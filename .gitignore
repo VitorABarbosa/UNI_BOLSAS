@@ -10,6 +10,7 @@ tsconfig.tsbuildinfo
 
 # claude code workspace
 .claude/
+.superpowers/
 
 # env vars
 .env

@@ -215,6 +215,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
