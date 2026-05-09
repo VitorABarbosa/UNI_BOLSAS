@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { DM_Sans, Fraunces } from 'next/font/google';
+import { SITE_URL } from '@/lib/seo';
 import './globals.css';
 
 const dmSans = DM_Sans({
@@ -16,6 +17,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Uni Bolsas — Atacado e Varejo · Brás SP',
   description:
     'Fabricante de bolsas no Brás · São Paulo. Atendimento atacado e varejo via WhatsApp.',
