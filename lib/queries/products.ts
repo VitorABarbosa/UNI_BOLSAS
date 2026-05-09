@@ -1,5 +1,6 @@
 import 'server-only';
 import { createClient } from '@/lib/supabase/server';
+import { createAnonClient } from '@/lib/supabase/anon';
 import type { Database } from '@/types/db';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -93,8 +94,13 @@ export async function listRelatedProducts(
 
 export type ProductSlugRow = Pick<ProductRow, 'slug' | 'updated_at'>;
 
+/**
+ * Slug list for `generateStaticParams` and `sitemap.ts`. Uses an anon-key
+ * client because `generateStaticParams` runs at build time, where the
+ * cookie-bound SSR client throws.
+ */
 export async function listProductSlugs(): Promise<ProductSlugRow[]> {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('products')
     .select('slug, updated_at')
