@@ -60,36 +60,67 @@ Alternativa manual: Studio → Authentication → Users → Add user (com `Auto 
 ## Layout do projeto
 
 ```
-app/                       # Next.js App Router
-  layout.tsx               # html, fontes, metadata
-  page.tsx                 # placeholder (substituido na Fase 2)
-  globals.css              # Tailwind v4 + design tokens + shadcn vars
-components/ui/             # primitivas shadcn (button, input, dialog, ...)
+app/
+  layout.tsx                       # html, fontes, metadata, metadataBase
+  globals.css                      # Tailwind v4 + tokens + 1500+ linhas de uni-* @layer components
+  robots.ts                        # /robots.txt
+  sitemap.ts                       # /sitemap.xml (landing + 5 PDPs)
+  (public)/
+    layout.tsx                     # casca: PromoStrip, Header, Footer, FloatingWA
+    page.tsx                       # landing single-page (RSC + ISR 60s)
+    produtos/[slug]/
+      page.tsx                     # PDP (SSG via generateStaticParams)
+      opengraph-image.tsx          # OG PNG 1200x630 dinâmico
+components/
+  public/
+    icons/                         # 12 SVG icons (port da reference)
+    primitives/                    # Reveal, CountUp, WhatsAppButton, Logo
+    shell/                         # PromoStrip, Header, MobileMenu, Footer, FloatingWA
+    home/
+      Hero, HeroIllustration, CredibilityStrip, WholesaleVsRetail
+      Catalog/                     # orchestrator + filters + grid + card
+      Manifesto, ManifestoIllustrations
+      Social, SocialIllustrations
+      FAQSection, Location, MapIllustration, Newsletter
+      HomeContent                  # client wrapper que mantém o state do QuickView
+    quickview/QuickView            # modal de detalhes
+    pdp/                           # PdpContent, Gallery, ProductInfo, ColorSwatches,
+                                   # SizePicker, PdpWhatsAppCTA, RelatedProducts
+  ui/                              # primitivas shadcn (Plano 03 vai consumir)
 lib/
-  tokens.ts                # paleta TS (espelha CSS vars)
-  utils.ts                 # cn() helper
+  tokens.ts                        # paleta TS (espelha CSS vars)
+  utils.ts                         # cn()
+  format.ts                        # truncate, formatPriceBRL
+  seo.ts                           # SITE_URL, SITE_NAME
+  whatsapp.ts                      # waLink, waProduct, waGeneral, waWholesale, waRetail, waNewsletter
+  product-images.ts                # galleryImages, cardCoverImage, productHasColor
+  content/                         # FAQ, TIMELINE, TESTIMONIALS, STORE, CREDIBILITY, PROMO, COLOR_PALETTE
+  queries/                         # listActiveProducts, getProductBySlug, listRelatedProducts, listProductSlugs
   supabase/
-    client.ts              # createBrowserClient ('use client')
-    server.ts              # createServerClient (RSC + Server Actions)
-    admin.ts               # service-role, server-only
+    client.ts                      # createBrowserClient
+    server.ts                      # createServerClient (cookie-bound RSC)
+    anon.ts                        # stateless anon client (build-time queries)
+    admin.ts                       # service-role, server-only
+    image-url.ts                   # publicImageUrl(storage_path)
 types/
-  db.ts                    # gerado de supabase gen types
+  db.ts                            # gerado de supabase gen types
 scripts/
-  seed.ts                  # popula DB + Storage
-  test-fetch.ts            # smoke
-  create-admin.ts          # cria auth user + admins row
+  seed.ts                          # popula DB + Storage
+  test-fetch.ts                    # smoke
+  create-admin.ts                  # cria auth user + admins row
+  port-styles.py                   # one-shot: porta styles.jsx -> globals.css
 supabase/
-  config.toml              # supabase init
-  migrations/              # SQL versionado
-  seed-assets/images.ts    # geradores de SVG (placeholders)
-Claude Design - Reference/ # protótipo original (preservado até Fase 8)
-docs/superpowers/          # plans + specs da migração
+  config.toml
+  migrations/                      # SQL versionado
+  seed-assets/images.ts            # geradores de SVG
+Claude Design - Reference/         # protótipo original (preservado até Fase 8)
+docs/superpowers/                  # plans + specs da migração
 ```
 
 ## Roadmap
 
 - [x] **Plano 01 — Foundation:** scaffold Next.js + Tailwind + shadcn, projeto Supabase, schema com RLS, Storage com policies, seed dos 5 produtos, smoke test, primeiro admin
-- [ ] **Plano 02 — Public site:** landing single-page, PDP `/produtos/[slug]`, sitemap, OG images
+- [x] **Plano 02 — Public site:** landing single-page, PDP `/produtos/[slug]`, sitemap, robots, OG images dinâmicas
 - [ ] **Plano 03 — Admin:** auth, shell admin, CRUD de produtos com upload de imagens, CRUD de categorias
 - [ ] **Plano 04 — Deploy + cleanup:** Vercel, custom domain, smoke em produção, remoção da reference
 
