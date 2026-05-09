@@ -46,3 +46,6 @@ desktop.ini
 docs/
 Claude Design - Reference/
 
+# port-styles helper output (intermediate, never committed)
+scripts/_ported-styles.css
+
