@@ -42,7 +42,7 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
-.claude/
-.docs/
-.Claude Design - Reference/
+# excluded from public repo (kept local only)
+docs/
+Claude Design - Reference/
 
