@@ -1,17 +1,13 @@
 import { z } from 'zod';
 
-const HEX_REGEX = /^#[0-9a-fA-F]{6}$/;
+import { nullableStringFromInput } from './_helpers';
 
-const nullableHexFromInput = () =>
-  z.preprocess(
-    (v) => (v === '' || v === undefined ? null : v),
-    z.string().regex(HEX_REGEX).nullable(),
-  );
+const HEX_REGEX = /^#[0-9a-fA-F]{6}$/;
 
 export const ColorSchema = z.object({
   name: z.string().min(1).max(60),
   hex: z.string().regex(HEX_REGEX),
-  accent_hex: nullableHexFromInput(),
+  accent_hex: nullableStringFromInput({ regex: HEX_REGEX }),
   sort_order: z.coerce.number().int().min(0),
 });
 

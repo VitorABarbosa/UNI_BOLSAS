@@ -1,22 +1,18 @@
 import { z } from 'zod';
 
-const nullableStringFromInput = (max?: number) =>
-  z.preprocess(
-    (v) => (v === '' || v === undefined ? null : v),
-    max ? z.string().max(max).nullable() : z.string().nullable(),
-  );
+import { nullableStringFromInput } from './_helpers';
 
 export const ImageInsertSchema = z.object({
   product_id: z.string().uuid(),
   color_id: z.string().uuid().nullable(),
   storage_path: z.string().min(1),
-  alt: nullableStringFromInput(200),
+  alt: nullableStringFromInput({ max: 200 }),
   sort_order: z.coerce.number().int().min(0),
 });
 
 export const ImageUpdateAltSchema = z.object({
   id: z.string().uuid(),
-  alt: nullableStringFromInput(200),
+  alt: nullableStringFromInput({ max: 200 }),
 });
 
 export const ImageReorderSchema = z.object({
