@@ -1,13 +1,7 @@
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { FlatCompat } from '@eslint/eslintrc';
+import nextConfig from 'eslint-config-next';
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({ baseDirectory: __dirname });
-
-const eslintConfig = [
+const config = [
   {
     ignores: [
       'node_modules/**',
@@ -16,9 +10,11 @@ const eslintConfig = [
       'next-env.d.ts',
       'Claude Design - Reference/**',
       'supabase/seed-assets/**',
+      'components/ui/**',
     ],
   },
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextConfig,
+  ...nextCoreWebVitals,
 ];
 
-export default eslintConfig;
+export default config;
