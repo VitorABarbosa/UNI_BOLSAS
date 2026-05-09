@@ -1,0 +1,144 @@
+'use client';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Reveal } from '@/components/public/primitives/Reveal';
+import { CategoryFilter, type CategoryOption } from './CategoryFilter';
+import { ColorFilter } from './ColorFilter';
+import { ProductGrid } from './ProductGrid';
+import type { ProductWithRelations } from '@/lib/queries/products';
+import type { PaletteColor } from '@/lib/content/color-palette';
+import { productHasColor } from '@/lib/product-images';
+
+type CatalogProps = {
+  products: ProductWithRelations[];
+  categories: CategoryOption[];
+  colorPalette: ReadonlyArray<PaletteColor>;
+  onOpenQuickView: (product: ProductWithRelations, colorIdx: number) => void;
+};
+
+export function Catalog({
+  products,
+  categories,
+  colorPalette,
+  onOpenQuickView,
+}: CatalogProps) {
+  const [activeCat, setActiveCat] = useState('todos');
+  const [activeColor, setActiveColor] = useState<string | null>(null);
+  const [selectedColors, setSelectedColors] = useState<Record<string, number>>(
+    () => Object.fromEntries(products.map((p) => [p.id, 0])),
+  );
+  const [previewColors, setPreviewColors] = useState<
+    Record<string, number | null>
+  >({});
+  const [renderedIds, setRenderedIds] = useState<string[]>(() =>
+    products.map((p) => p.id),
+  );
+  const [leavingIds, setLeavingIds] = useState<string[]>([]);
+  const [enteringIds, setEnteringIds] = useState<string[]>([]);
+  const filterTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const enterTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevFilteredRef = useRef<string[]>(products.map((p) => p.id));
+
+  const filtered = useMemo(() => {
+    return products.filter((p) => {
+      const catOK = activeCat === 'todos' || p.category?.slug === activeCat;
+      const colorOK = !activeColor || productHasColor(p, activeColor);
+      return catOK && colorOK;
+    });
+  }, [products, activeCat, activeColor]);
+
+  useEffect(() => {
+    const prev = prevFilteredRef.current;
+    const curr = filtered.map((p) => p.id);
+    const leaving = prev.filter((id) => !curr.includes(id));
+    const entering = curr.filter((id) => !prev.includes(id));
+    if (leaving.length === 0 && entering.length === 0) {
+      prevFilteredRef.current = curr;
+      return;
+    }
+    setLeavingIds(leaving);
+    if (filterTimerRef.current) clearTimeout(filterTimerRef.current);
+    filterTimerRef.current = setTimeout(() => {
+      setRenderedIds(curr);
+      setLeavingIds([]);
+      setEnteringIds(entering);
+      if (enterTimerRef.current) clearTimeout(enterTimerRef.current);
+      enterTimerRef.current = setTimeout(() => setEnteringIds([]), 700);
+      prevFilteredRef.current = curr;
+    }, 220);
+    return () => {
+      if (filterTimerRef.current) clearTimeout(filterTimerRef.current);
+    };
+  }, [filtered]);
+
+  const displayedIds = leavingIds.length
+    ? prevFilteredRef.current
+    : renderedIds;
+  const displayed = displayedIds
+    .map((id) => products.find((p) => p.id === id))
+    .filter((p): p is ProductWithRelations => p != null);
+
+  const onSelectColor = (id: string, idx: number) =>
+    setSelectedColors((s) => ({ ...s, [id]: idx }));
+  const onPreviewColor = (id: string, idx: number | null) =>
+    setPreviewColors((s) => ({ ...s, [id]: idx }));
+
+  const counts = useMemo(() => {
+    const m: Record<string, number> = { todos: products.length };
+    categories.forEach((c) => {
+      if (c.id !== 'todos')
+        m[c.id] = products.filter((p) => p.category?.slug === c.id).length;
+    });
+    return m;
+  }, [products, categories]);
+
+  const onClearFilters = () => {
+    setActiveCat('todos');
+    setActiveColor(null);
+  };
+
+  return (
+    <section className="uni-catalog uni-section" id="catalogo">
+      <div className="uni-container">
+        <Reveal>
+          <div className="uni-section-head">
+            <div className="uni-eyebrow uni-eyebrow-wide">O catálogo</div>
+            <h2 className="uni-h2">
+              Bolsas <em>em foco.</em>
+            </h2>
+            <p className="uni-section-lede">
+              Filtre por cor ou categoria, abra cada peça pra ver dimensões,
+              material e galeria, e peça direto pelo WhatsApp.
+            </p>
+          </div>
+        </Reveal>
+        <Reveal>
+          <ColorFilter
+            palette={colorPalette}
+            activeColor={activeColor}
+            onChange={setActiveColor}
+          />
+        </Reveal>
+        <Reveal>
+          <CategoryFilter
+            categories={categories}
+            activeCat={activeCat}
+            counts={counts}
+            onChange={setActiveCat}
+          />
+        </Reveal>
+        <ProductGrid
+          displayed={displayed}
+          selectedColors={selectedColors}
+          previewColors={previewColors}
+          leavingIds={leavingIds}
+          enteringIds={enteringIds}
+          onSelectColor={onSelectColor}
+          onPreviewColor={onPreviewColor}
+          onOpenQuickView={onOpenQuickView}
+          onClearFilters={onClearFilters}
+        />
+      </div>
+    </section>
+  );
+}
