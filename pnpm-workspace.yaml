@@ -1,6 +1,9 @@
-allowBuilds:
-  esbuild: true
-  msw: true
-  sharp: true
-  supabase: true
-  unrs-resolver: true
+packages:
+  - .
+
+onlyBuiltDependencies:
+  - esbuild
+  - msw
+  - sharp
+  - supabase
+  - unrs-resolver
