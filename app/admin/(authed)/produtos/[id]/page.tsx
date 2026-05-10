@@ -4,6 +4,10 @@ import { requireAdmin } from '@/lib/auth/require-admin';
 import { AdminShell } from '@/components/admin/shell/AdminShell';
 import { ProductForm } from '@/components/admin/ProductForm';
 import type { ColorRow } from '@/components/admin/ProductForm/ColorsEditor';
+import type {
+  ImageRow,
+  ColorTabInfo,
+} from '@/components/admin/ProductForm/ImagesEditor';
 import { DeleteProductButton } from '@/components/admin/DeleteProductButton';
 
 export const metadata = {
@@ -28,7 +32,7 @@ export default async function EditarProdutoPage({
         `
           *,
           colors:product_colors(*),
-          images:product_images(id, color_id, sort_order, storage_path, alt)
+          images:product_images(id, product_id, color_id, sort_order, storage_path, alt)
         `,
       )
       .eq('id', id)
@@ -46,7 +50,14 @@ export default async function EditarProdutoPage({
     accent_hex: string | null;
     sort_order: number;
   };
-  type ImageRecord = { color_id: string | null };
+  type ImageRecord = {
+    id: string;
+    product_id: string | null;
+    color_id: string | null;
+    storage_path: string;
+    alt: string | null;
+    sort_order: number;
+  };
 
   const colorRecords: ColorRecord[] = (product.colors ?? []) as ColorRecord[];
   const imageRecords: ImageRecord[] = (product.images ?? []) as ImageRecord[];
@@ -58,6 +69,21 @@ export default async function EditarProdutoPage({
     accent_hex: c.accent_hex,
     sort_order: c.sort_order,
     image_count: imageRecords.filter((img) => img.color_id === c.id).length,
+  }));
+
+  const initialImages: ImageRow[] = imageRecords.map((img) => ({
+    id: img.id,
+    product_id: img.product_id ?? product.id,
+    color_id: img.color_id,
+    storage_path: img.storage_path,
+    alt: img.alt,
+    sort_order: img.sort_order,
+  }));
+
+  const colorTabs: ColorTabInfo[] = initialColors.map((c) => ({
+    id: c.id,
+    name: c.name,
+    hex: c.hex,
   }));
 
   return (
@@ -81,6 +107,8 @@ export default async function EditarProdutoPage({
         categories={cats ?? []}
         product={product as never}
         initialColors={initialColors}
+        initialImages={initialImages}
+        colorTabs={colorTabs}
       />
     </AdminShell>
   );

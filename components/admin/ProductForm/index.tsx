@@ -15,6 +15,11 @@ import { PricingFields } from './PricingFields';
 import { DetailsFields } from './DetailsFields';
 import { SeoFields } from './SeoFields';
 import { ColorsEditor, type ColorRow } from './ColorsEditor';
+import {
+  ImagesEditor,
+  type ImageRow,
+  type ColorTabInfo,
+} from './ImagesEditor';
 
 const TABS = [
   { value: 'basico', label: 'Básico' },
@@ -61,11 +66,15 @@ export function ProductForm({
   categories,
   product,
   initialColors,
+  initialImages,
+  colorTabs,
 }: {
   mode: 'create' | 'edit';
   categories: { id: string; label: string }[];
   product?: ProductRowFull;
   initialColors?: ColorRow[];
+  initialImages?: ImageRow[];
+  colorTabs?: ColorTabInfo[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -165,9 +174,11 @@ export function ProductForm({
                   Salve o produto primeiro pra liberar o upload de imagens.
                 </p>
               ) : (
-                <p className="rounded-md border border-whisper bg-bone-light p-4 text-sm text-stone">
-                  Editor de imagens virá na Task 15.
-                </p>
+                <ImagesEditor
+                  productId={product!.id}
+                  colors={colorTabs ?? []}
+                  initial={initialImages ?? []}
+                />
               )}
             </TabsContent>
           </div>
