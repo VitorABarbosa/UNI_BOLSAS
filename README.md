@@ -96,7 +96,7 @@ components/
     primitives/                    # Reveal, CountUp, WhatsAppButton, Logo
     shell/                         # PromoStrip, Header, MobileMenu, Footer, FloatingWA
     home/
-      Hero, HeroIllustration, CredibilityStrip, WholesaleVsRetail
+      Hero, HeroCarousel, CredibilityStrip, WholesaleVsRetail   # HeroCarousel consome lib/content/hero-slides.ts
       Catalog/                     # orchestrator + filters + grid + card
       Manifesto, ManifestoIllustrations
       Social                         # consome lib/content/instagram.ts + thumbnails de public/instagram/

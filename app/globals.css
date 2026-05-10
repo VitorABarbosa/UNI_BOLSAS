@@ -219,6 +219,32 @@ html, body {
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* Hero carousel keyframes (top-level — must NOT live inside @layer) */
+@keyframes uni-slide-in-right {
+  0%   { opacity: 0; clip-path: inset(0 100% 0 0); transform: scale(1.04); }
+  100% { opacity: 1; clip-path: inset(0 0% 0 0);   transform: scale(1); }
+}
+@keyframes uni-slide-in-left {
+  0%   { opacity: 0; clip-path: inset(0 0 0 100%); transform: scale(1.04); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0%);   transform: scale(1); }
+}
+@keyframes uni-slide-out {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.97); }
+}
+@keyframes uni-carousel-zoom {
+  0%   { transform: scale(1.0); }
+  100% { transform: scale(1.06); }
+}
+@keyframes uni-dot-fill {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+@keyframes uni-progress {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
 @layer components {
   .uni-root {
     background: var(--color-bone);
@@ -474,125 +500,210 @@ html, body {
       radial-gradient(ellipse 50% 35% at 90% 75%, rgba(92, 26, 43, 0.07), transparent 60%);
     pointer-events: none;
   }
-  .uni-hero-grid {
+  .uni-hero-inner {
     position: relative;
     z-index: 1;
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 64px;
-    align-items: stretch;
-    min-height: 70vh;
-  }
-  .uni-hero-text-col {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding-right: 24px;
-  }
-  .uni-hero-eyebrow-wrap {
-    display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 36px;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .uni-hero-image-frame {
+    position: relative;
+    width: 90vw;
+    margin-left: calc(50% - 45vw);
+    margin-right: calc(50% - 45vw);
+    margin-bottom: 56px;
     opacity: 0;
-    animation: uni-letter-spread 1.2s ease 0.25s both;
+    animation: uni-frame-rise 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both;
   }
-  .uni-hero-eyebrow-line {
-    width: 56px;
-    height: 1px;
-    background: var(--color-leather-dark);
-    opacity: 0.5;
+  .uni-hero-eyebrow {
+    margin: 0 0 28px;
+    opacity: 0;
+    animation: uni-letter-spread 1.2s ease 0.55s both;
   }
-  .uni-hero-h1-wrap { margin-bottom: 36px; }
+  .uni-hero-h1 {
+    margin: 0 0 32px;
+    max-width: 880px;
+  }
   .uni-hero-h1 .uni-word {
     display: inline-block;
     opacity: 0;
     animation: uni-word-rise 1.0s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
-
-
   .uni-hero-divider {
     width: 0;
     height: 1px;
     background: var(--color-leather-dark);
     opacity: 0;
-    margin-bottom: 28px;
-    animation: uni-divider-grow 0.9s cubic-bezier(0.65, 0.05, 0.36, 1) 1.4s both;
+    margin: 0 auto 32px;
+    animation: uni-divider-grow 0.9s cubic-bezier(0.65, 0.05, 0.36, 1) 1.55s both;
   }
-
   .uni-hero-lede {
     font-family: 'DM Sans', sans-serif;
     font-size: 17px;
     line-height: 1.65;
     color: var(--color-charcoal);
-    max-width: 480px;
-    margin: 0 0 40px;
+    max-width: 580px;
+    margin: 0 auto 40px;
     opacity: 0;
-    animation: uni-fade-up 0.9s ease 1.6s both;
+    animation: uni-fade-up 0.9s ease 1.75s both;
   }
   .uni-hero-ctas {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
+    justify-content: center;
     opacity: 0;
-    animation: uni-fade-up 0.9s ease 1.85s both;
+    animation: uni-fade-up 0.9s ease 1.95s both;
   }
 
-
-  /* Hero image col */
-  .uni-hero-img-col {
+  /* ---- Hero Carousel ---- */
+  .uni-carousel {
     position: relative;
-    min-height: 540px;
-    opacity: 0;
-    animation: uni-frame-rise 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both;
-  }
-
-  .uni-hero-img-wrap {
-    position: absolute;
-    inset: 0;
+    width: 100%;
+    aspect-ratio: 21 / 9;
     overflow: hidden;
     background: var(--color-bone-light);
     box-shadow:
       0 30px 80px -24px rgba(17, 17, 17, 0.22),
       0 6px 16px -8px rgba(17, 17, 17, 0.08);
+    transition: box-shadow 0.6s ease;
   }
-  .uni-hero-img {
+  .uni-carousel:hover {
+    box-shadow:
+      0 50px 120px -30px rgba(17, 17, 17, 0.32),
+      0 10px 28px -12px rgba(17, 17, 17, 0.14);
+  }
+  .uni-carousel-slide {
+    position: absolute;
+    inset: 0;
+    will-change: transform, opacity, clip-path;
+  }
+  .uni-carousel-slide.is-active {
+    z-index: 2;
+    animation: uni-slide-in-right 0.9s cubic-bezier(0.3, 0.8, 0.2, 1) both;
+  }
+  .uni-carousel-slide.is-active[data-dir="-1"] {
+    animation-name: uni-slide-in-left;
+  }
+  .uni-carousel-slide.is-prev {
+    z-index: 1;
+    animation: uni-slide-out 0.9s ease both;
+  }
+  .uni-carousel-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transform-origin: 50% 45%;
-    transform: scale(1.02) translateZ(0);
-    backface-visibility: hidden;
-    will-change: transform;
-    animation: uni-ken-burns 32s ease-in-out infinite alternate;
   }
-
-
-  .uni-hero-badge-1, .uni-hero-badge-2 {
+  .uni-carousel-slide.is-active .uni-carousel-img {
+    animation: uni-carousel-zoom 6s ease-out both;
+    transform-origin: center center;
+  }
+  .uni-carousel-overlay {
     position: absolute;
-    background: rgba(17, 17, 17, 0.86);
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 55%, rgba(17, 17, 17, 0.32) 100%);
+    pointer-events: none;
+  }
+  .uni-carousel-tag {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--color-ink);
     color: var(--color-bone);
+    padding: 6px 14px;
     font-family: 'DM Sans', sans-serif;
     font-size: 10px;
-    letter-spacing: 0.32em;
+    letter-spacing: 0.3em;
     text-transform: uppercase;
     font-weight: 500;
-    padding: 9px 18px;
-    backdrop-filter: blur(6px);
     z-index: 3;
-    box-shadow: 0 8px 22px rgba(17, 17, 17, 0.18);
+    box-shadow: 0 4px 14px rgba(17, 17, 17, 0.22);
+    animation: uni-tag-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s both;
   }
-  .uni-hero-badge-1 {
-    top: 22px; right: -10px;
-    animation: uni-tag-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 1.3s both;
-  }
-  .uni-hero-badge-2 {
-    bottom: 32px; left: -10px;
-    background: var(--color-bone);
+  .uni-carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(244, 239, 230, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(17, 17, 17, 0.08);
     color: var(--color-ink);
-    border: 1px solid var(--color-whisper);
-    animation: uni-tag-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 1.55s both;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 4px 16px rgba(17, 17, 17, 0.14);
+    padding: 0;
+  }
+  .uni-carousel-arrow:hover {
+    background: var(--color-bone);
+    transform: translateY(-50%) scale(1.08);
+    box-shadow: 0 8px 24px rgba(17, 17, 17, 0.22);
+  }
+  .uni-carousel-arrow-prev { left: 14px; }
+  .uni-carousel-arrow-next { right: 14px; }
+  .uni-carousel-dots {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+  }
+  .uni-carousel-dot {
+    width: 28px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(244, 239, 230, 0.35);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.3s ease, width 0.4s ease;
+    overflow: hidden;
+    position: relative;
+  }
+  .uni-carousel-dot.is-active {
+    width: 56px;
+    background: rgba(244, 239, 230, 0.5);
+  }
+  .uni-carousel-dot-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--color-bone);
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+  .uni-carousel-dot.is-active .uni-carousel-dot-fill {
+    animation: uni-dot-fill 5s linear both;
+  }
+  .uni-carousel-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(244, 239, 230, 0.15);
+    z-index: 10;
+    overflow: hidden;
+  }
+  .uni-carousel-progress-fill {
+    height: 100%;
+    background: var(--color-bone);
+    opacity: 0.7;
+    transform-origin: left;
+    animation: uni-progress 5s linear both;
   }
 
 
@@ -1929,22 +2040,29 @@ html, body {
   }
 
   /* ---- Reduced motion ---- */
-
+  /* Matches reference: only soften specific hero text animations.
+     Carousel animations (slide-in/out, progress, dot fill) play normally
+     so the carousel never appears as a hard cut. */
+  @media (prefers-reduced-motion: reduce) {
+    .uni-hero-bg {
+      animation: none !important;
+    }
+    .uni-hero-eyebrow,
+    .uni-hero-divider,
+    .uni-hero-lede,
+    .uni-hero-ctas,
+    .uni-hero-h1 .uni-word,
+    .uni-hero-image-frame {
+      animation-duration: 0.4s !important;
+      animation-delay: 0s !important;
+    }
+  }
 
   /* ---- Tablet ---- */
 
-  @media (prefers-reduced-motion: reduce) {
-    .uni-hero-img { animation: none; transform: none; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  }
-
   @media (max-width: 1080px) {
     .uni-section { padding: 100px 0; }
-    .uni-hero-grid { grid-template-columns: 1fr; gap: 48px; }
-    .uni-hero-img-col { min-height: 460px; order: 2; }
+    .uni-hero-image-frame { margin-bottom: 40px; }
     .uni-h1 { font-size: clamp(48px, 9vw, 90px); }
     .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
     .uni-location-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -1997,7 +2115,8 @@ html, body {
     .uni-promo-strip-close { right: 12px; }
     .uni-social-head { flex-direction: column; align-items: flex-start; gap: 12px; }
     .uni-footer-bottom { flex-direction: column; align-items: flex-start; }
-    .uni-hero-badge-1, .uni-hero-badge-2 { font-size: 9px; padding: 7px 12px; }
+    .uni-carousel-arrow { width: 36px; height: 36px; }
+    .uni-carousel-tag { font-size: 9px; padding: 5px 11px; }
   }
 
   /* ---- PDP layout (page-mode product detail) ---- */
