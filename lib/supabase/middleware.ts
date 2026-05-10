@@ -3,15 +3,12 @@ import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@/types/db';
 
 /**
- * Cookie-aware Supabase client for Next.js middleware.
+ * Cookie-aware Supabase client for the Next.js proxy (formerly middleware).
  *
  * Returns the supabase instance + a `NextResponse` with refreshed cookies.
- * The caller MUST return this `response` from the middleware (or merge its
+ * The caller MUST return this `response` from the proxy (or merge its
  * cookies/headers into any other response it returns) so that refreshed
  * Supabase auth cookies make it back to the browser.
- *
- * Edge-compatible: uses only `@supabase/ssr` and `next/server` — no
- * `next/headers`, no `'server-only'`, no Node-specific APIs.
  *
  * Pattern: https://supabase.com/docs/guides/auth/server-side/nextjs
  */

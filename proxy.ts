@@ -15,9 +15,9 @@ import { isAdminClaim } from '@/lib/auth/is-admin-claim';
  *   5. Admin → return the `response` produced by `createMiddlewareClient`
  *      (carries refreshed Supabase auth cookies back to the browser).
  *
- * Edge-compatible: only `next/server` + `@supabase/ssr` (via the helper).
+ * Runs on the Node.js runtime (Next 16 `proxy` does not support `edge`).
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Bypass /admin/login itself to avoid redirect loops.

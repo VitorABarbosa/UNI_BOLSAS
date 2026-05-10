@@ -24,7 +24,7 @@ export async function createClient() {
             });
           } catch {
             // setAll is a no-op when called from a Server Component;
-            // middleware refreshes the session on the next request.
+            // proxy refreshes the session on the next request.
           }
         },
       },
