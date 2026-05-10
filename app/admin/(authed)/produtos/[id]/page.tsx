@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { AdminShell } from '@/components/admin/shell/AdminShell';
 import { ProductForm } from '@/components/admin/ProductForm';
+import type { ColorRow } from '@/components/admin/ProductForm/ColorsEditor';
 import { DeleteProductButton } from '@/components/admin/DeleteProductButton';
 
 export const metadata = {
@@ -23,7 +24,13 @@ export default async function EditarProdutoPage({
   ] = await Promise.all([
     supabase
       .from('products')
-      .select('*, colors:product_colors(*), images:product_images(*)')
+      .select(
+        `
+          *,
+          colors:product_colors(*),
+          images:product_images(id, color_id, sort_order, storage_path, alt)
+        `,
+      )
       .eq('id', id)
       .maybeSingle(),
     supabase.from('categories').select('id, label').order('sort_order'),
@@ -31,6 +38,27 @@ export default async function EditarProdutoPage({
   if (prodError) throw prodError;
   if (catsError) throw catsError;
   if (!product) notFound();
+
+  type ColorRecord = {
+    id: string;
+    name: string;
+    hex: string;
+    accent_hex: string | null;
+    sort_order: number;
+  };
+  type ImageRecord = { color_id: string | null };
+
+  const colorRecords: ColorRecord[] = (product.colors ?? []) as ColorRecord[];
+  const imageRecords: ImageRecord[] = (product.images ?? []) as ImageRecord[];
+
+  const initialColors: ColorRow[] = colorRecords.map((c) => ({
+    id: c.id,
+    name: c.name,
+    hex: c.hex,
+    accent_hex: c.accent_hex,
+    sort_order: c.sort_order,
+    image_count: imageRecords.filter((img) => img.color_id === c.id).length,
+  }));
 
   return (
     <AdminShell
@@ -52,6 +80,7 @@ export default async function EditarProdutoPage({
         mode="edit"
         categories={cats ?? []}
         product={product as never}
+        initialColors={initialColors}
       />
     </AdminShell>
   );

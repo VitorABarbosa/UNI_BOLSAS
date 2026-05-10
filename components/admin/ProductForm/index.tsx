@@ -14,6 +14,7 @@ import { BasicFields } from './BasicFields';
 import { PricingFields } from './PricingFields';
 import { DetailsFields } from './DetailsFields';
 import { SeoFields } from './SeoFields';
+import { ColorsEditor, type ColorRow } from './ColorsEditor';
 
 const TABS = [
   { value: 'basico', label: 'Básico' },
@@ -59,10 +60,12 @@ export function ProductForm({
   mode,
   categories,
   product,
+  initialColors,
 }: {
   mode: 'create' | 'edit';
   categories: { id: string; label: string }[];
   product?: ProductRowFull;
+  initialColors?: ColorRow[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -153,9 +156,7 @@ export function ProductForm({
                   Salve o produto primeiro pra liberar a edição de cores.
                 </p>
               ) : (
-                <p className="rounded-md border border-whisper bg-bone-light p-4 text-sm text-stone">
-                  Editor de cores virá na Task 14.
-                </p>
+                <ColorsEditor productId={product!.id} initial={initialColors ?? []} />
               )}
             </TabsContent>
             <TabsContent value="imagens">
