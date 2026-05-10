@@ -6,7 +6,7 @@ import {
   PinIcon,
   WazeIcon,
 } from '@/components/public/icons';
-import { MapIllustration } from './MapIllustration';
+import { MapEmbed } from './MapEmbed';
 import { STORE } from '@/lib/content/store';
 import { TOKENS } from '@/lib/tokens';
 import { waLink } from '@/lib/whatsapp';
@@ -30,7 +30,7 @@ export function Location() {
         <div className="uni-location-grid">
           <Reveal>
             <div className="uni-map-wrap">
-              <MapIllustration />
+              <MapEmbed />
               <a
                 className="uni-map-pill"
                 href={STORE.mapsUrl}
@@ -57,7 +57,11 @@ export function Location() {
                 <div className="uni-store-hours-head">
                   <ClockIcon size={12} color={TOKENS.leatherDark} /> Horário
                 </div>
-                <div className="uni-store-hours-body">{STORE.hours}</div>
+                <div className="uni-store-hours-body">
+                  {STORE.hours.map((line) => (
+                    <div key={line}>{line}</div>
+                  ))}
+                </div>
               </div>
               <div className="uni-store-transport">
                 <div className="uni-store-transport-head">Como chegar</div>

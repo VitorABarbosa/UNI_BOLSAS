@@ -1,6 +1,6 @@
 import { Reveal } from '@/components/public/primitives/Reveal';
 import { InstagramIcon } from '@/components/public/icons';
-import { IG_POSTS } from './SocialIllustrations';
+import { IG_FEED } from '@/lib/content/instagram';
 import { TESTIMONIALS } from '@/lib/content/testimonials';
 import { INSTAGRAM_HANDLE, TOKENS } from '@/lib/tokens';
 
@@ -28,16 +28,20 @@ export function Social() {
         </Reveal>
         <Reveal>
           <div className="uni-ig-grid">
-            {IG_POSTS.map((Post, i) => (
+            {IG_FEED.map((post, i) => (
               <a
-                key={i}
-                href={`https://instagram.com/${INSTAGRAM_HANDLE}`}
+                key={post.shortcode}
+                href={post.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="uni-ig-item"
-                aria-label={`Post ${i + 1} do Instagram Uni Bolsas`}
+                aria-label={`Post ${i + 1} de @${INSTAGRAM_HANDLE} no Instagram`}
               >
-                <Post />
+                <img
+                  src={`/instagram/${post.shortcode}.jpg`}
+                  alt=""
+                  loading="lazy"
+                />
                 <div className="uni-ig-overlay">
                   <InstagramIcon size={28} color={TOKENS.bone} />
                 </div>

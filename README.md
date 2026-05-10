@@ -99,8 +99,8 @@ components/
       Hero, HeroIllustration, CredibilityStrip, WholesaleVsRetail
       Catalog/                     # orchestrator + filters + grid + card
       Manifesto, ManifestoIllustrations
-      Social, SocialIllustrations
-      FAQSection, Location, MapIllustration, Newsletter
+      Social                         # consome lib/content/instagram.ts + thumbnails de public/instagram/
+      FAQSection, Location, MapEmbed, Newsletter
       HomeContent                  # client wrapper que mantém o state do QuickView
     quickview/QuickView            # modal de detalhes
     pdp/                           # PdpContent, Gallery, ProductInfo, ColorSwatches,

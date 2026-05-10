@@ -45,7 +45,14 @@ export function Footer() {
               <br />
               {STORE.district} · {STORE.city}
               <br />
-              <span className="uni-footer-hours">{STORE.hoursShort}</span>
+              <span className="uni-footer-hours">
+                {STORE.hoursShort.map((line, i) => (
+                  <span key={line}>
+                    {i > 0 && <br />}
+                    {line}
+                  </span>
+                ))}
+              </span>
             </div>
           </div>
           <div>
