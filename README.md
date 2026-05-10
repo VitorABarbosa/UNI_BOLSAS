@@ -57,6 +57,25 @@ Cria o usuário em `auth.users` (já confirmado) e adiciona em `public.admins`. 
 
 Alternativa manual: Studio → Authentication → Users → Add user (com `Auto Confirm: ON`) → SQL Editor → `insert into public.admins (user_id) values ('<UUID>');`
 
+### Habilitar o Auth Hook (uma vez por projeto)
+
+O middleware lê a claim `is_admin` direto do JWT (zero roundtrip ao DB). A claim é injetada por uma função SQL (`public.custom_access_token_hook`, criada no Plano 03), mas a função só é executada se o hook estiver habilitado no Studio:
+
+> Studio → **Authentication → Hooks** → **Customize Access Token (CAT) Claim** → schema=`public`, function=`custom_access_token_hook`, status=**Enabled** → Save.
+
+Sem isso, o login até funciona, mas o middleware redireciona com `?error=unauthorized` porque a claim nunca chega. Após habilitar, faça logout/login do admin uma vez para o JWT renovar.
+
+## Como usar o admin
+
+1. Acesse `/admin/login` e entre com o email/senha do admin (criado pelo `pnpm tsx scripts/create-admin.ts`).
+2. **Dashboard** (`/admin`): contadores de produtos ativos, categorias e imagens, mais os 5 produtos editados mais recentemente.
+3. **Produtos** (`/admin/produtos`): listagem com search, filtro por categoria, toggle de ativos, sort. Botão **Novo produto** abre o form em `/admin/produtos/novo`.
+4. **Editar produto** (`/admin/produtos/[id]`): tabs Básico / Preço / Detalhes / SEO / Cores / Imagens. Cores e Imagens persistem **independentemente** (cada mudança grava na hora). Os outros tabs gravam só ao clicar em **Salvar** no rodapé.
+5. **Imagens**: drag-and-drop até 4 paralelos, 5MB por arquivo, formatos webp/jpg/png/svg. Cada cor cria uma tab própria + tab "Genéricas" sempre presente. Reorder por drag, click na thumb edita o `alt`.
+6. **Categorias** (`/admin/categorias`): tabela inline editável com reorder por drag e add inline no fim. Delete cascade com confirm que mostra quantos produtos serão apagados junto.
+
+Mudanças refletem no site público em ≤5s via `revalidatePath` específico (a home, o sitemap, e cada PDP afetado).
+
 ## Layout do projeto
 
 ```
@@ -121,7 +140,7 @@ docs/superpowers/                  # plans + specs da migração
 
 - [x] **Plano 01 — Foundation:** scaffold Next.js + Tailwind + shadcn, projeto Supabase, schema com RLS, Storage com policies, seed dos 5 produtos, smoke test, primeiro admin
 - [x] **Plano 02 — Public site:** landing single-page, PDP `/produtos/[slug]`, sitemap, robots, OG images dinâmicas
-- [ ] **Plano 03 — Admin:** auth, shell admin, CRUD de produtos com upload de imagens, CRUD de categorias
-- [ ] **Plano 04 — Deploy + cleanup:** Vercel, custom domain, smoke em produção, remoção da reference
+- [x] **Plano 03 — Admin:** auth via JWT claim `is_admin`, shell admin, CRUD de produtos com upload drag-and-drop e editor de cores, CRUD de categorias com cascade delete
+- [ ] **Plano 04 — Deploy + cleanup:** Vercel, custom domain, smoke em produção, remoção da reference, polish (loading states, OG fonts, rename `middleware.ts` → `proxy.ts` para Next 16)
 
 A spec viva está em `docs/superpowers/specs/2026-05-08-uni-bolsas-stack-migration-design.md`.
