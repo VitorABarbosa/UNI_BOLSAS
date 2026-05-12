@@ -10,24 +10,18 @@ export function CredibilityStrip() {
         <div className="uni-cred-grid">
           <Reveal className="uni-cred-cell" delay={0}>
             <div className="uni-cred-num">
-              +<CountUp value={10} />
+              +<CountUp value={25} />
               <span className="mono-suffix">anos</span>
             </div>
             <div className="uni-cred-label">no Brás</div>
           </Reveal>
           <Reveal className="uni-cred-cell" delay={120}>
             <div className="uni-cred-num">
-              +<CountUp value={500} />
-            </div>
-            <div className="uni-cred-label">Modelos no catálogo</div>
-          </Reveal>
-          <Reveal className="uni-cred-cell" delay={240}>
-            <div className="uni-cred-num">
               +<CountUp value={5000} />
             </div>
             <div className="uni-cred-label">Lojistas atendidas</div>
           </Reveal>
-          <Reveal className="uni-cred-cell" delay={360}>
+          <Reveal className="uni-cred-cell" delay={240}>
             <div className="uni-cred-num">2</div>
             <div className="uni-cred-label">Atacado · Varejo · Loja física</div>
           </Reveal>
