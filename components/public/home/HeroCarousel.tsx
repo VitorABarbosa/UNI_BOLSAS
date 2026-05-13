@@ -62,11 +62,19 @@ export function HeroCarousel() {
             style={{ ['--slide-dir' as string]: dir } as CSSProperties}
             data-dir={dir}
           >
-            <img
-              src={slide.image}
-              alt={slide.alt}
-              className="uni-carousel-img"
-            />
+            <picture>
+              {slide.imageMobile && (
+                <source
+                  media="(max-width: 600px)"
+                  srcSet={slide.imageMobile}
+                />
+              )}
+              <img
+                src={slide.image}
+                alt={slide.alt}
+                className="uni-carousel-img"
+              />
+            </picture>
             <div className="uni-carousel-overlay" />
             <div className="uni-carousel-tag">{slide.tag}</div>
           </div>
