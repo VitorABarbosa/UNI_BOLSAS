@@ -2242,3 +2242,20 @@ html, body {
     .uni-pdp-gallery-mobile-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
   }
 }
+
+/* Mobile overrides — fora do @layer para garantir prioridade máxima */
+@media (max-width: 600px) {
+  .uni-carousel { aspect-ratio: 4 / 3 !important; }
+  .uni-product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  .uni-card-body { padding: 10px 10px 12px !important; }
+  .uni-card-name { font-size: 13px !important; }
+  .uni-card-price { font-size: 11px !important; }
+  .uni-card-tagline { display: none !important; }
+  .uni-card-sizes { display: none !important; }
+  .uni-card-colors-label { display: none !important; }
+  .uni-card-cta-row { flex-direction: column !important; gap: 6px !important; }
+  .uni-card-cta-detail, .uni-card-cta-wa { padding: 8px 6px !important; font-size: 9px !important; letter-spacing: 0.10em !important; gap: 4px !important; }
+  .uni-card-badge { font-size: 8px !important; padding: 4px 8px !important; top: 8px !important; left: 8px !important; }
+  .uni-card-head-row { gap: 4px !important; margin-bottom: 4px !important; }
+  .uni-card-colors { margin-bottom: 8px !important; padding-top: 8px !important; }
+}
