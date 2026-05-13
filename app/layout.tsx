@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Fraunces } from 'next/font/google';
 import { SITE_URL } from '@/lib/seo';
 import { Toaster } from '@/components/ui/sonner';
@@ -16,6 +16,11 @@ const fraunces = Fraunces({
   variable: '--font-fraunces',
   axes: ['opsz'],
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

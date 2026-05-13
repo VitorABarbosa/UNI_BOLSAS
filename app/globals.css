@@ -2094,7 +2094,19 @@ html, body {
     .uni-hero { padding: 60px 0 80px; }
     .uni-section { padding: 80px 0; }
     .uni-h1 { font-size: clamp(44px, 13vw, 72px); }
-    .uni-product-grid { grid-template-columns: 1fr; gap: 24px; }
+    .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .uni-card-body { padding: 10px 10px 12px; }
+    .uni-card-name { font-size: 13px; }
+    .uni-card-price { font-size: 11px; }
+    .uni-card-tagline { display: none; }
+    .uni-card-sizes { display: none; }
+    .uni-card-colors-label { display: none; }
+    .uni-card-cta-row { flex-direction: column; gap: 6px; }
+    .uni-card-cta-detail, .uni-card-cta-wa { padding: 8px 6px; font-size: 9px; letter-spacing: 0.10em; gap: 4px; }
+    .uni-card-badge { font-size: 8px; padding: 4px 8px; top: 8px; left: 8px; }
+    .uni-card-head-row { gap: 4px; margin-bottom: 4px; }
+    .uni-card-colors { margin-bottom: 8px; padding-top: 8px; }
+    .uni-carousel { aspect-ratio: 4 / 3; }
     .uni-footer-grid { grid-template-columns: 1fr; gap: 32px; }
     .uni-wsr-card { padding: 40px 28px; }
     .uni-manifesto-text-col { padding: 48px 18px; }
