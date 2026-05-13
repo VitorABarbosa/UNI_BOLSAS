@@ -2094,7 +2094,9 @@ html, body {
     .uni-hero { padding: 60px 0 80px; }
     .uni-section { padding: 80px 0; }
     .uni-h1 { font-size: clamp(44px, 13vw, 72px); }
-    .uni-product-grid { grid-template-columns: 1fr; gap: 24px; }
+    .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .uni-card-body { padding: 14px 12px 16px; }
+    .uni-card-badge { top: 10px; left: 10px; padding: 4px 8px; font-size: 9px; letter-spacing: 0.2em; }
     .uni-footer-grid { grid-template-columns: 1fr; gap: 32px; }
     .uni-wsr-card { padding: 40px 28px; }
     .uni-manifesto-text-col { padding: 48px 18px; }
@@ -2117,13 +2119,6 @@ html, body {
     .uni-footer-bottom { flex-direction: column; align-items: flex-start; }
     .uni-carousel-arrow { width: 36px; height: 36px; }
     .uni-carousel-tag { font-size: 9px; padding: 5px 11px; }
-    .uni-hero-image-frame {
-      width: 100vw;
-      margin-left: calc(50% - 50vw);
-      margin-right: calc(50% - 50vw);
-      margin-bottom: 32px;
-    }
-    .uni-carousel { aspect-ratio: 4 / 5; }
   }
 
   /* ---- PDP layout (page-mode product detail) ---- */

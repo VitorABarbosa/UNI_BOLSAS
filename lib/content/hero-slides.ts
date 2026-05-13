@@ -14,7 +14,6 @@
 export type HeroSlide = {
   key: string;
   image: string;
-  imageMobile?: string;
   alt: string;
   tag: string;
 };
@@ -23,14 +22,12 @@ export const HERO_SLIDES: ReadonlyArray<HeroSlide> = [
   {
     key: 'colecao',
     image: '/hero/slide-1.jpg',
-    imageMobile: '/hero/slide-1-mobile.jpg',
     alt: 'Coleção Uni Bolsas 2026',
     tag: 'Coleção · 2026',
   },
   {
     key: 'atacado-varejo',
     image: '/hero/slide-2.jpg',
-    imageMobile: '/hero/slide-2-mobile.jpg',
     alt: 'Uni Bolsas — Atacado e varejo no Brás',
     tag: 'Atacado · Varejo',
   },
