@@ -2131,6 +2131,13 @@ html, body {
     .uni-footer-bottom { flex-direction: column; align-items: flex-start; }
     .uni-carousel-arrow { width: 36px; height: 36px; }
     .uni-carousel-tag { font-size: 9px; padding: 5px 11px; }
+    .uni-hero-image-frame {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      margin-bottom: 32px;
+    }
+    .uni-carousel { aspect-ratio: 4 / 3; }
   }
 
   /* ---- PDP layout (page-mode product detail) ---- */
