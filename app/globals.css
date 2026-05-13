@@ -561,10 +561,13 @@ html, body {
   }
 
   /* ---- Hero Carousel ---- */
+  @media (min-width: 768px) {
+    .uni-carousel { aspect-ratio: 21 / 9 !important; }
+  }
   .uni-carousel {
     position: relative;
     width: 100%;
-    aspect-ratio: 21 / 9;
+    aspect-ratio: 4 / 3;
     overflow: hidden;
     background: var(--color-bone-light);
     box-shadow:
