@@ -55,7 +55,7 @@ export function ProductCard({
   };
 
   const selectedImages = galleryImages(product, selected);
-  const showDots = selectedImages.length > 1 && !previewing;
+  const showArrows = product.colors.length > 1 && !previewing;
   const categorySlug = product.category?.slug ?? 'todos';
 
   return (
@@ -100,18 +100,20 @@ export function ProductCard({
             }}
           />
         )}
-        {showDots && (
+        {showArrows && (
           <>
             <button
               type="button"
               className="uni-card-arrow uni-card-arrow-prev"
               onClick={(e) => {
                 e.stopPropagation();
-                setImgIdx(
-                  (imgIdx - 1 + selectedImages.length) % selectedImages.length,
-                );
+                const next =
+                  (selectedColorIdx - 1 + product.colors.length) %
+                  product.colors.length;
+                setImgIdx(0);
+                onSelectColor(product.id, next);
               }}
-              aria-label="Imagem anterior"
+              aria-label="Cor anterior"
             >
               <svg
                 width="14"
@@ -132,9 +134,11 @@ export function ProductCard({
               className="uni-card-arrow uni-card-arrow-next"
               onClick={(e) => {
                 e.stopPropagation();
-                setImgIdx((imgIdx + 1) % selectedImages.length);
+                const next = (selectedColorIdx + 1) % product.colors.length;
+                setImgIdx(0);
+                onSelectColor(product.id, next);
               }}
-              aria-label="Próxima imagem"
+              aria-label="Próxima cor"
             >
               <svg
                 width="14"
@@ -151,13 +155,13 @@ export function ProductCard({
               </svg>
             </button>
             <div className="uni-card-dots" aria-hidden="true">
-              {selectedImages.map((_, i) => (
+              {product.colors.map((_, i) => (
                 <span
                   key={i}
                   className="uni-card-dot"
                   style={{
-                    width: i === imgIdx ? 18 : 6,
-                    opacity: i === imgIdx ? 1 : 0.45,
+                    width: i === selectedColorIdx ? 18 : 6,
+                    opacity: i === selectedColorIdx ? 1 : 0.45,
                   }}
                 />
               ))}
