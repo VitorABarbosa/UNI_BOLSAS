@@ -10,7 +10,6 @@ import { Newsletter } from '@/components/public/home/Newsletter';
 import { HomeContent } from '@/components/public/home/HomeContent';
 import { listActiveProducts } from '@/lib/queries/products';
 import { listCategories } from '@/lib/queries/categories';
-import { COLOR_PALETTE } from '@/lib/content/color-palette';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
 
 export const revalidate = 60;
@@ -49,7 +48,6 @@ export default async function HomePage() {
       <HomeContent
         products={products}
         categories={categoriesWithTodos}
-        colorPalette={COLOR_PALETTE}
       />
       <Manifesto />
       <Social />

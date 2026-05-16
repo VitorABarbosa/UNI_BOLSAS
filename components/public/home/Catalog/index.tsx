@@ -3,27 +3,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Reveal } from '@/components/public/primitives/Reveal';
 import { CategoryFilter, type CategoryOption } from './CategoryFilter';
-import { ColorFilter } from './ColorFilter';
 import { ProductGrid } from './ProductGrid';
 import type { ProductWithRelations } from '@/lib/queries/products';
-import type { PaletteColor } from '@/lib/content/color-palette';
-import { productHasColor } from '@/lib/product-images';
 
 type CatalogProps = {
   products: ProductWithRelations[];
   categories: CategoryOption[];
-  colorPalette: ReadonlyArray<PaletteColor>;
   onOpenQuickView: (product: ProductWithRelations, colorIdx: number) => void;
 };
 
 export function Catalog({
   products,
   categories,
-  colorPalette,
   onOpenQuickView,
 }: CatalogProps) {
   const [activeCat, setActiveCat] = useState('todos');
-  const [activeColor, setActiveColor] = useState<string | null>(null);
   const [selectedColors, setSelectedColors] = useState<Record<string, number>>(
     () => Object.fromEntries(products.map((p) => [p.id, 0])),
   );
@@ -41,11 +35,9 @@ export function Catalog({
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
-      const catOK = activeCat === 'todos' || p.category?.slug === activeCat;
-      const colorOK = !activeColor || productHasColor(p, activeColor);
-      return catOK && colorOK;
+      return activeCat === 'todos' || p.category?.slug === activeCat;
     });
-  }, [products, activeCat, activeColor]);
+  }, [products, activeCat]);
 
   useEffect(() => {
     const prev = prevFilteredRef.current;
@@ -94,7 +86,6 @@ export function Catalog({
 
   const onClearFilters = () => {
     setActiveCat('todos');
-    setActiveColor(null);
   };
 
   return (
@@ -107,17 +98,10 @@ export function Catalog({
               Bolsas <em>em foco.</em>
             </h2>
             <p className="uni-section-lede">
-              Filtre por cor ou categoria, abra cada peça pra ver dimensões,
+              Filtre por categoria, abra cada peça pra ver dimensões,
               material e galeria, e peça direto pelo WhatsApp.
             </p>
           </div>
-        </Reveal>
-        <Reveal>
-          <ColorFilter
-            palette={colorPalette}
-            activeColor={activeColor}
-            onChange={setActiveColor}
-          />
         </Reveal>
         <Reveal>
           <CategoryFilter

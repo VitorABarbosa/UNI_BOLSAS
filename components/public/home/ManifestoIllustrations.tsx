@@ -119,7 +119,15 @@ export function AtelierLoja({ className }: Props) {
   );
 }
 
+function makePhoto(src: string, alt: string) {
+  return function ManifestoRealPhoto({ className }: { className?: string }) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={alt} className={className} />;
+  };
+}
+
 export const MANIFESTO_PHOTOS = [
+  makePhoto('/manifesto/campanha-1.jpg', 'Uni Bolsas — Campanha'),
   AtelierBags,
   AtelierCuradoria,
   AtelierLoja,
