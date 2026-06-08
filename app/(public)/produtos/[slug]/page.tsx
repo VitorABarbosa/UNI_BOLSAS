@@ -13,8 +13,20 @@ import { SITE_NAME, SITE_URL } from '@/lib/seo';
 export const revalidate = 60;
 
 export async function generateStaticParams() {
-  const slugs = await listProductSlugs();
-  return slugs.map((s) => ({ slug: s.slug }));
+  // Build-time prerender is best-effort: if the data source is unreachable
+  // during the build (e.g. no network egress on the CI builder), skip
+  // prerendering. `dynamicParams` defaults to true, so each page is still
+  // rendered on demand via ISR (revalidate above) on first request.
+  try {
+    const slugs = await listProductSlugs();
+    return slugs.map((s) => ({ slug: s.slug }));
+  } catch (err) {
+    console.warn(
+      '[produtos/[slug]] generateStaticParams: slugs unavailable at build, falling back to on-demand ISR:',
+      err,
+    );
+    return [];
+  }
 }
 
 type RouteParams = { slug: string };
