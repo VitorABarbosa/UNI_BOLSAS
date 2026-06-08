@@ -766,7 +766,7 @@ html, body {
   }
   .uni-cred-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 0;
     align-items: stretch;
   }
@@ -1042,6 +1042,38 @@ html, body {
     background: var(--color-bone);
     transition: width 0.3s ease, opacity 0.3s ease;
     display: inline-block;
+  }
+  .uni-card-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--color-ink);
+    border: 1px solid rgba(17, 17, 17, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    z-index: 4;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease, background 0.25s ease;
+    box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.25);
+  }
+  .uni-card:hover .uni-card-arrow { opacity: 1; }
+  .uni-card-arrow:hover {
+    background: var(--color-ink);
+    color: var(--color-bone);
+  }
+  .uni-card-arrow-prev { left: 12px; }
+  .uni-card-arrow-next { right: 12px; }
+  .uni-card-arrow-prev:hover { transform: translateY(-50%) translateX(-2px); }
+  .uni-card-arrow-next:hover { transform: translateY(-50%) translateX(2px); }
+  @media (hover: none) {
+    .uni-card-arrow { opacity: 1; }
   }
   .uni-card-body {
     padding: 22px 22px 24px;
@@ -1399,11 +1431,23 @@ html, body {
 
   /* ---- Manifesto ---- */
   .uni-manifesto {
-    background: var(--color-ink);
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 0%, rgba(164,117,81,0.18), transparent 60%),
+      radial-gradient(ellipse 60% 45% at 100% 100%, rgba(92,26,43,0.16), transparent 60%),
+      var(--color-ink);
     color: var(--color-bone);
     padding: 0;
     position: relative;
     overflow: hidden;
+  }
+  .uni-manifesto::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(229,222,207,0.05) 0%, transparent 18%, transparent 82%, rgba(229,222,207,0.05) 100%);
+    z-index: 0;
   }
   .uni-manifesto-grain {
     position: absolute;
@@ -1420,8 +1464,30 @@ html, body {
     position: relative;
     z-index: 1;
   }
-  .uni-manifesto-photo-col { position: relative; overflow: hidden; }
-  .uni-manifesto-photo-wrap { position: relative; width: 100%; height: 100%; min-height: 540px; }
+  .uni-manifesto-photo-col {
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+  }
+  .uni-manifesto-photo-col::after {
+    content: "";
+    position: absolute;
+    inset: 24px;
+    border: 1px solid rgba(229,222,207,0.22);
+    pointer-events: none;
+    z-index: 3;
+  }
+  .uni-manifesto-photo-col::before {
+    content: "";
+    position: absolute;
+    inset: 24px;
+    background:
+      linear-gradient(180deg, rgba(17,17,17,0.0) 55%, rgba(17,17,17,0.55) 100%),
+      radial-gradient(ellipse 100% 70% at 50% 50%, transparent 55%, rgba(17,17,17,0.35) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .uni-manifesto-photo-wrap { position: relative; width: 100%; height: 100%; min-height: 540px; overflow: hidden; }
   .uni-manifesto-photo {
     position: absolute;
     inset: 0;
@@ -1436,33 +1502,45 @@ html, body {
   .uni-manifesto-photo.is-inactive { opacity: 0; z-index: 0; }
   .uni-manifesto-badge {
     position: absolute;
-    bottom: 32px;
-    left: 32px;
-    background: rgba(17,17,17,0.78);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(229,222,207,0.18);
-    padding: 14px 22px;
+    bottom: 56px;
+    left: 56px;
+    background: rgba(17,17,17,0.72);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    border: 1px solid rgba(164,117,81,0.45);
+    padding: 18px 26px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     z-index: 5;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
     animation: uni-badge-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+  }
+  .uni-manifesto-badge::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -1px;
+    width: 2px;
+    height: 60%;
+    background: var(--color-caramel);
+    transform: translateY(-50%);
   }
 
   .uni-manifesto-badge-num {
     font-family: 'Fraunces', serif;
     font-style: italic;
-    font-size: 24px;
+    font-size: 26px;
     color: var(--color-bone);
     line-height: 1;
+    letter-spacing: -0.01em;
   }
   .uni-manifesto-badge-sub {
     font-family: 'DM Sans', sans-serif;
     font-size: 10px;
-    letter-spacing: 0.32em;
+    letter-spacing: 0.34em;
     text-transform: uppercase;
-    color: var(--color-whisper);
+    color: var(--color-caramel);
   }
   .uni-manifesto-text-col {
     padding: 96px 72px;
@@ -1472,27 +1550,43 @@ html, body {
     position: relative;
     margin-top: 40px;
   }
+  .uni-manifesto-text-col .uni-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .uni-manifesto-text-col .uni-eyebrow::before {
+    content: "";
+    display: inline-block;
+    width: 32px;
+    height: 1px;
+    background: var(--color-caramel);
+  }
   .uni-manifesto-quote-mark {
     font-family: 'Fraunces', serif;
-    font-size: 160px;
+    font-size: 260px;
     line-height: 0.7;
-    color: var(--color-leather-dark);
-    opacity: 0.4;
-    margin-bottom: -24px;
-    margin-left: -8px;
+    color: var(--color-caramel);
+    opacity: 0.18;
+    position: absolute;
+    top: 60px;
+    left: 48px;
     user-select: none;
     pointer-events: none;
+    z-index: 0;
   }
   .uni-manifesto-quote {
     font-family: 'Fraunces', serif;
     font-size: clamp(28px, 3.4vw, 44px);
-    line-height: 1.18;
+    line-height: 1.22;
     letter-spacing: -0.025em;
     font-weight: 400;
     color: var(--color-bone);
-    margin: 0 0 28px;
+    margin: 28px 0 32px;
     border: none;
     padding: 0;
+    position: relative;
+    z-index: 1;
   }
   .uni-manifesto-quote em { font-style: italic; color: var(--color-caramel); }
   .uni-manifesto-body {
@@ -1506,8 +1600,12 @@ html, body {
   .uni-manifesto-rule {
     width: 100%;
     height: 1px;
-    background: rgba(229,222,207,0.15);
-    margin: 36px 0;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(164,117,81,0.5) 12%,
+      rgba(229,222,207,0.22) 50%,
+      transparent 100%);
+    margin: 40px 0;
   }
   .uni-manifesto-timeline {
     display: grid;
@@ -1541,25 +1639,39 @@ html, body {
     border: 2px solid var(--color-ink);
     z-index: 1;
   }
+  .uni-tl-cell::after {
+    content: "";
+    position: absolute;
+    top: 11px;
+    left: 11px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-caramel);
+    opacity: 0.35;
+    filter: blur(4px);
+    z-index: 0;
+  }
   .uni-tl-year {
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.18em;
+    font-size: 12px;
+    letter-spacing: 0.22em;
     color: var(--color-caramel);
-    margin: 26px 0 8px;
+    margin: 28px 0 10px;
+    font-weight: 500;
   }
   .uni-tl-label {
     font-family: 'DM Sans', sans-serif;
     font-size: 13px;
-    line-height: 1.45;
+    line-height: 1.5;
     color: var(--color-whisper);
     max-width: 180px;
   }
   .uni-manifesto-cta {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 28px;
+    gap: 12px;
+    padding: 15px 30px;
     background: var(--color-bone);
     color: var(--color-ink);
     font-family: 'DM Sans', sans-serif;
@@ -1569,12 +1681,27 @@ html, body {
     text-transform: uppercase;
     text-decoration: none;
     align-self: flex-start;
-    transition: background 0.25s ease, transform 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
+    box-shadow: 0 8px 24px -10px rgba(0,0,0,0.5);
   }
+  .uni-manifesto-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--color-caramel);
+    transform: translateX(-101%);
+    transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1);
+    z-index: 0;
+  }
+  .uni-manifesto-cta > * { position: relative; z-index: 1; }
   .uni-manifesto-cta:hover {
-    background: var(--color-pearl);
+    color: var(--color-bone);
     transform: translateY(-2px);
+    box-shadow: 0 14px 34px -10px rgba(164,117,81,0.55);
   }
+  .uni-manifesto-cta:hover::before { transform: translateX(0); }
 
   /* ---- Social ---- */
   .uni-social { background: var(--color-bone); padding: 130px 0; }
@@ -2109,11 +2236,19 @@ html, body {
     .uni-card-badge { font-size: 8px; padding: 4px 8px; top: 8px; left: 8px; }
     .uni-card-head-row { gap: 4px; margin-bottom: 4px; }
     .uni-card-colors { margin-bottom: 8px; padding-top: 8px; }
-    .uni-carousel { aspect-ratio: 4 / 3; }
+    /* setas do card (feature do branch update-store-age) — compactas no mobile */
+    .uni-card-arrow { width: 26px; height: 26px; }
+    .uni-card-arrow-prev { left: 6px; }
+    .uni-card-arrow-next { right: 6px; }
     .uni-footer-grid { grid-template-columns: 1fr; gap: 32px; }
     .uni-wsr-card { padding: 40px 28px; }
     .uni-manifesto-text-col { padding: 48px 18px; }
-    .uni-manifesto-quote-mark { font-size: 100px; }
+    .uni-manifesto-quote-mark { font-size: 160px; top: 24px; left: 12px; }
+    .uni-manifesto-photo-col { padding: 14px; }
+    .uni-manifesto-photo-col::after,
+    .uni-manifesto-photo-col::before { inset: 14px; }
+    .uni-manifesto-badge { bottom: 34px; left: 34px; padding: 14px 20px; }
+    .uni-manifesto-badge-num { font-size: 22px; }
     .uni-manifesto-timeline { grid-template-columns: 1fr 1fr; gap: 24px 0; }
     .uni-manifesto-timeline::before { display: none; }
     .uni-tl-cell::before { position: relative; display: inline-block; margin-bottom: 6px; top: 0; }
@@ -2132,6 +2267,13 @@ html, body {
     .uni-footer-bottom { flex-direction: column; align-items: flex-start; }
     .uni-carousel-arrow { width: 36px; height: 36px; }
     .uni-carousel-tag { font-size: 9px; padding: 5px 11px; }
+    .uni-hero-image-frame {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      margin-bottom: 32px;
+    }
+    .uni-carousel { aspect-ratio: 4 / 3; }
   }
 
   /* ---- PDP layout (page-mode product detail) ---- */

@@ -36,7 +36,7 @@ export function Manifesto() {
               />
             ))}
             <div className="uni-manifesto-badge">
-              <span className="uni-manifesto-badge-num">+10 anos</span>
+              <span className="uni-manifesto-badge-num">+25 anos</span>
               <span className="uni-manifesto-badge-sub">Brás · São Paulo</span>
             </div>
           </div>

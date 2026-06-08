@@ -5,12 +5,9 @@ import { Catalog } from '@/components/public/home/Catalog';
 import type { CategoryOption } from '@/components/public/home/Catalog/CategoryFilter';
 import { QuickView } from '@/components/public/quickview/QuickView';
 import type { ProductWithRelations } from '@/lib/queries/products';
-import type { PaletteColor } from '@/lib/content/color-palette';
-
 type HomeContentProps = {
   products: ProductWithRelations[];
   categories: CategoryOption[];
-  colorPalette: ReadonlyArray<PaletteColor>;
 };
 
 type QuickViewState = {
@@ -21,7 +18,6 @@ type QuickViewState = {
 export function HomeContent({
   products,
   categories,
-  colorPalette,
 }: HomeContentProps) {
   const [quickView, setQuickView] = useState<QuickViewState>(null);
 
@@ -30,7 +26,6 @@ export function HomeContent({
       <Catalog
         products={products}
         categories={categories}
-        colorPalette={colorPalette}
         onOpenQuickView={(product, colorIdx) =>
           setQuickView({ product, colorIdx })
         }
