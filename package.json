@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "db:types": "supabase gen types typescript --project-id ipgulijhqfbwegpnmwnv > types/db.ts",
     "seed": "tsx scripts/seed.ts",
+    "add:products": "tsx scripts/add-products.ts",
     "smoke": "tsx scripts/test-fetch.ts"
   },
   "engines": {
