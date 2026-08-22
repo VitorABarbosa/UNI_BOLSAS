@@ -1,56 +1,18 @@
 import { Reveal } from '@/components/public/primitives/Reveal';
-import { SafeImage } from '@/components/public/primitives/SafeImage';
-import { InstagramIcon } from '@/components/public/icons';
-import { IG_FEED } from '@/lib/content/instagram';
 import { TESTIMONIALS } from '@/lib/content/testimonials';
-import { INSTAGRAM_HANDLE, TOKENS } from '@/lib/tokens';
 
 export function Social() {
   return (
-    <section className="uni-social" id="social">
+    <section className="uni-social uni-section" id="social">
       <div className="uni-container">
         <Reveal>
-          <div className="uni-social-head">
-            <div>
-              <div className="uni-eyebrow uni-eyebrow-wide">Visto por aí</div>
-              <h2 className="uni-h2">
-                No <em>feed</em> e na rua.
-              </h2>
+          <div className="uni-section-head">
+            <div className="uni-eyebrow uni-eyebrow-wide">
+              Quem compra com a gente
             </div>
-            <a
-              className="uni-social-handle"
-              href={`https://instagram.com/${INSTAGRAM_HANDLE}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <InstagramIcon size={16} />@{INSTAGRAM_HANDLE}
-            </a>
-          </div>
-        </Reveal>
-        <Reveal>
-          <div className="uni-ig-grid">
-            {IG_FEED.map((post, i) => (
-              <a
-                key={post.shortcode}
-                href={post.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="uni-ig-item"
-                aria-label={`Post ${i + 1} de @${INSTAGRAM_HANDLE} no Instagram`}
-              >
-                <SafeImage
-                  src={`/instagram/${post.shortcode}.jpg`}
-                  alt=""
-                  fill
-                  sizes="(max-width: 600px) 50vw, (max-width: 1080px) 33vw, 300px"
-                  loading="lazy"
-                  fallback={<InstagramIcon size={22} color={TOKENS.stone} />}
-                />
-                <div className="uni-ig-overlay">
-                  <InstagramIcon size={28} color={TOKENS.bone} />
-                </div>
-              </a>
-            ))}
+            <h2 className="uni-h2">
+              Na <em>voz</em> de quem usa.
+            </h2>
           </div>
         </Reveal>
         <div className="uni-test-grid">

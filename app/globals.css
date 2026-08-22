@@ -710,7 +710,6 @@ html, body {
     animation: uni-progress 5s linear both;
   }
 
-
   .uni-secondary-btn {
     display: inline-flex;
     align-items: center;
@@ -986,7 +985,6 @@ html, body {
   .uni-card:hover { transform: translateY(-3px); box-shadow: 0 18px 38px rgba(17,17,17,0.10); }
   .uni-card.is-leaving { opacity: 0; transform: scale(0.96); }
   .uni-card.is-entering { animation: uni-card-enter 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-
 
   .uni-card-img-wrap {
     position: relative;
@@ -1423,327 +1421,8 @@ html, body {
     margin: 0;
   }
 
-  /* ---- Manifesto ---- */
-  .uni-manifesto {
-    background:
-      radial-gradient(ellipse 70% 50% at 20% 0%, rgba(164,117,81,0.18), transparent 60%),
-      radial-gradient(ellipse 60% 45% at 100% 100%, rgba(92,26,43,0.16), transparent 60%),
-      var(--color-ink);
-    color: var(--color-bone);
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .uni-manifesto::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      linear-gradient(180deg, rgba(229,222,207,0.05) 0%, transparent 18%, transparent 82%, rgba(229,222,207,0.05) 100%);
-    z-index: 0;
-  }
-  .uni-manifesto-grain {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.04;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    background-size: 200px 200px;
-  }
-  .uni-manifesto-layout {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    min-height: 720px;
-    position: relative;
-    z-index: 1;
-  }
-  .uni-manifesto-photo-col {
-    position: relative;
-    overflow: hidden;
-    padding: 24px;
-  }
-  .uni-manifesto-photo-col::after {
-    content: "";
-    position: absolute;
-    inset: 24px;
-    border: 1px solid rgba(229,222,207,0.22);
-    pointer-events: none;
-    z-index: 3;
-  }
-  .uni-manifesto-photo-col::before {
-    content: "";
-    position: absolute;
-    inset: 24px;
-    background:
-      linear-gradient(180deg, rgba(17,17,17,0.0) 55%, rgba(17,17,17,0.55) 100%),
-      radial-gradient(ellipse 100% 70% at 50% 50%, transparent 55%, rgba(17,17,17,0.35) 100%);
-    pointer-events: none;
-    z-index: 2;
-  }
-  .uni-manifesto-photo-wrap { position: relative; width: 100%; height: 100%; min-height: 540px; overflow: hidden; }
-  .uni-manifesto-photo {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    filter: brightness(0.92) contrast(1.05);
-    transition: opacity 1.2s ease;
-  }
-  .uni-manifesto-photo.is-active { opacity: 1; z-index: 1; }
-  .uni-manifesto-photo.is-inactive { opacity: 0; z-index: 0; }
-  .uni-manifesto-badge {
-    position: absolute;
-    bottom: 56px;
-    left: 56px;
-    background: rgba(17,17,17,0.72);
-    backdrop-filter: blur(14px) saturate(1.2);
-    -webkit-backdrop-filter: blur(14px) saturate(1.2);
-    border: 1px solid rgba(164,117,81,0.45);
-    padding: 18px 26px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    z-index: 5;
-    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
-    animation: uni-badge-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
-  }
-  .uni-manifesto-badge::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -1px;
-    width: 2px;
-    height: 60%;
-    background: var(--color-caramel);
-    transform: translateY(-50%);
-  }
-
-  .uni-manifesto-badge-num {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 26px;
-    color: var(--color-bone);
-    line-height: 1;
-    letter-spacing: -0.01em;
-  }
-  .uni-manifesto-badge-sub {
-    font-family: var(--font-sans);
-    font-size: 10px;
-    letter-spacing: 0.34em;
-    text-transform: uppercase;
-    color: var(--color-caramel);
-  }
-  .uni-manifesto-text-col {
-    padding: 96px 72px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    margin-top: 40px;
-  }
-  .uni-manifesto-text-col .uni-eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .uni-manifesto-text-col .uni-eyebrow::before {
-    content: "";
-    display: inline-block;
-    width: 32px;
-    height: 1px;
-    background: var(--color-caramel);
-  }
-  .uni-manifesto-quote-mark {
-    font-family: var(--font-serif);
-    font-size: 260px;
-    line-height: 0.7;
-    color: var(--color-caramel);
-    opacity: 0.18;
-    position: absolute;
-    top: 60px;
-    left: 48px;
-    user-select: none;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .uni-manifesto-quote {
-    font-family: var(--font-serif);
-    font-size: clamp(28px, 3.4vw, 44px);
-    line-height: 1.22;
-    letter-spacing: -0.025em;
-    font-weight: 400;
-    color: var(--color-bone);
-    margin: 28px 0 32px;
-    border: none;
-    padding: 0;
-    position: relative;
-    z-index: 1;
-  }
-  .uni-manifesto-quote em { font-style: italic; color: var(--color-caramel); }
-  .uni-manifesto-body {
-    font-family: var(--font-sans);
-    font-size: 16px;
-    line-height: 1.72;
-    color: var(--color-whisper);
-    margin: 0 0 18px;
-    max-width: 520px;
-  }
-  .uni-manifesto-rule {
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(164,117,81,0.5) 12%,
-      rgba(229,222,207,0.22) 50%,
-      transparent 100%);
-    margin: 40px 0;
-  }
-  .uni-manifesto-timeline {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    margin-bottom: 44px;
-    position: relative;
-  }
-  .uni-manifesto-timeline::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 12px;
-    height: 1px;
-    background: rgba(229,222,207,0.2);
-  }
-  .uni-tl-cell {
-    padding: 0 16px 0 0;
-    position: relative;
-  }
-  .uni-tl-cell::before {
-    content: "";
-    position: absolute;
-    top: 7px;
-    left: 0;
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var(--color-caramel);
-    border: 2px solid var(--color-ink);
-    z-index: 1;
-  }
-  .uni-tl-cell::after {
-    content: "";
-    position: absolute;
-    top: 11px;
-    left: 11px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-caramel);
-    opacity: 0.35;
-    filter: blur(4px);
-    z-index: 0;
-  }
-  .uni-tl-year {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    color: var(--color-caramel);
-    margin: 28px 0 10px;
-    font-weight: 500;
-  }
-  .uni-tl-label {
-    font-family: var(--font-sans);
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--color-whisper);
-    max-width: 180px;
-  }
-  .uni-manifesto-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px 30px;
-    background: var(--color-bone);
-    color: var(--color-ink);
-    font-family: var(--font-sans);
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    text-decoration: none;
-    align-self: flex-start;
-    position: relative;
-    overflow: hidden;
-    transition: color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
-    box-shadow: 0 8px 24px -10px rgba(0,0,0,0.5);
-  }
-  .uni-manifesto-cta::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--color-caramel);
-    transform: translateX(-101%);
-    transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1);
-    z-index: 0;
-  }
-  .uni-manifesto-cta > * { position: relative; z-index: 1; }
-  .uni-manifesto-cta:hover {
-    color: var(--color-bone);
-    transform: translateY(-2px);
-    box-shadow: 0 14px 34px -10px rgba(164,117,81,0.55);
-  }
-  .uni-manifesto-cta:hover::before { transform: translateX(0); }
-
   /* ---- Social ---- */
-  .uni-social { background: var(--color-bone); padding: 130px 0; }
-  .uni-social-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 48px; }
-  .uni-social-handle {
-    font-family: var(--font-sans);
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--color-stone);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-  .uni-social-handle:hover { color: var(--color-ink); }
-  .uni-ig-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 80px;
-  }
-  .uni-ig-item {
-    position: relative;
-    aspect-ratio: 1;
-    overflow: hidden;
-    cursor: pointer;
-    background: var(--color-whisper);
-  }
-  .uni-ig-item img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .uni-ig-item:hover img { transform: scale(1.06); }
-  .uni-ig-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(17,17,17,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    color: var(--color-bone);
-  }
-  .uni-ig-item:hover .uni-ig-overlay { opacity: 1; }
+  .uni-social { background: var(--color-bone); }
   .uni-test-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -2466,17 +2145,6 @@ html, body {
 }
 
 /* ---- Placeholder de imagem ausente ---- */
-.uni-img-fallback {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-whisper);
-  color: var(--color-stone);
-  overflow: hidden;
-}
-.uni-img-fallback > * { width: 100%; height: 100%; }
 
 /* ============================================================================
    RESPONSIVO — fonte única de verdade
@@ -2606,9 +2274,6 @@ input, select, textarea { font-size: 16px; }
   .uni-wsr-grid { grid-template-columns: 1fr; gap: 16px; }
   .uni-wsr-card.is-wholesale { transform: none; }
   .uni-wsr-card.is-wholesale:hover { transform: translateY(-4px); }
-  .uni-manifesto-layout { grid-template-columns: 1fr; }
-  .uni-manifesto-photo-wrap { min-height: 360px; }
-  .uni-manifesto-text-col { padding: 60px 32px; margin-top: 0; }
   .uni-test-grid { grid-template-columns: 1fr; gap: 0; }
   .uni-test-card { padding: 28px 0; }
   .uni-news-inner { grid-template-columns: 1fr; gap: 24px; }
@@ -2682,7 +2347,6 @@ input, select, textarea { font-size: 16px; }
   .uni-carousel-dot::after { content: ""; position: absolute; inset: -12px -2px; }
   .uni-carousel-dots { padding: 12px; gap: 10px; }
   .uni-footer-link { min-height: 40px; align-items: center; }
-  .uni-social-handle { min-height: 40px; display: inline-flex; align-items: center; }
   .uni-hero-h1 { margin-bottom: 24px; }
   .uni-hero-lede { font-size: 16px; margin-bottom: 32px; }
   /* CTA de largura total: alvo grande e hierarquia clara no polegar. */
@@ -2776,26 +2440,8 @@ input, select, textarea { font-size: 16px; }
   .uni-qv-spec-grid { gap: 14px; }
   .uni-qv-size-chip { min-height: 44px; }
 
-  /* Manifesto */
-  .uni-manifesto-photo-wrap { min-height: 300px; }
-  .uni-manifesto-text-col { padding: 48px 20px; }
-  .uni-manifesto-quote-mark { font-size: 140px; top: 20px; left: 8px; }
-  .uni-manifesto-photo-col { padding: 14px; }
-  .uni-manifesto-photo-col::after,
-  .uni-manifesto-photo-col::before { inset: 14px; }
-  .uni-manifesto-badge { bottom: 28px; left: 28px; padding: 12px 18px; }
-  .uni-manifesto-badge-num { font-size: 20px; }
-  .uni-manifesto-timeline { grid-template-columns: 1fr 1fr; gap: 24px 0; }
-  .uni-manifesto-timeline::before { display: none; }
-  .uni-tl-cell::before { position: relative; display: inline-block; margin-bottom: 6px; top: 0; }
-  .uni-manifesto-cta { min-height: 48px; }
-
   /* Atacado x varejo */
   .uni-wsr-card { padding: 36px 24px; }
-
-  /* Social / depoimentos */
-  .uni-social-head { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .uni-ig-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 48px; }
 
   /* FAQ */
   .uni-faq-q { padding: 22px 12px 22px 0; gap: 16px; font-size: 17px; min-height: 56px; }
@@ -2844,7 +2490,6 @@ input, select, textarea { font-size: 16px; }
   .uni-product-grid { gap: 10px; }
   .uni-card-cta-row { grid-template-columns: 1fr; }
   .uni-card-cta-detail { display: none; }
-  .uni-manifesto-timeline { grid-template-columns: 1fr; }
 }
 
 /* ---- Página de produto (PDP) ---- */

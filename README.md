@@ -44,7 +44,7 @@ Next.js 16 (App Router) · TypeScript estrito · Tailwind v4 · shadcn/ui · Sup
 | `pnpm db:types` | Regera `types/db.ts` do schema remoto via supabase CLI (precisa `supabase login` antes) |
 | `pnpm seed` | Limpa e re-popula DB + Storage com os 5 produtos da referência |
 | `pnpm smoke` | Fetch ponta-a-ponta via anon key (verifica RLS pública + nested relations) |
-| `pnpm images:optimize` | Reencoda as imagens de `public/` (hero, instagram, manifesto) pra tamanho web. Rodar sempre que trocar uma foto |
+| `pnpm images:optimize` | Reencoda as imagens de `public/hero` pra tamanho web. Rodar sempre que trocar uma foto |
 
 ## Imagens e mobile
 
@@ -54,7 +54,8 @@ WebP/AVIF, lazy loading). Duas regras ao mexer nelas:
 1. **Toda foto nova em `public/` passa pelo `pnpm images:optimize`.** As artes
    chegam em resolução de impressão — os dois slides do hero somavam 9,1 MB e
    viraram 376 KB sem perda visível. O script é idempotente e ignora o que já
-   está dentro do limite.
+   está dentro do limite; ao criar uma pasta nova em `public/`, some ela ao
+   `TARGET_DIRS` em `scripts/optimize-images.ts`.
 2. **`next/image` com `fill` exige `position: relative` no container.** Sem isso
    a foto escapa do bloco e cobre a página inteira.
 

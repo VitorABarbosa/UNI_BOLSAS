@@ -24,7 +24,7 @@ const MAX_WIDTH = 2400;
 const MAX_BYTES = 600 * 1024;
 const QUALITY = 78;
 
-const TARGET_DIRS = ['public/hero', 'public/instagram', 'public/manifesto'];
+const TARGET_DIRS = ['public/hero'];
 const EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 
 const dry = process.argv.includes('--dry');
