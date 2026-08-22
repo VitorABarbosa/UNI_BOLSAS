@@ -12,6 +12,11 @@ const shopeeImagePattern = {
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
+  experimental: {
+    // The spreadsheet importer round-trips the parsed rows through Server
+    // Actions; the 1MB default is not enough for a few hundred products.
+    serverActions: { bodySizeLimit: '10mb' },
+  },
   images: {
     remotePatterns: supabaseHostname
       ? [

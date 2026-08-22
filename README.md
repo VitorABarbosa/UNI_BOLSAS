@@ -73,9 +73,42 @@ Sem isso, o login até funciona, mas o proxy redireciona com `?error=unauthorize
 4. **Editar produto** (`/admin/produtos/[id]`): tabs Básico / Preço / Detalhes / SEO / Cores / Imagens. Cores e Imagens persistem **independentemente** (cada mudança grava na hora). Os outros tabs gravam só ao clicar em **Salvar** no rodapé.
 5. **Imagens**: drag-and-drop até 4 paralelos, 5MB por arquivo, formatos webp/jpg/png/svg. Cada cor cria uma tab própria + tab "Genéricas" sempre presente. Reorder por drag, click na thumb edita o `alt`.
 6. **Categorias** (`/admin/categorias`): tabela inline editável com reorder por drag e add inline no fim. Delete cascade com confirm que mostra quantos produtos serão apagados junto.
-7. **Shopee** (`/admin/shopee`): conectar/desconectar a loja, sincronizar e importar os anúncios da Shopee como produtos do site (ver seção abaixo).
+7. **Importar planilha** (`/admin/importar`): sobe o `.xlsx`/`.csv` exportado da Shopee e cria os produtos (ver seção abaixo).
+8. **Shopee** (`/admin/shopee`): conectar/desconectar a loja, sincronizar e importar os anúncios da Shopee como produtos do site (ver seção abaixo).
 
 Mudanças refletem no site público em ≤5s via `revalidatePath` específico (a home, o sitemap, e cada PDP afetado).
+
+## Importar produtos por planilha
+
+Caminho mais curto para trazer o catálogo da Shopee (ou de qualquer lugar) sem
+depender da API: `/admin/importar`. Não precisa de app aprovado na Shopee, nem
+de chave, nem de variável de ambiente — só estar logado no admin.
+
+1. No Seller Center da Shopee, exporte os produtos (a ferramenta de upload em
+   massa gera um `.xlsx`). Qualquer planilha salva em `.csv` também serve.
+2. `/admin/importar` → **Escolher arquivo**. A planilha é lida no servidor e
+   nada é criado ainda.
+3. **Confira as colunas.** O sistema chuta pelo cabeçalho (nome, descrição,
+   preço, colunas de foto) e você corrige o que estiver errado. Escolha também
+   a categoria de destino.
+4. **Prévia** das 5 primeiras linhas já formatadas → **Importar**.
+
+Cada linha vira um produto com nome, descrição, preço e as fotos **baixadas
+para o nosso Storage** (o arquivo traz URLs; nunca fazemos hotlink). Limite de
+500 linhas e 9 fotos por produto, 5MB cada.
+
+Detalhes de comportamento:
+
+- **Duplicados:** por padrão, linha cujo nome já existe no catálogo é pulada
+  (comparação sem acento e sem pontuação). Há um toggle para, nesses casos,
+  atualizar só o preço — bom para reimportar depois de um reajuste.
+- **Preço:** aceita `R$ 189,90`, `1.234,56` e `89.90`.
+- **Cabeçalho:** planilhas de exportação costumam começar com uma linha de
+  título; o leitor procura a linha de cabeçalho real nas 10 primeiras.
+- **Cores e tamanhos não são importados** — nenhuma planilha traz o hex das
+  cores. Complete no form do produto.
+- Uma foto que falhar no download é pulada com aviso no relatório final, sem
+  derrubar a importação inteira.
 
 ## Integração Shopee (Shopee → catálogo do site)
 
@@ -165,6 +198,8 @@ lib/
   seo.ts                           # SITE_URL, SITE_NAME
   whatsapp.ts                      # waLink, waProduct, waGeneral, waWholesale, waRetail, waNewsletter
   product-images.ts                # galleryImages, cardCoverImage, productHasColor
+  catalog/create-product.ts        # cria produto + copia fotos (usado pelos 2 importadores)
+  import/                          # leitura de planilha (.xlsx/.csv) + detecção de colunas
   shopee/                          # server-only: config, assinatura HMAC, tokens,
                                    # catalog.ts (leitura), import.ts (item -> produto)
                                    # e sync.ts (orquestra tudo)
@@ -196,6 +231,7 @@ docs/superpowers/                  # plans + specs da migração
 - [x] **Plano 01 — Foundation:** scaffold Next.js + Tailwind + shadcn, projeto Supabase, schema com RLS, Storage com policies, seed dos 5 produtos, smoke test, primeiro admin
 - [x] **Plano 02 — Public site:** landing single-page, PDP `/produtos/[slug]`, sitemap, robots, OG images dinâmicas
 - [x] **Plano 03 — Admin:** auth via JWT claim `is_admin`, shell admin, CRUD de produtos com upload drag-and-drop e editor de cores, CRUD de categorias com cascade delete
+- [x] **Importador de planilha:** `/admin/importar` — `.xlsx`/`.csv` → produtos com fotos, sem depender da API
 - [x] **Integração Shopee (Shopee → catálogo):** OAuth da loja, mirror em `shopee_items`, importação do item como produto (fotos incluídas), preço sempre sincronizado, painel `/admin/shopee` e cron diário
 - [ ] **Plano 04 — Deploy + cleanup:** Vercel, custom domain, smoke em produção, remoção da reference, polish (loading states, OG fonts)
 

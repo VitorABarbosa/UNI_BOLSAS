@@ -2,7 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingBag, Tag } from 'lucide-react';
+import {
+  FileSpreadsheet,
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Tag,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SignOutButton } from './SignOutButton';
 
@@ -10,6 +16,7 @@ const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/produtos', label: 'Produtos', icon: Package, exact: false },
   { href: '/admin/categorias', label: 'Categorias', icon: Tag, exact: false },
+  { href: '/admin/importar', label: 'Importar', icon: FileSpreadsheet, exact: false },
   { href: '/admin/shopee', label: 'Shopee', icon: ShoppingBag, exact: false },
 ] as const;
 
