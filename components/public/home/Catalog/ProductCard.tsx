@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { ArrowIcon, WhatsAppIcon } from '@/components/public/icons';
 import type { ProductWithRelations } from '@/lib/queries/products';
@@ -17,6 +18,13 @@ type ProductCardProps = {
   isLeaving: boolean;
   isEntering: boolean;
 };
+
+/**
+ * Larguras reais do card por breakpoint — sem isto o `next/image` assume 100vw
+ * e serve uma imagem 4x maior do que o card de 160px do mobile.
+ */
+const CARD_SIZES =
+  '(max-width: 600px) 50vw, (max-width: 1080px) 45vw, 340px';
 
 export function ProductCard({
   product,
@@ -44,6 +52,8 @@ export function ProductCard({
     null;
 
   const onMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    // Ponteiro grosso (dedo) não tem parallax — só gastaria render no mobile.
+    if (!window.matchMedia('(hover: hover)').matches) return;
     const r = e.currentTarget.getBoundingClientRect();
     const cx = (e.clientX - r.left) / r.width - 0.5;
     const cy = (e.clientY - r.top) / r.height - 0.5;
@@ -90,11 +100,14 @@ export function ProductCard({
           </div>
         )}
         {baseImg && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={publicImageUrl(baseImg.storage_path)}
             alt={baseImg.alt}
             className="uni-card-img"
+            fill
+            sizes={CARD_SIZES}
+            // O catálogo nunca é a primeira dobra: tudo entra sob demanda.
+            loading="lazy"
             style={{
               transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0) scale(1.02)`,
             }}
@@ -221,8 +234,11 @@ export function ProductCard({
           <button
             className="uni-card-cta-detail"
             onClick={() => onOpenQuickView(product, selectedColorIdx)}
+            aria-label={`Ver detalhes de ${product.name}`}
           >
-            Ver detalhes <ArrowIcon size={12} />
+            {/* No mobile fica só a seta: um quadrado de 44px ao lado do CTA. */}
+            <span className="uni-card-cta-label">Ver detalhes</span>{' '}
+            <ArrowIcon size={12} />
           </button>
           <a
             className="uni-card-cta-wa"

@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 import { CloseIcon } from '@/components/public/icons';
 import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
-import { TOKENS } from '@/lib/tokens';
 import { waProduct } from '@/lib/whatsapp';
 
 type QuickViewProps = {
@@ -14,6 +14,8 @@ type QuickViewProps = {
   initialColorIdx: number;
   onClose: () => void;
 };
+
+const QV_SIZES = '(max-width: 1080px) 100vw, 700px';
 
 export function QuickView({
   product,
@@ -23,32 +25,66 @@ export function QuickView({
   const [colorIdx, setColorIdx] = useState(initialColorIdx ?? 0);
   const [imgIdx, setImgIdx] = useState(0);
   const [sizeIdx, setSizeIdx] = useState(0);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  /** Evita que o scroll programático (clique na miniatura) vire "swipe". */
+  const syncingRef = useRef(false);
 
   const color = product.colors[colorIdx] ?? product.colors[0] ?? null;
   const images = galleryImages(product, color);
-  const mainImage = images[Math.min(imgIdx, images.length - 1)] ?? images[0];
 
   useEffect(() => {
     setImgIdx(0);
+    stageRef.current?.scrollTo({ left: 0, behavior: 'auto' });
   }, [colorIdx]);
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    // Trava o fundo sem perder a posição da rolagem ao fechar (no iOS,
+    // `overflow: hidden` sozinho deixa a página voltar pro topo).
+    const scrollY = window.scrollY;
+    const body = document.body;
+    const previous = {
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    };
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = '';
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.width = previous.width;
+      body.style.overflow = previous.overflow;
+      window.scrollTo(0, scrollY);
       window.removeEventListener('keydown', onKey);
     };
   }, [onClose]);
 
-  const placeholderStyle = {
-    opacity: 0.4,
-    cursor: 'default',
-    background: `repeating-linear-gradient(45deg, ${TOKENS.whisper}, ${TOKENS.whisper} 4px, ${TOKENS.boneLight} 4px, ${TOKENS.boneLight} 8px)`,
-  } as const;
+  /** Mantém o índice ativo em sincronia com o swipe do usuário. */
+  const onStageScroll = () => {
+    const el = stageRef.current;
+    if (!el || syncingRef.current || el.clientWidth === 0) return;
+    const idx = Math.round(el.scrollLeft / el.clientWidth);
+    setImgIdx((current) => (current === idx ? current : idx));
+  };
+
+  const goToImage = (i: number) => {
+    setImgIdx(i);
+    const el = stageRef.current;
+    if (!el) return;
+    syncingRef.current = true;
+    el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
+    window.setTimeout(() => {
+      syncingRef.current = false;
+    }, 450);
+  };
 
   const sizeForWa =
     product.sizes && product.sizes.length > 1
@@ -64,11 +100,7 @@ export function QuickView({
       aria-label={`Detalhes ${product.name}`}
     >
       <div className="uni-qv-modal" onClick={(e) => e.stopPropagation()}>
-        <button
-          className="uni-qv-close"
-          onClick={onClose}
-          aria-label="Fechar"
-        >
+        <button className="uni-qv-close" onClick={onClose} aria-label="Fechar">
           <CloseIcon size={16} />
         </button>
         <div className="uni-qv-gallery">
@@ -83,34 +115,56 @@ export function QuickView({
                 role="tab"
                 aria-selected={imgIdx === i}
                 className={'uni-qv-thumb ' + (imgIdx === i ? 'is-active' : '')}
-                onClick={() => setImgIdx(i)}
+                onClick={() => goToImage(i)}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={publicImageUrl(img.storage_path)}
                   alt={`${product.name} ${color?.name ?? ''} #${i + 1}`}
+                  fill
+                  sizes="80px"
                 />
               </button>
             ))}
-            {images.length === 1 &&
-              Array.from({ length: 2 }).map((_, i) => (
-                <div
-                  key={'ph' + i}
-                  className="uni-qv-thumb"
-                  style={placeholderStyle}
-                />
-              ))}
           </div>
-          <div className="uni-qv-main">
-            {mainImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={imgIdx}
-                src={publicImageUrl(mainImage.storage_path)}
-                alt={mainImage.alt}
-              />
+          {/* Um único palco com scroll-snap: arrasta no celular, é clicado pelas
+              miniaturas no desktop. Cada foto é baixada uma vez só. */}
+          <div
+            className="uni-qv-stage"
+            ref={stageRef}
+            onScroll={onStageScroll}
+            aria-live="polite"
+          >
+            {images.map((img, i) => (
+              <div className="uni-qv-slide" key={i}>
+                <Image
+                  src={publicImageUrl(img.storage_path)}
+                  alt={img.alt}
+                  fill
+                  sizes={QV_SIZES}
+                  priority={i === 0}
+                />
+              </div>
+            ))}
+            {images.length === 0 && (
+              <div className="uni-qv-slide is-empty">
+                <span>Sem imagens disponíveis.</span>
+              </div>
             )}
           </div>
+          {images.length > 1 && (
+            <div className="uni-qv-dots" role="tablist" aria-label="Foto">
+              {images.map((_, i) => (
+                <button
+                  key={i}
+                  role="tab"
+                  aria-selected={imgIdx === i}
+                  aria-label={`Foto ${i + 1}`}
+                  className={'uni-qv-dot ' + (imgIdx === i ? 'is-active' : '')}
+                  onClick={() => goToImage(i)}
+                />
+              ))}
+            </div>
+          )}
         </div>
         <div className="uni-qv-info">
           <div className="uni-qv-eyebrow">
@@ -193,10 +247,7 @@ export function QuickView({
             </div>
           )}
           <div className="uni-qv-cta">
-            <WhatsAppButton
-              href={waProduct(product, color, sizeForWa)}
-              full
-            >
+            <WhatsAppButton href={waProduct(product, color, sizeForWa)} full>
               Pedir no WhatsApp · R${' '}
               {product.price_retail.toFixed(2).replace('.', ',')}
             </WhatsAppButton>

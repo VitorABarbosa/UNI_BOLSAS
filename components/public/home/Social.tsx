@@ -1,4 +1,5 @@
 import { Reveal } from '@/components/public/primitives/Reveal';
+import { SafeImage } from '@/components/public/primitives/SafeImage';
 import { InstagramIcon } from '@/components/public/icons';
 import { IG_FEED } from '@/lib/content/instagram';
 import { TESTIMONIALS } from '@/lib/content/testimonials';
@@ -37,10 +38,13 @@ export function Social() {
                 className="uni-ig-item"
                 aria-label={`Post ${i + 1} de @${INSTAGRAM_HANDLE} no Instagram`}
               >
-                <img
+                <SafeImage
                   src={`/instagram/${post.shortcode}.jpg`}
                   alt=""
+                  fill
+                  sizes="(max-width: 600px) 50vw, (max-width: 1080px) 33vw, 300px"
                   loading="lazy"
+                  fallback={<InstagramIcon size={22} color={TOKENS.stone} />}
                 />
                 <div className="uni-ig-overlay">
                   <InstagramIcon size={28} color={TOKENS.bone} />

@@ -44,6 +44,31 @@ Next.js 16 (App Router) · TypeScript estrito · Tailwind v4 · shadcn/ui · Sup
 | `pnpm db:types` | Regera `types/db.ts` do schema remoto via supabase CLI (precisa `supabase login` antes) |
 | `pnpm seed` | Limpa e re-popula DB + Storage com os 5 produtos da referência |
 | `pnpm smoke` | Fetch ponta-a-ponta via anon key (verifica RLS pública + nested relations) |
+| `pnpm images:optimize` | Reencoda as imagens de `public/` (hero, instagram, manifesto) pra tamanho web. Rodar sempre que trocar uma foto |
+
+## Imagens e mobile
+
+O site público serve **todas** as imagens por `next/image` (variantes responsivas,
+WebP/AVIF, lazy loading). Duas regras ao mexer nelas:
+
+1. **Toda foto nova em `public/` passa pelo `pnpm images:optimize`.** As artes
+   chegam em resolução de impressão — os dois slides do hero somavam 9,1 MB e
+   viraram 376 KB sem perda visível. O script é idempotente e ignora o que já
+   está dentro do limite.
+2. **`next/image` com `fill` exige `position: relative` no container.** Sem isso
+   a foto escapa do bloco e cobre a página inteira.
+
+O CSS responsivo tem **uma fonte única de verdade**: o bloco no fim de
+`app/globals.css`, fora do `@layer components` (CSS sem layer vence CSS com
+layer, então ele ganha do desktop sem `!important`). Não duplicar essas regras
+dentro do `@layer` — era assim antes, com duas cópias do bloco mobile, e editar
+só uma delas dava a impressão de que a mudança não pegava.
+
+As famílias tipográficas vêm dos tokens `--font-sans` / `--font-serif` /
+`--font-mono`, que apontam pras variáveis geradas pelo `next/font` em
+`app/layout.tsx`. Escrever `font-family: 'DM Sans'` direto **não funciona**: o
+`next/font` registra a fonte com um nome com hash, e o nome literal cai no
+fallback do sistema.
 
 ## Cadastrar um admin
 

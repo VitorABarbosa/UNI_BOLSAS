@@ -1,3 +1,7 @@
+'use client';
+
+import { SafeImage } from '@/components/public/primitives/SafeImage';
+
 /**
  * Three editorial SVG compositions used by the Manifesto carousel.
  * Ported from `Claude Design - Reference/Uni Bolsas/js/images.js#atelier`.
@@ -33,7 +37,7 @@ function Frame({
       <text
         x="32"
         y="380"
-        fontFamily="Fraunces, serif"
+        style={{ fontFamily: 'var(--font-serif)' }}
         fontStyle="italic"
         fontSize="11"
         fill="#111"
@@ -95,7 +99,7 @@ export function AtelierLoja({ className }: Props) {
       <text
         x="200"
         y="60"
-        fontFamily="Fraunces, serif"
+        style={{ fontFamily: 'var(--font-serif)' }}
         fontStyle="italic"
         fontSize="22"
         fill="#111"
@@ -106,7 +110,7 @@ export function AtelierLoja({ className }: Props) {
       <text
         x="200"
         y="350"
-        fontFamily="DM Sans, sans-serif"
+        style={{ fontFamily: 'var(--font-sans)' }}
         fontSize="9"
         letterSpacing="4"
         fill="#111"
@@ -119,15 +123,34 @@ export function AtelierLoja({ className }: Props) {
   );
 }
 
-function makePhoto(src: string, alt: string) {
-  return function ManifestoRealPhoto({ className }: { className?: string }) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} className={className} />;
+/**
+ * Foto real do manifesto, com a ilustração vetorial como rede de proteção.
+ *
+ * As fotos de campanha são publicadas à mão em `public/manifesto/`. Quando o
+ * arquivo não está lá, cai numa das composições SVG do próprio arquivo em vez
+ * de deixar um bloco vazio no meio da seção.
+ */
+function makePhoto(
+  src: string,
+  alt: string,
+  Fallback: (props: Props) => React.ReactElement,
+) {
+  return function ManifestoRealPhoto({ className }: Props) {
+    return (
+      <SafeImage
+        src={src}
+        alt={alt}
+        className={className}
+        fill
+        sizes="(max-width: 1080px) 100vw, 50vw"
+        fallback={<Fallback className={className} />}
+      />
+    );
   };
 }
 
 export const MANIFESTO_PHOTOS = [
-  makePhoto('/manifesto/campanha-1.jpg', 'Uni Bolsas — Campanha'),
+  makePhoto('/manifesto/campanha-1.jpg', 'Uni Bolsas — Campanha', AtelierBags),
   AtelierBags,
   AtelierCuradoria,
   AtelierLoja,

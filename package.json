@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "db:types": "supabase gen types typescript --project-id ipgulijhqfbwegpnmwnv > types/db.ts",
     "seed": "tsx scripts/seed.ts",
-    "smoke": "tsx scripts/test-fetch.ts"
+    "smoke": "tsx scripts/test-fetch.ts",
+    "images:optimize": "tsx scripts/optimize-images.ts"
   },
   "engines": {
     "node": ">=22.13"
@@ -52,6 +53,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.6",
     "postcss": "^8.5.14",
+    "sharp": "^0.35.3",
     "supabase": "^2.98.2",
     "tailwindcss": "^4.2.4",
     "tsx": "^4.21.0",

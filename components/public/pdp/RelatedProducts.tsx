@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { cardCoverImage } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
@@ -32,10 +33,12 @@ export function RelatedProducts({ products }: RelatedProductsProps) {
               >
                 <div className="uni-pdp-related-img-wrap">
                   {cover ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={publicImageUrl(cover.storage_path)}
                       alt={cover.alt}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 260px"
+                      loading="lazy"
                     />
                   ) : null}
                 </div>

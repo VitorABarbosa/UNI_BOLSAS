@@ -16,7 +16,8 @@ type PdpWhatsAppCTAProps = {
 
 export function PdpWhatsAppCTA({ product, color, size }: PdpWhatsAppCTAProps) {
   return (
-    <div className="uni-qv-cta">
+    // No mobile este CTA some: quem assume é a `PdpBuyBar` fixa no rodapé.
+    <div className="uni-qv-cta uni-pdp-cta-inline">
       <WhatsAppButton href={waProduct(product, color, size)} full>
         Pedir no WhatsApp · {formatPriceBRL(product.price_retail)}
       </WhatsAppButton>
