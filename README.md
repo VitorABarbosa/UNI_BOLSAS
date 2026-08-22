@@ -80,35 +80,59 @@ Mudanças refletem no site público em ≤5s via `revalidatePath` específico (a
 
 ## Importar produtos por planilha
 
-Caminho mais curto para trazer o catálogo da Shopee (ou de qualquer lugar) sem
-depender da API: `/admin/importar`. Não precisa de app aprovado na Shopee, nem
-de chave, nem de variável de ambiente — só estar logado no admin.
+Caminho mais curto para trazer o catálogo da Shopee sem depender da API:
+`/admin/importar`. Não precisa de app aprovado, chave, migration nem variável
+de ambiente — só estar logado no admin.
 
-1. No Seller Center da Shopee, exporte os produtos (a ferramenta de upload em
-   massa gera um `.xlsx`). Qualquer planilha salva em `.csv` também serve.
-2. `/admin/importar` → **Escolher arquivo**. A planilha é lida no servidor e
-   nada é criado ainda.
-3. **Confira as colunas.** O sistema chuta pelo cabeçalho (nome, descrição,
-   preço, colunas de foto) e você corrige o que estiver errado. Escolha também
-   a categoria de destino.
-4. **Prévia** das 5 primeiras linhas já formatadas → **Importar**.
+### Com o export do Seller Center (caminho principal)
 
-Cada linha vira um produto com nome, descrição, preço e as fotos **baixadas
-para o nosso Storage** (o arquivo traz URLs; nunca fazemos hotlink). Limite de
-500 linhas e 9 fotos por produto, 5MB cada.
+No Seller Center: **Produtos → Editar em Massa → Baixar**, e gere os três
+modelos (deixe os filtros em "Todos"):
 
-Detalhes de comportamento:
+| Modelo | O que traz |
+|---|---|
+| Informações básicas | nome e descrição |
+| Informações de Mídia | categoria da Shopee, foto de capa + até 8 fotos, e a foto de cada cor |
+| Informações de vendas | uma linha por variação, com preço e estoque |
 
-- **Duplicados:** por padrão, linha cujo nome já existe no catálogo é pulada
-  (comparação sem acento e sem pontuação). Há um toggle para, nesses casos,
-  atualizar só o preço — bom para reimportar depois de um reajuste.
-- **Preço:** aceita `R$ 189,90`, `1.234,56` e `89.90`.
-- **Cabeçalho:** planilhas de exportação costumam começar com uma linha de
-  título; o leitor procura a linha de cabeçalho real nas 10 primeiras.
-- **Cores e tamanhos não são importados** — nenhuma planilha traz o hex das
-  cores. Complete no form do produto.
-- Uma foto que falhar no download é pulada com aviso no relatório final, sem
-  derrubar a importação inteira.
+Em `/admin/importar`, selecione **os três de uma vez**. O leitor reconhece cada
+template pelo marcador interno (linha 2 da planilha), junta tudo pelo *ID do
+Produto* e mostra um resumo antes de criar qualquer coisa: quantos produtos,
+quantas fotos, quantos têm cor, quantos já existem no site.
+
+O que cada produto recebe:
+
+- **nome e descrição** do anúncio;
+- **preço** = a variação mais barata (o site mostra "a partir de");
+- **fotos** baixadas para o nosso Storage (nunca hotlink do CDN da Shopee);
+- **cores**: as variações que são realmente cor viram swatch, com a foto
+  daquela cor quando a Shopee tem uma. O hex vem de um vocabulário em
+  `lib/import/color-map.ts`; variação que não é cor (`kit com 2`, `01`, `02`)
+  é ignorada e aparece no relatório;
+- **tamanho**, quando o vendedor empacotou os dois no mesmo campo
+  (`Preto,grande`).
+
+A importação anda em **blocos de 5 produtos** com barra de progresso: um
+catálogo de 200 itens significa ~800 downloads de foto, muito além do que uma
+requisição aguenta. Nomes repetidos são descartados, e por padrão produtos que
+já existem no site são pulados.
+
+### Com qualquer outra planilha
+
+Se o arquivo não for um export da Shopee, a tela cai no modo genérico: você
+escolhe quais colunas são nome, descrição, preço e fotos, vê a prévia e
+importa. Aceita `.xlsx` e `.csv` (com `;` ou `,`), até 500 linhas.
+
+### Detalhes que evitam surpresa
+
+- **Formato das fotos** é detectado pelos bytes do arquivo, não pelo
+  `content-type` nem pela extensão — as URLs da Shopee não têm extensão.
+- **Preço** aceita `R$ 189,90`, `1.234,56` e `89.90`.
+- Foto que falhar no download é pulada com aviso no relatório, sem derrubar a
+  importação.
+- Depois de importar, revise em `/admin/produtos`: os textos da Shopee vêm
+  cheios de palavra-chave, e as cores que não foram reconhecidas precisam ser
+  cadastradas à mão.
 
 ## Integração Shopee (Shopee → catálogo do site)
 
@@ -199,7 +223,8 @@ lib/
   whatsapp.ts                      # waLink, waProduct, waGeneral, waWholesale, waRetail, waNewsletter
   product-images.ts                # galleryImages, cardCoverImage, productHasColor
   catalog/create-product.ts        # cria produto + copia fotos (usado pelos 2 importadores)
-  import/                          # leitura de planilha (.xlsx/.csv) + detecção de colunas
+  import/                          # sheet.ts (.xlsx/.csv genérico), shopee-export.ts
+                                   # (templates do Seller Center), color-map.ts, columns.ts
   shopee/                          # server-only: config, assinatura HMAC, tokens,
                                    # catalog.ts (leitura), import.ts (item -> produto)
                                    # e sync.ts (orquestra tudo)
@@ -231,7 +256,7 @@ docs/superpowers/                  # plans + specs da migração
 - [x] **Plano 01 — Foundation:** scaffold Next.js + Tailwind + shadcn, projeto Supabase, schema com RLS, Storage com policies, seed dos 5 produtos, smoke test, primeiro admin
 - [x] **Plano 02 — Public site:** landing single-page, PDP `/produtos/[slug]`, sitemap, robots, OG images dinâmicas
 - [x] **Plano 03 — Admin:** auth via JWT claim `is_admin`, shell admin, CRUD de produtos com upload drag-and-drop e editor de cores, CRUD de categorias com cascade delete
-- [x] **Importador de planilha:** `/admin/importar` — `.xlsx`/`.csv` → produtos com fotos, sem depender da API
+- [x] **Importador de planilha:** `/admin/importar` — export do Seller Center (básicas + mídia + vendas) → produtos com fotos e cores, sem depender da API
 - [x] **Integração Shopee (Shopee → catálogo):** OAuth da loja, mirror em `shopee_items`, importação do item como produto (fotos incluídas), preço sempre sincronizado, painel `/admin/shopee` e cron diário
 - [ ] **Plano 04 — Deploy + cleanup:** Vercel, custom domain, smoke em produção, remoção da reference, polish (loading states, OG fonts)
 

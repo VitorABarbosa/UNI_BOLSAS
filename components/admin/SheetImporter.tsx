@@ -26,15 +26,22 @@ import { formatPriceBRL } from '@/lib/format';
 import { extractImageUrls, parsePrice } from '@/lib/import/columns';
 import {
   importSheetRows,
-  parseImportFile,
+  importShopeeDrafts,
+  parseUpload,
   type ImportReport,
   type ParsedSheet,
+  type ShopeeParseResult,
 } from '@/app/admin/_actions/import';
 
 type Category = { id: string; label: string };
 
 const NONE = 'none';
 const PREVIEW_ROWS = 5;
+/**
+ * Products per request. 200 products mean ~800 photo downloads, far more than
+ * one serverless request can carry — the page walks the list in batches.
+ */
+const BATCH_SIZE = 5;
 
 export function SheetImporter({ categories }: { categories: Category[] }) {
   const router = useRouter();
@@ -42,6 +49,9 @@ export function SheetImporter({ categories }: { categories: Category[] }) {
   const fileInput = useRef<HTMLInputElement>(null);
 
   const [sheet, setSheet] = useState<ParsedSheet | null>(null);
+  const [shopee, setShopee] = useState<ShopeeParseResult | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [importColors, setImportColors] = useState(true);
   const [fileName, setFileName] = useState('');
   const [nameCol, setNameCol] = useState('');
   const [descCol, setDescCol] = useState(NONE);
@@ -52,30 +62,85 @@ export function SheetImporter({ categories }: { categories: Category[] }) {
   const [updateExistingPrice, setUpdateExistingPrice] = useState(false);
   const [report, setReport] = useState<ImportReport | null>(null);
 
-  const readFile = (file: File) => {
-    setFileName(file.name);
+  const readFiles = (files: File[]) => {
+    setFileName(files.map((f) => f.name).join(', '));
     setReport(null);
+    setSheet(null);
+    setShopee(null);
+    setProgress(null);
+
     const formData = new FormData();
-    formData.set('file', file);
+    for (const file of files) formData.append('files', file);
 
     startTransition(async () => {
-      const res = await parseImportFile(formData);
+      const res = await parseUpload(formData);
       if (!res.ok) {
         toast.error(res.error);
-        setSheet(null);
         return;
       }
-      setSheet(res.data);
-      setNameCol(res.data.guess.name ?? res.data.headers[0] ?? '');
-      setDescCol(res.data.guess.description ?? NONE);
-      setPriceCol(res.data.guess.price ?? NONE);
-      setImageCols(res.data.guess.images);
+
+      if (res.data.mode === 'shopee') {
+        const result = res.data.result;
+        setShopee(result);
+        toast.success(
+          `${result.drafts.length} produtos lidos de ${result.kinds.length} planilha(s)`,
+        );
+        return;
+      }
+
+      const parsedSheet = res.data.result;
+      setSheet(parsedSheet);
+      setNameCol(parsedSheet.guess.name ?? parsedSheet.headers[0] ?? '');
+      setDescCol(parsedSheet.guess.description ?? NONE);
+      setPriceCol(parsedSheet.guess.price ?? NONE);
+      setImageCols(parsedSheet.guess.images);
       toast.success(
-        `${res.data.rows.length} linhas lidas` +
-          (res.data.truncated > 0
-            ? ` (${res.data.truncated} ficaram de fora do limite)`
+        `${parsedSheet.rows.length} linhas lidas` +
+          (parsedSheet.truncated > 0
+            ? ` (${parsedSheet.truncated} ficaram de fora do limite)`
             : ''),
       );
+    });
+  };
+
+  const runShopeeImport = () => {
+    if (!shopee || !categoryId) return;
+    const drafts = shopee.drafts;
+
+    startTransition(async () => {
+      const total: ImportReport = {
+        created: 0,
+        skipped: 0,
+        priceUpdated: 0,
+        failed: 0,
+        problems: [],
+      };
+      setProgress({ done: 0, total: drafts.length });
+
+      for (let i = 0; i < drafts.length; i += BATCH_SIZE) {
+        const batch = drafts.slice(i, i + BATCH_SIZE);
+        const res = await importShopeeDrafts({
+          drafts: batch,
+          categoryId,
+          skipExisting,
+          importColors,
+        });
+
+        if (!res.ok) {
+          toast.error(`${res.error} — parei em ${i} de ${drafts.length}`);
+          break;
+        }
+
+        total.created += res.data.created;
+        total.skipped += res.data.skipped;
+        total.failed += res.data.failed;
+        total.problems.push(...res.data.problems);
+        setProgress({ done: Math.min(i + BATCH_SIZE, drafts.length), total: drafts.length });
+        setReport({ ...total, problems: total.problems.slice(0, 10) });
+      }
+
+      toast.success(`${total.created} produtos criados`);
+      router.refresh();
     });
   };
 
@@ -119,8 +184,10 @@ export function SheetImporter({ categories }: { categories: Category[] }) {
           <div>
             <h2 className="font-serif text-lg text-ink">1 · Escolha a planilha</h2>
             <p className="text-sm text-stone">
-              O arquivo que o Seller Center da Shopee exporta (.xlsx) ou qualquer
-              planilha salva em .csv. Nada é criado nesta etapa.
+              Os arquivos que o Seller Center exporta em <strong>Editar em
+              Massa → Baixar</strong> (informações básicas, de mídia e de
+              vendas) — pode selecionar os três de uma vez. Qualquer outra
+              planilha em .xlsx/.csv também serve. Nada é criado nesta etapa.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -128,14 +195,15 @@ export function SheetImporter({ categories }: { categories: Category[] }) {
               ref={fileInput}
               type="file"
               accept=".xlsx,.csv,text/csv"
+              multiple
               className="hidden"
               onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) readFile(file);
+                const files = Array.from(e.target.files ?? []);
+                if (files.length > 0) readFiles(files);
               }}
             />
             <Button disabled={pending} onClick={() => fileInput.current?.click()}>
-              <Upload className="h-4 w-4" /> Escolher arquivo
+              <Upload className="h-4 w-4" /> Escolher arquivos
             </Button>
             {fileName && (
               <span className="flex items-center gap-2 text-sm text-stone">
@@ -148,7 +216,7 @@ export function SheetImporter({ categories }: { categories: Category[] }) {
         </CardContent>
       </Card>
 
-      {sheet && (
+      {sheet && !shopee && (
         <>
           <Card>
             <CardContent className="space-y-4 p-6">
@@ -294,6 +362,96 @@ export function SheetImporter({ categories }: { categories: Category[] }) {
         </>
       )}
 
+      {shopee && (
+        <Card>
+          <CardContent className="space-y-4 p-6">
+            <div>
+              <h2 className="font-serif text-lg text-ink">
+                2 · Confira o que veio
+              </h2>
+              <p className="text-sm text-stone">
+                Planilhas reconhecidas: {shopee.kinds.join(', ')}.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-4">
+              <Stat value={shopee.drafts.length} label="produtos" />
+              <Stat value={shopee.photoCount} label="fotos a baixar" />
+              <Stat
+                value={shopee.drafts.filter((d) => d.colors.length > 0).length}
+                label="com cores"
+              />
+              <Stat value={shopee.existing.length} label="já no site" />
+            </div>
+
+            {shopee.duplicates.length > 0 && (
+              <p className="text-xs text-stone">
+                {shopee.duplicates.length} linha(s) com nome repetido foram
+                descartadas: {shopee.duplicates.slice(0, 3).join(' · ')}
+                {shopee.duplicates.length > 3 ? ' …' : ''}
+              </p>
+            )}
+            {shopee.unknownFiles.length > 0 && (
+              <p className="text-xs text-destructive">
+                Não reconheci: {shopee.unknownFiles.join(', ')}
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-4 border-t border-whisper pt-4">
+              <label className="flex items-center gap-2 text-sm text-stone">
+                Categoria
+                <Select value={categoryId} onValueChange={(v) => setCategoryId(v as string)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
+              <label className="flex items-center gap-2 text-sm text-stone">
+                <Switch checked={skipExisting} onCheckedChange={setSkipExisting} />
+                Pular os que já existem
+              </label>
+              <label className="flex items-center gap-2 text-sm text-stone">
+                <Switch checked={importColors} onCheckedChange={setImportColors} />
+                Importar cores e fotos por cor
+              </label>
+            </div>
+
+            <div className="space-y-2">
+              <Button
+                disabled={pending || !categoryId}
+                onClick={runShopeeImport}
+              >
+                Importar {shopee.drafts.length} produtos
+              </Button>
+              {progress && (
+                <div className="space-y-1">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-whisper">
+                    <div
+                      className="h-full bg-leather transition-all"
+                      style={{ width: `${(progress.done / progress.total) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-stone">
+                    {progress.done} de {progress.total} · não feche a página
+                  </p>
+                </div>
+              )}
+              <p className="text-xs text-stone">
+                São {shopee.photoCount} fotos para baixar — a importação anda em
+                blocos de {BATCH_SIZE} produtos e pode levar alguns minutos.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {report && (
         <Card>
           <CardContent className="space-y-3 p-6">
@@ -355,6 +513,15 @@ function ColumnPicker({
           ))}
         </SelectContent>
       </Select>
+    </div>
+  );
+}
+
+function Stat({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="rounded-lg border border-whisper bg-bone-light px-4 py-3">
+      <div className="font-serif text-2xl text-ink tabular-nums">{value}</div>
+      <div className="text-xs text-stone">{label}</div>
     </div>
   );
 }
