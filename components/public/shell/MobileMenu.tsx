@@ -5,7 +5,6 @@ import { Logo } from '@/components/public/primitives/Logo';
 import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
 import { CloseIcon } from '@/components/public/icons';
 import { waGeneral } from '@/lib/whatsapp';
-import { TOKENS } from '@/lib/tokens';
 
 type MobileMenuProps = {
   onClose: () => void;
@@ -13,22 +12,27 @@ type MobileMenuProps = {
 
 export function MobileMenu({ onClose }: MobileMenuProps) {
   useEffect(() => {
+    const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
     };
-  }, []);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
 
   const close = () => onClose();
 
   return (
-    <div className="uni-mobile-menu" role="dialog" aria-modal="true">
+    <div className="uni-mobile-menu" role="dialog" aria-modal="true" aria-label="Menu">
       <div className="uni-mobile-menu-head">
         <Logo size={22} />
         <button
           onClick={close}
-          className="uni-promo-strip-close"
-          style={{ position: 'static', color: TOKENS.ink, transform: 'none' }}
+          className="uni-mobile-menu-close"
           aria-label="Fechar menu"
         >
           <CloseIcon size={20} />
@@ -48,7 +52,7 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
           F<em>A</em>Q
         </a>
       </div>
-      <div style={{ marginTop: 'auto' }}>
+      <div className="uni-mobile-menu-foot">
         <WhatsAppButton href={waGeneral} variant="dark" full>
           Falar pelo WhatsApp
         </WhatsAppButton>

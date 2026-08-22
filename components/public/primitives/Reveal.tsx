@@ -18,6 +18,14 @@ type RevealProps = {
   threshold?: number;
 };
 
+/**
+ * Anima a entrada do bloco quando ele aparece na viewport.
+ *
+ * O estado inicial (escondido) vive no CSS sob `.js-ready .uni-reveal`, e não
+ * num style inline. Assim o HTML renderizado no servidor nasce visível: se o JS
+ * demorar (celular no 4G) ou falhar, o conteúdo aparece do mesmo jeito, em vez
+ * de a página ficar em branco até a hidratação.
+ */
 export function Reveal({
   children,
   delay = 0,
@@ -62,13 +70,10 @@ export function Reveal({
   return (
     <Tag
       ref={ref}
-      className={className}
-      style={{
-        opacity: shown ? 1 : 0,
-        transform: shown ? 'translateY(0)' : 'translateY(28px)',
-        transition: `opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) ${delay}ms, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) ${delay}ms`,
-        ...style,
-      }}
+      className={['uni-reveal', shown ? 'is-shown' : '', className]
+        .filter(Boolean)
+        .join(' ')}
+      style={{ ['--reveal-delay' as string]: `${delay}ms`, ...style }}
     >
       {children}
     </Tag>

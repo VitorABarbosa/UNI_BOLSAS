@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Hero } from '@/components/public/home/Hero';
 import { CredibilityStrip } from '@/components/public/home/CredibilityStrip';
 import { WholesaleVsRetail } from '@/components/public/home/WholesaleVsRetail';
-import { Manifesto } from '@/components/public/home/Manifesto';
 import { Social } from '@/components/public/home/Social';
 import { FAQSection } from '@/components/public/home/FAQSection';
 import { Location } from '@/components/public/home/Location';
@@ -49,7 +48,6 @@ export default async function HomePage() {
         products={products}
         categories={categoriesWithTodos}
       />
-      <Manifesto />
       <Social />
       <FAQSection />
       <Location />

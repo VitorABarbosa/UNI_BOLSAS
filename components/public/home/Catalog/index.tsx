@@ -6,6 +6,9 @@ import { CategoryFilter, type CategoryOption } from './CategoryFilter';
 import { ProductGrid } from './ProductGrid';
 import type { ProductWithRelations } from '@/lib/queries/products';
 
+/** Quantos produtos entram por lote no grid. */
+const PAGE_SIZE = 12;
+
 type CatalogProps = {
   products: ProductWithRelations[];
   categories: CategoryOption[];
@@ -18,6 +21,7 @@ export function Catalog({
   onOpenQuickView,
 }: CatalogProps) {
   const [activeCat, setActiveCat] = useState('todos');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedColors, setSelectedColors] = useState<Record<string, number>>(
     () => Object.fromEntries(products.map((p) => [p.id, 0])),
   );
@@ -63,12 +67,21 @@ export function Catalog({
     };
   }, [filtered]);
 
+  // Volta pro topo da paginação sempre que o filtro muda.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [activeCat]);
+
   const displayedIds = leavingIds.length
     ? prevFilteredRef.current
     : renderedIds;
-  const displayed = displayedIds
+  const displayedAll = displayedIds
     .map((id) => products.find((p) => p.id === id))
     .filter((p): p is ProductWithRelations => p != null);
+  // Renderiza em lotes: com o catálogo inteiro na tela, um celular baixava uma
+  // imagem por produto de uma vez só.
+  const displayed = displayedAll.slice(0, visibleCount);
+  const remaining = displayedAll.length - displayed.length;
 
   const onSelectColor = (id: string, idx: number) =>
     setSelectedColors((s) => ({ ...s, [id]: idx }));
@@ -122,6 +135,20 @@ export function Catalog({
           onOpenQuickView={onOpenQuickView}
           onClearFilters={onClearFilters}
         />
+        {remaining > 0 && (
+          <div className="uni-load-more-wrap">
+            <button
+              type="button"
+              className="uni-load-more"
+              onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+            >
+              Carregar mais
+              <span className="uni-load-more-count">
+                {remaining} {remaining === 1 ? 'peça' : 'peças'}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -23,6 +23,7 @@
 
   --font-sans: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-fraunces), Georgia, serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
 html, body {
@@ -31,8 +32,11 @@ html, body {
 }
 
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: var(--font-sans);
+  /* NÃO redeclarar --font-sans aqui: `--font-sans: var(--font-sans)` é uma
+     referência cíclica, o valor vira inválido e o navegador cai no serif
+     padrão (Times New Roman). Era por isso que todo o texto sans do site
+     aparecia com cara de Times. As famílias vivem no @theme lá em cima. */
+  --font-heading: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -249,7 +253,7 @@ html, body {
   .uni-root {
     background: var(--color-bone);
     min-height: 100vh;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
   }
@@ -263,7 +267,7 @@ html, body {
 
   /* Type scale */
   .uni-eyebrow {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 11px;
     letter-spacing: 0.4em;
     text-transform: uppercase;
@@ -273,10 +277,10 @@ html, body {
   .uni-eyebrow-wide { letter-spacing: 0.5em; }
   .uni-eyebrow-light { color: var(--color-whisper); }
   .uni-center { text-align: center; }
-  .mono { font-family: 'DM Mono', monospace; font-feature-settings: 'tnum'; }
+  .mono { font-family: var(--font-mono); font-feature-settings: 'tnum'; }
 
   .uni-h1 {
-    font-family: 'Fraunces', Georgia, serif;
+    font-family: var(--font-serif);
     font-size: clamp(56px, 11vw, 140px);
     line-height: 0.95;
     letter-spacing: -0.04em;
@@ -288,7 +292,7 @@ html, body {
   .uni-h1 em { font-style: italic; color: var(--color-leather-dark); font-weight: 300; }
 
   .uni-h2 {
-    font-family: 'Fraunces', Georgia, serif;
+    font-family: var(--font-serif);
     font-size: clamp(36px, 5.4vw, 64px);
     line-height: 1.0;
     letter-spacing: -0.025em;
@@ -302,7 +306,7 @@ html, body {
   .uni-h2-light em { color: var(--color-caramel); }
 
   .uni-h3 {
-    font-family: 'Fraunces', Georgia, serif;
+    font-family: var(--font-serif);
     font-size: clamp(24px, 2.6vw, 32px);
     line-height: 1.1;
     letter-spacing: -0.015em;
@@ -314,7 +318,7 @@ html, body {
 
   .uni-section-head { text-align: center; margin-bottom: 64px; }
   .uni-section-lede {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 16px;
     line-height: 1.65;
     color: var(--color-charcoal);
@@ -348,7 +352,7 @@ html, body {
     font-weight: 500;
   }
   .uni-promo-strip-inner em {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-style: italic;
     font-weight: 400;
     text-transform: none;
@@ -357,7 +361,7 @@ html, body {
     color: var(--color-caramel);
   }
   .uni-promo-strip-cup {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     background: var(--color-bone);
     color: var(--color-ink);
     padding: 3px 9px;
@@ -405,7 +409,7 @@ html, body {
     justify-content: center;
   }
   .uni-header-link {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 12px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
@@ -434,7 +438,7 @@ html, body {
     background: var(--color-whatsapp);
     color: var(--color-pearl);
     padding: 10px 18px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.12em;
@@ -475,7 +479,7 @@ html, body {
     gap: 4px;
   }
   .uni-mobile-menu-link {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-size: 36px;
     color: var(--color-ink);
     text-decoration: none;
@@ -542,7 +546,7 @@ html, body {
     animation: uni-divider-grow 0.9s cubic-bezier(0.65, 0.05, 0.36, 1) 1.55s both;
   }
   .uni-hero-lede {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 17px;
     line-height: 1.65;
     color: var(--color-charcoal);
@@ -561,9 +565,6 @@ html, body {
   }
 
   /* ---- Hero Carousel ---- */
-  @media (min-width: 768px) {
-    .uni-carousel { aspect-ratio: 21 / 9 !important; }
-  }
   .uni-carousel {
     position: relative;
     width: 100%;
@@ -619,7 +620,7 @@ html, body {
     background: var(--color-ink);
     color: var(--color-bone);
     padding: 6px 14px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.3em;
     text-transform: uppercase;
@@ -709,13 +710,12 @@ html, body {
     animation: uni-progress 5s linear both;
   }
 
-
   .uni-secondary-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 14px 24px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 500;
     letter-spacing: 0.12em;
@@ -738,7 +738,7 @@ html, body {
     justify-content: center;
     gap: 10px;
     padding: 14px 24px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 500;
     letter-spacing: 0.12em;
@@ -781,7 +781,7 @@ html, body {
   }
   .uni-cred-cell:last-child { border-right: none; }
   .uni-cred-num {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-style: italic;
     font-size: clamp(40px, 4.5vw, 56px);
     line-height: 1;
@@ -790,14 +790,14 @@ html, body {
     font-weight: 400;
   }
   .uni-cred-num .mono-suffix {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-style: normal;
     font-size: 0.6em;
     margin-left: 2px;
     color: var(--color-leather-dark);
   }
   .uni-cred-label {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
@@ -836,7 +836,7 @@ html, body {
     color: var(--color-leather-dark);
   }
   .uni-wsr-card-eyebrow {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.4em;
     text-transform: uppercase;
@@ -844,7 +844,7 @@ html, body {
     margin-bottom: 14px;
   }
   .uni-wsr-card-h {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-size: clamp(32px, 3.5vw, 44px);
     line-height: 1.0;
     letter-spacing: -0.025em;
@@ -862,7 +862,7 @@ html, body {
     gap: 14px;
   }
   .uni-wsr-card-bullets li {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 15px;
     line-height: 1.5;
     color: var(--color-charcoal);
@@ -876,7 +876,7 @@ html, body {
     color: var(--color-leather-dark);
   }
   .uni-wsr-card-bullets li strong {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 500;
     color: var(--color-ink);
     font-size: 14px;
@@ -896,7 +896,7 @@ html, body {
     border-bottom: 1px solid var(--color-whisper);
   }
   .uni-color-filter-label {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.4em;
     text-transform: uppercase;
@@ -919,7 +919,7 @@ html, body {
   }
   .uni-color-swatch-big.is-clear {
     background: transparent;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.2em;
     color: var(--color-stone);
@@ -940,7 +940,7 @@ html, body {
     margin-bottom: 56px;
   }
   .uni-cat-btn {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 12px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -956,7 +956,7 @@ html, body {
   }
   .uni-cat-btn:hover { border-color: var(--color-ink); }
   .uni-cat-btn.is-active { background: var(--color-ink); color: var(--color-bone); border-color: var(--color-ink); }
-  .uni-cat-count { font-size: 10px; opacity: 0.6; font-family: 'DM Mono', monospace; }
+  .uni-cat-count { font-size: 10px; opacity: 0.6; font-family: var(--font-mono); }
 
   .uni-product-grid {
     display: grid;
@@ -970,7 +970,7 @@ html, body {
     text-align: center;
     padding: 80px 24px;
     color: var(--color-stone);
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-style: italic;
     font-size: 22px;
   }
@@ -985,7 +985,6 @@ html, body {
   .uni-card:hover { transform: translateY(-3px); box-shadow: 0 18px 38px rgba(17,17,17,0.10); }
   .uni-card.is-leaving { opacity: 0; transform: scale(0.96); }
   .uni-card.is-entering { animation: uni-card-enter 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-
 
   .uni-card-img-wrap {
     position: relative;
@@ -1016,7 +1015,7 @@ html, body {
     background: var(--color-ink);
     color: var(--color-bone);
     padding: 6px 12px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.25em;
     text-transform: uppercase;
@@ -1088,7 +1087,7 @@ html, body {
     margin-bottom: 6px;
   }
   .uni-card-name {
-    font-family: 'Fraunces', Georgia, serif;
+    font-family: var(--font-serif);
     font-size: 22px;
     line-height: 1.15;
     letter-spacing: -0.015em;
@@ -1097,7 +1096,7 @@ html, body {
     margin: 0;
   }
   .uni-card-price {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 15px;
     font-weight: 500;
     color: var(--color-ink);
@@ -1105,7 +1104,7 @@ html, body {
     letter-spacing: -0.01em;
   }
   .uni-card-tagline {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     line-height: 1.5;
     color: var(--color-stone);
@@ -1119,7 +1118,7 @@ html, body {
     flex-wrap: wrap;
   }
   .uni-card-size-chip {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.1em;
     padding: 3px 8px;
@@ -1133,7 +1132,7 @@ html, body {
     margin-bottom: 16px;
   }
   .uni-card-colors-label {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
@@ -1153,7 +1152,7 @@ html, body {
   }
   .uni-card-colors-count {
     margin-left: auto;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--color-stone);
   }
@@ -1190,7 +1189,7 @@ html, body {
     justify-content: center;
     gap: 7px;
     padding: 11px 12px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.16em;
@@ -1274,6 +1273,7 @@ html, body {
     gap: 10px;
   }
   .uni-qv-thumb {
+    position: relative;
     width: 80px;
     aspect-ratio: 1;
     background: var(--color-whisper);
@@ -1285,14 +1285,6 @@ html, body {
   }
   .uni-qv-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .uni-qv-thumb.is-active { border-color: var(--color-ink); }
-  .uni-qv-main {
-    background: var(--color-pearl);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .uni-qv-main img { width: 100%; height: 100%; object-fit: cover; display: block; animation: uni-fade-in 0.3s ease; }
 
   .uni-qv-info {
     padding: 48px 44px;
@@ -1301,7 +1293,7 @@ html, body {
     flex-direction: column;
   }
   .uni-qv-eyebrow {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.4em;
     text-transform: uppercase;
@@ -1309,7 +1301,7 @@ html, body {
     margin-bottom: 14px;
   }
   .uni-qv-name {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-size: 38px;
     line-height: 1.05;
     letter-spacing: -0.025em;
@@ -1325,13 +1317,13 @@ html, body {
     flex-wrap: wrap;
   }
   .uni-qv-price {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 22px;
     color: var(--color-ink);
     font-weight: 500;
   }
   .uni-qv-price-w {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 12px;
     letter-spacing: 0.08em;
     color: var(--color-leather-dark);
@@ -1339,7 +1331,7 @@ html, body {
     padding: 4px 10px;
   }
   .uni-qv-desc {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     line-height: 1.7;
     color: var(--color-charcoal);
@@ -1355,7 +1347,7 @@ html, body {
     margin-bottom: 24px;
   }
   .uni-qv-spec-label {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
@@ -1363,17 +1355,17 @@ html, body {
     margin-bottom: 4px;
   }
   .uni-qv-spec-val {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 13px;
     color: var(--color-ink);
     letter-spacing: -0.01em;
   }
-  .uni-qv-spec-val.is-text { font-family: 'DM Sans', sans-serif; font-size: 13px; }
+  .uni-qv-spec-val.is-text { font-family: var(--font-sans); font-size: 13px; }
   .uni-qv-color-section, .uni-qv-size-section {
     margin-bottom: 22px;
   }
   .uni-qv-section-label {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
@@ -1384,7 +1376,7 @@ html, body {
     gap: 10px;
   }
   .uni-qv-section-label strong {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-style: italic;
     text-transform: none;
     letter-spacing: -0.01em;
@@ -1403,7 +1395,7 @@ html, body {
     flex-wrap: wrap;
   }
   .uni-qv-size-chip {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     padding: 8px 14px;
     border: 1px solid var(--color-whisper);
@@ -1422,334 +1414,15 @@ html, body {
     gap: 10px;
   }
   .uni-qv-cta-note {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 11px;
     color: var(--color-stone);
     text-align: center;
     margin: 0;
   }
 
-  /* ---- Manifesto ---- */
-  .uni-manifesto {
-    background:
-      radial-gradient(ellipse 70% 50% at 20% 0%, rgba(164,117,81,0.18), transparent 60%),
-      radial-gradient(ellipse 60% 45% at 100% 100%, rgba(92,26,43,0.16), transparent 60%),
-      var(--color-ink);
-    color: var(--color-bone);
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .uni-manifesto::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      linear-gradient(180deg, rgba(229,222,207,0.05) 0%, transparent 18%, transparent 82%, rgba(229,222,207,0.05) 100%);
-    z-index: 0;
-  }
-  .uni-manifesto-grain {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.04;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    background-size: 200px 200px;
-  }
-  .uni-manifesto-layout {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    min-height: 720px;
-    position: relative;
-    z-index: 1;
-  }
-  .uni-manifesto-photo-col {
-    position: relative;
-    overflow: hidden;
-    padding: 24px;
-  }
-  .uni-manifesto-photo-col::after {
-    content: "";
-    position: absolute;
-    inset: 24px;
-    border: 1px solid rgba(229,222,207,0.22);
-    pointer-events: none;
-    z-index: 3;
-  }
-  .uni-manifesto-photo-col::before {
-    content: "";
-    position: absolute;
-    inset: 24px;
-    background:
-      linear-gradient(180deg, rgba(17,17,17,0.0) 55%, rgba(17,17,17,0.55) 100%),
-      radial-gradient(ellipse 100% 70% at 50% 50%, transparent 55%, rgba(17,17,17,0.35) 100%);
-    pointer-events: none;
-    z-index: 2;
-  }
-  .uni-manifesto-photo-wrap { position: relative; width: 100%; height: 100%; min-height: 540px; overflow: hidden; }
-  .uni-manifesto-photo {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    filter: brightness(0.92) contrast(1.05);
-    transition: opacity 1.2s ease;
-  }
-  .uni-manifesto-photo.is-active { opacity: 1; z-index: 1; }
-  .uni-manifesto-photo.is-inactive { opacity: 0; z-index: 0; }
-  .uni-manifesto-badge {
-    position: absolute;
-    bottom: 56px;
-    left: 56px;
-    background: rgba(17,17,17,0.72);
-    backdrop-filter: blur(14px) saturate(1.2);
-    -webkit-backdrop-filter: blur(14px) saturate(1.2);
-    border: 1px solid rgba(164,117,81,0.45);
-    padding: 18px 26px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    z-index: 5;
-    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
-    animation: uni-badge-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
-  }
-  .uni-manifesto-badge::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -1px;
-    width: 2px;
-    height: 60%;
-    background: var(--color-caramel);
-    transform: translateY(-50%);
-  }
-
-  .uni-manifesto-badge-num {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 26px;
-    color: var(--color-bone);
-    line-height: 1;
-    letter-spacing: -0.01em;
-  }
-  .uni-manifesto-badge-sub {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
-    letter-spacing: 0.34em;
-    text-transform: uppercase;
-    color: var(--color-caramel);
-  }
-  .uni-manifesto-text-col {
-    padding: 96px 72px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    margin-top: 40px;
-  }
-  .uni-manifesto-text-col .uni-eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .uni-manifesto-text-col .uni-eyebrow::before {
-    content: "";
-    display: inline-block;
-    width: 32px;
-    height: 1px;
-    background: var(--color-caramel);
-  }
-  .uni-manifesto-quote-mark {
-    font-family: 'Fraunces', serif;
-    font-size: 260px;
-    line-height: 0.7;
-    color: var(--color-caramel);
-    opacity: 0.18;
-    position: absolute;
-    top: 60px;
-    left: 48px;
-    user-select: none;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .uni-manifesto-quote {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(28px, 3.4vw, 44px);
-    line-height: 1.22;
-    letter-spacing: -0.025em;
-    font-weight: 400;
-    color: var(--color-bone);
-    margin: 28px 0 32px;
-    border: none;
-    padding: 0;
-    position: relative;
-    z-index: 1;
-  }
-  .uni-manifesto-quote em { font-style: italic; color: var(--color-caramel); }
-  .uni-manifesto-body {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    line-height: 1.72;
-    color: var(--color-whisper);
-    margin: 0 0 18px;
-    max-width: 520px;
-  }
-  .uni-manifesto-rule {
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(164,117,81,0.5) 12%,
-      rgba(229,222,207,0.22) 50%,
-      transparent 100%);
-    margin: 40px 0;
-  }
-  .uni-manifesto-timeline {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    margin-bottom: 44px;
-    position: relative;
-  }
-  .uni-manifesto-timeline::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 12px;
-    height: 1px;
-    background: rgba(229,222,207,0.2);
-  }
-  .uni-tl-cell {
-    padding: 0 16px 0 0;
-    position: relative;
-  }
-  .uni-tl-cell::before {
-    content: "";
-    position: absolute;
-    top: 7px;
-    left: 0;
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var(--color-caramel);
-    border: 2px solid var(--color-ink);
-    z-index: 1;
-  }
-  .uni-tl-cell::after {
-    content: "";
-    position: absolute;
-    top: 11px;
-    left: 11px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-caramel);
-    opacity: 0.35;
-    filter: blur(4px);
-    z-index: 0;
-  }
-  .uni-tl-year {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    color: var(--color-caramel);
-    margin: 28px 0 10px;
-    font-weight: 500;
-  }
-  .uni-tl-label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--color-whisper);
-    max-width: 180px;
-  }
-  .uni-manifesto-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px 30px;
-    background: var(--color-bone);
-    color: var(--color-ink);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    text-decoration: none;
-    align-self: flex-start;
-    position: relative;
-    overflow: hidden;
-    transition: color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
-    box-shadow: 0 8px 24px -10px rgba(0,0,0,0.5);
-  }
-  .uni-manifesto-cta::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--color-caramel);
-    transform: translateX(-101%);
-    transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1);
-    z-index: 0;
-  }
-  .uni-manifesto-cta > * { position: relative; z-index: 1; }
-  .uni-manifesto-cta:hover {
-    color: var(--color-bone);
-    transform: translateY(-2px);
-    box-shadow: 0 14px 34px -10px rgba(164,117,81,0.55);
-  }
-  .uni-manifesto-cta:hover::before { transform: translateX(0); }
-
   /* ---- Social ---- */
-  .uni-social { background: var(--color-bone); padding: 130px 0; }
-  .uni-social-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 48px; }
-  .uni-social-handle {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--color-stone);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-  .uni-social-handle:hover { color: var(--color-ink); }
-  .uni-ig-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 80px;
-  }
-  .uni-ig-item {
-    position: relative;
-    aspect-ratio: 1;
-    overflow: hidden;
-    cursor: pointer;
-    background: var(--color-whisper);
-  }
-  .uni-ig-item img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .uni-ig-item:hover img { transform: scale(1.06); }
-  .uni-ig-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(17,17,17,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    color: var(--color-bone);
-  }
-  .uni-ig-item:hover .uni-ig-overlay { opacity: 1; }
+  .uni-social { background: var(--color-bone); }
   .uni-test-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1760,7 +1433,7 @@ html, body {
     padding: 28px 0 0;
   }
   .uni-test-quote {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-size: 19px;
     line-height: 1.4;
     color: var(--color-ink);
@@ -1776,13 +1449,13 @@ html, body {
     font-style: italic;
   }
   .uni-test-name {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 500;
     color: var(--color-ink);
   }
   .uni-test-role {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: var(--color-stone);
     letter-spacing: 0.05em;
@@ -1809,7 +1482,7 @@ html, body {
     align-items: center;
     gap: 24px;
     cursor: pointer;
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-size: clamp(18px, 2vw, 22px);
     font-weight: 400;
     color: var(--color-ink);
@@ -1836,7 +1509,7 @@ html, body {
     overflow: hidden;
     opacity: 0;
     transition: max-height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease, padding 0.3s ease;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 15px;
     line-height: 1.7;
     color: var(--color-charcoal);
@@ -1873,7 +1546,7 @@ html, body {
     padding: 10px 16px;
     background: var(--color-pearl);
     color: var(--color-ink);
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.18em;
@@ -1889,14 +1562,14 @@ html, body {
     align-items: center;
     gap: 12px;
     margin-bottom: 24px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 11px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
     color: var(--color-stone);
   }
   .uni-store-name {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-size: 42px;
     line-height: 1.05;
     letter-spacing: -0.02em;
@@ -1905,13 +1578,13 @@ html, body {
     margin: 0 0 8px;
   }
   .uni-store-addr {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 16px;
     line-height: 1.7;
     color: var(--color-charcoal);
     margin-bottom: 24px;
   }
-  .uni-store-cep { font-size: 13px; color: var(--color-stone); margin-top: 4px; font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
+  .uni-store-cep { font-size: 13px; color: var(--color-stone); margin-top: 4px; font-family: var(--font-mono); letter-spacing: 0.05em; }
   .uni-store-hours {
     border-top: 1px solid var(--color-whisper);
     border-bottom: 1px solid var(--color-whisper);
@@ -1922,7 +1595,7 @@ html, body {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
@@ -1937,7 +1610,7 @@ html, body {
     margin-bottom: 28px;
   }
   .uni-store-transport-head {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
@@ -1947,14 +1620,14 @@ html, body {
   .uni-store-transport-row {
     display: flex;
     justify-content: space-between;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     color: var(--color-charcoal);
     padding: 5px 0;
     border-bottom: 1px dashed var(--color-whisper);
   }
   .uni-store-transport-row strong { font-weight: 500; color: var(--color-ink); }
-  .uni-store-transport-row span { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--color-stone); }
+  .uni-store-transport-row span { font-family: var(--font-mono); font-size: 12px; color: var(--color-stone); }
   .uni-location-ctas { display: flex; flex-direction: column; gap: 10px; }
   .uni-loc-btn {
     display: flex;
@@ -1962,7 +1635,7 @@ html, body {
     justify-content: center;
     gap: 10px;
     padding: 14px 24px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.16em;
@@ -1986,7 +1659,7 @@ html, body {
     align-items: center;
   }
   .uni-news-h {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-serif);
     font-size: clamp(28px, 3.2vw, 38px);
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -1996,7 +1669,7 @@ html, body {
   }
   .uni-news-h em { font-style: italic; color: var(--color-caramel); }
   .uni-news-sub {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     line-height: 1.6;
     color: var(--color-whisper);
@@ -2011,7 +1684,7 @@ html, body {
     align-self: flex-start;
   }
   .uni-news-toggle-btn {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 11px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
@@ -2033,7 +1706,7 @@ html, body {
     background: transparent;
     border: none;
     padding: 14px 18px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     color: var(--color-bone);
     outline: none;
@@ -2044,7 +1717,7 @@ html, body {
     color: var(--color-ink);
     border: none;
     padding: 14px 22px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.22em;
@@ -2058,7 +1731,7 @@ html, body {
   }
   .uni-news-submit:hover { background: var(--color-caramel); color: var(--color-ink); }
   .uni-news-tip {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: rgba(244,239,230,0.4);
     letter-spacing: 0.05em;
@@ -2077,7 +1750,7 @@ html, body {
     margin-bottom: 48px;
   }
   .uni-footer-blurb {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     line-height: 1.6;
     color: var(--color-whisper);
@@ -2085,7 +1758,7 @@ html, body {
     max-width: 320px;
   }
   .uni-footer-head {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
@@ -2099,7 +1772,7 @@ html, body {
     align-items: center;
     gap: 10px;
     color: var(--color-bone);
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     text-decoration: none;
     transition: color 0.2s ease;
@@ -2115,7 +1788,7 @@ html, body {
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: var(--color-whisper);
     letter-spacing: 0.08em;
@@ -2137,7 +1810,7 @@ html, body {
   .uni-float-wa-tip {
     background: var(--color-ink);
     color: var(--color-bone);
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 12px;
     padding: 10px 16px;
     white-space: nowrap;
@@ -2188,94 +1861,6 @@ html, body {
     }
   }
 
-  /* ---- Tablet ---- */
-
-  @media (max-width: 1080px) {
-    .uni-section { padding: 100px 0; }
-    .uni-hero-image-frame { margin-bottom: 40px; }
-    .uni-h1 { font-size: clamp(48px, 9vw, 90px); }
-    .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-    .uni-location-grid { grid-template-columns: 1fr; gap: 32px; }
-    .uni-footer-grid { grid-template-columns: 1.5fr 1fr 1fr; gap: 32px; }
-    .uni-cred-grid { grid-template-columns: repeat(2, 1fr); gap: 0; }
-    .uni-cred-cell:nth-child(2) { border-right: none; }
-    .uni-cred-cell:nth-child(1), .uni-cred-cell:nth-child(2) { padding-bottom: 32px; border-bottom: 1px solid var(--color-whisper); }
-    .uni-cred-cell:nth-child(3), .uni-cred-cell:nth-child(4) { padding-top: 32px; }
-    .uni-wsr-grid { grid-template-columns: 1fr; gap: 16px; }
-    .uni-wsr-card.is-wholesale { transform: none; }
-    .uni-wsr-card.is-wholesale:hover { transform: translateY(-4px); }
-    .uni-manifesto-layout { grid-template-columns: 1fr; }
-    .uni-manifesto-photo-wrap { min-height: 360px; }
-    .uni-manifesto-text-col { padding: 60px 32px; margin-top: 0; }
-    .uni-test-grid { grid-template-columns: 1fr; gap: 0; }
-    .uni-test-card { padding: 28px 0; }
-    .uni-news-inner { grid-template-columns: 1fr; gap: 24px; }
-    .uni-qv-modal { grid-template-columns: 1fr; max-height: 96vh; overflow-y: auto; }
-    .uni-qv-gallery { grid-template-columns: 1fr; min-height: 360px; }
-    .uni-qv-thumbs { flex-direction: row; overflow-x: auto; }
-    .uni-qv-thumb { flex-shrink: 0; }
-    .uni-header-nav { display: none; }
-    .uni-header-menu-btn { display: inline-flex; }
-    .uni-header-inner { grid-template-columns: 1fr auto; }
-  }
-
-  @media (max-width: 600px) {
-    .uni-container { padding: 0 18px; }
-    .uni-hero { padding: 60px 0 80px; }
-    .uni-section { padding: 80px 0; }
-    .uni-h1 { font-size: clamp(44px, 13vw, 72px); }
-    .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .uni-card-body { padding: 10px 10px 12px; }
-    .uni-card-name { font-size: 13px; }
-    .uni-card-price { font-size: 11px; }
-    .uni-card-tagline { display: none; }
-    .uni-card-sizes { display: none; }
-    .uni-card-colors-label { display: none; }
-    .uni-card-cta-row { flex-direction: column; gap: 6px; }
-    .uni-card-cta-detail, .uni-card-cta-wa { padding: 8px 6px; font-size: 9px; letter-spacing: 0.10em; gap: 4px; }
-    .uni-card-badge { font-size: 8px; padding: 4px 8px; top: 8px; left: 8px; }
-    .uni-card-head-row { gap: 4px; margin-bottom: 4px; }
-    .uni-card-colors { margin-bottom: 8px; padding-top: 8px; }
-    /* setas do card (feature do branch update-store-age) — compactas no mobile */
-    .uni-card-arrow { width: 26px; height: 26px; }
-    .uni-card-arrow-prev { left: 6px; }
-    .uni-card-arrow-next { right: 6px; }
-    .uni-footer-grid { grid-template-columns: 1fr; gap: 32px; }
-    .uni-wsr-card { padding: 40px 28px; }
-    .uni-manifesto-text-col { padding: 48px 18px; }
-    .uni-manifesto-quote-mark { font-size: 160px; top: 24px; left: 12px; }
-    .uni-manifesto-photo-col { padding: 14px; }
-    .uni-manifesto-photo-col::after,
-    .uni-manifesto-photo-col::before { inset: 14px; }
-    .uni-manifesto-badge { bottom: 34px; left: 34px; padding: 14px 20px; }
-    .uni-manifesto-badge-num { font-size: 22px; }
-    .uni-manifesto-timeline { grid-template-columns: 1fr 1fr; gap: 24px 0; }
-    .uni-manifesto-timeline::before { display: none; }
-    .uni-tl-cell::before { position: relative; display: inline-block; margin-bottom: 6px; top: 0; }
-    .uni-ig-grid { grid-template-columns: repeat(2, 1fr); }
-    .uni-cat-filter { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
-    .uni-cat-btn { flex-shrink: 0; }
-    .uni-color-filter { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-left: 4px; padding-right: 4px; }
-    .uni-color-swatch-big { flex-shrink: 0; }
-    .uni-qv-info { padding: 32px 24px; }
-    .uni-qv-name { font-size: 28px; }
-    .uni-qv-overlay { padding: 0; }
-    .uni-qv-modal { max-height: 100vh; height: 100vh; }
-    .uni-promo-strip-inner { font-size: 11px; flex-direction: column; gap: 6px; padding: 9px 38px; }
-    .uni-promo-strip-close { right: 12px; }
-    .uni-social-head { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .uni-footer-bottom { flex-direction: column; align-items: flex-start; }
-    .uni-carousel-arrow { width: 36px; height: 36px; }
-    .uni-carousel-tag { font-size: 9px; padding: 5px 11px; }
-    .uni-hero-image-frame {
-      width: 100vw;
-      margin-left: calc(50% - 50vw);
-      margin-right: calc(50% - 50vw);
-      margin-bottom: 32px;
-    }
-    .uni-carousel { aspect-ratio: 4 / 3; }
-  }
-
   /* ---- PDP layout (page-mode product detail) ---- */
   .uni-pdp { padding: 90px 0 60px; }
   .uni-pdp-grid {
@@ -2285,7 +1870,7 @@ html, body {
     align-items: start;
   }
   .uni-pdp-name {
-    font-family: 'Fraunces', Georgia, serif;
+    font-family: var(--font-serif);
     font-size: clamp(32px, 4.4vw, 52px);
     line-height: 1.04;
     letter-spacing: -0.025em;
@@ -2307,6 +1892,7 @@ html, body {
     overflow-y: auto;
   }
   .uni-pdp-gallery-thumb {
+    position: relative;
     border: 1px solid transparent;
     background: var(--color-bone-light);
     border-radius: 4px;
@@ -2320,15 +1906,6 @@ html, body {
   .uni-pdp-gallery-thumb:hover { border-color: var(--color-leather); }
   .uni-pdp-gallery-thumb.is-active { border-color: var(--color-ink); }
   .uni-pdp-gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .uni-pdp-gallery-main {
-    background: var(--color-bone-light);
-    border-radius: 6px;
-    overflow: hidden;
-    aspect-ratio: 1 / 1;
-  }
-  .uni-pdp-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; animation: uni-fade-in 0.35s ease-out; }
-  .uni-pdp-gallery-main.is-empty { display: flex; align-items: center; justify-content: center; color: var(--color-stone); font-size: 14px; padding: 32px; }
-  .uni-pdp-gallery-mobile-swipe { display: none; }
   /* ---- Related products ---- */
   .uni-pdp-related { padding: 80px 0 130px; }
   .uni-pdp-related-grid {
@@ -2344,6 +1921,9 @@ html, body {
   }
   .uni-pdp-related-card:hover { transform: translateY(-4px); }
   .uni-pdp-related-img-wrap {
+    /* `next/image` com `fill` posiciona a foto em absolute: sem o relative aqui
+       ela escapa do card e cobre a página inteira. */
+    position: relative;
     aspect-ratio: 1 / 1;
     background: var(--color-bone-light);
     border-radius: 4px;
@@ -2352,55 +1932,582 @@ html, body {
   }
   .uni-pdp-related-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .uni-pdp-related-name {
-    font-family: 'Fraunces', Georgia, serif;
+    font-family: var(--font-serif);
     font-size: 18px;
     font-weight: 400;
     margin-bottom: 4px;
   }
   .uni-pdp-related-price {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 13px;
     color: var(--color-stone);
   }
-
-  @media (max-width: 768px) {
-    .uni-pdp-grid { grid-template-columns: 1fr; gap: 32px; }
-    .uni-pdp-gallery { grid-template-columns: 1fr; }
-    .uni-pdp-gallery-thumbs { display: none; }
-    .uni-pdp-gallery-main { display: none; }
-    .uni-pdp-gallery-mobile-swipe {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 8px;
-    }
-    .uni-pdp-gallery-mobile-slide {
-      flex: 0 0 100%;
-      scroll-snap-align: start;
-      aspect-ratio: 1 / 1;
-      background: var(--color-bone-light);
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    .uni-pdp-gallery-mobile-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  }
 }
 
-/* Mobile overrides — fora do @layer para garantir prioridade máxima */
+/* ============================================================================
+   COMPONENTES NOVOS (fora do @layer, como o bloco responsivo abaixo)
+   ============================================================================ */
+
+/* ---- Logo ---- */
+.uni-logo {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+.uni-logo-mark { height: auto; width: auto; flex-shrink: 0; }
+.uni-logo-text { display: inline-flex; align-items: baseline; gap: 8px; min-width: 0; }
+.uni-logo-name {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  /* Sem isto o nome quebra em duas linhas quando o header aperta e a marca
+     fica desalinhada do símbolo. */
+  white-space: nowrap;
+}
+.uni-logo-city {
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-leather-dark);
+  opacity: 0.78;
+}
+
+/* ---- Menu mobile ---- */
+.uni-mobile-menu-close {
+  background: transparent;
+  border: none;
+  color: var(--color-ink);
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-right: -10px;
+}
+.uni-mobile-menu-foot { margin-top: auto; }
+
+/* ---- Palco de galeria (quick view e PDP) ----
+   Um só bloco de fotos serve desktop e mobile: no desktop as miniaturas rolam
+   o palco programaticamente (por isso `overflow-x: hidden`, que não impede
+   `scrollTo`); no mobile ele vira carrossel de swipe. */
+.uni-qv-stage,
+.uni-pdp-stage {
+  position: relative;
+  display: flex;
+  overflow-x: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  background: var(--color-bone-light);
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+}
+.uni-qv-slide,
+.uni-pdp-slide {
+  position: relative;
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  overflow: hidden;
+}
+.uni-qv-slide img,
+.uni-pdp-slide img { object-fit: cover; }
+.uni-qv-slide.is-empty,
+.uni-pdp-stage.is-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-stone);
+  font-size: 14px;
+  padding: 32px;
+}
+
+/* Pontinhos: só aparecem onde as miniaturas somem (mobile). */
+.uni-qv-dots,
+.uni-pdp-dots {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0 4px;
+}
+.uni-qv-dot,
+.uni-pdp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--color-whisper);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.25s ease, width 0.25s ease;
+}
+/* Alvo de toque de 32px sem engordar o desenho. */
+.uni-qv-dot::after,
+.uni-pdp-dot::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+}
+.uni-qv-dot.is-active,
+.uni-pdp-dot.is-active { background: var(--color-ink); width: 18px; border-radius: 4px; }
+
+/* ---- Barra de compra fixa (PDP mobile) ---- */
+.uni-pdp-buybar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(250, 247, 241, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--color-whisper);
+}
+.uni-pdp-buybar-price {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.uni-pdp-buybar-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-stone);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.uni-pdp-buybar-price strong {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+}
+.uni-pdp-buybar-cta {
+  flex: 1;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--color-whatsapp);
+  color: var(--color-pearl);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+/* ---- "Carregar mais" do catálogo ---- */
+.uni-load-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+.uni-load-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 14px 32px;
+  background: transparent;
+  border: 1px solid var(--color-ink);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.uni-load-more:hover { background: var(--color-ink); color: var(--color-bone); }
+.uni-load-more-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.6;
+  letter-spacing: 0.04em;
+}
+
+/* ---- Placeholder de imagem ausente ---- */
+
+/* ============================================================================
+   RESPONSIVO — fonte única de verdade
+   ----------------------------------------------------------------------------
+   Este bloco fica FORA do `@layer components` de propósito: CSS sem layer vence
+   CSS com layer, então tudo aqui ganha das regras de desktop lá de cima sem
+   precisar de `!important`.
+
+   ⚠️  NÃO duplicar estas regras dentro do @layer. Antes existiam duas cópias do
+   bloco mobile (uma dentro do layer e outra fora com `!important` em tudo) e
+   editar só uma delas dava a impressão de que a mudança "não pegava".
+
+   Ordem: base → tablet (≤1080) → mobile (≤600) → mobile pequeno (≤380) → PDP.
+   ============================================================================ */
+
+/* ---- Base: valem em qualquer largura ---- */
+
+html {
+  scroll-behavior: smooth;
+  /* Header sticky cobre o topo da seção quando o link âncora salta pra ela. */
+  scroll-padding-top: 84px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* `clip` em vez de `hidden`: corta o estouro horizontal (hero full-bleed) sem
+   quebrar o `position: sticky` do header, que `overflow: hidden` quebraria. */
+body { overflow-x: clip; }
+
+/* Itens de grid têm `min-width: auto` por padrão: um filho que não quebra
+   linha (o preço, o rótulo do botão) empurra a coluna além de 1fr e o grid
+   estoura a tela. Em 320px os cards passavam 15px da borda por causa disso. */
+.uni-product-grid > *,
+.uni-pdp-related-grid > * { min-width: 0; }
+
+/* Sem o flash cinza do toque no Android e sem seleção acidental em botões. */
+a, button {
+  -webkit-tap-highlight-color: rgba(17, 17, 17, 0.06);
+}
+
+/* iOS Safari dá zoom em qualquer campo com fonte < 16px — e não desfaz depois. */
+input, select, textarea { font-size: 16px; }
+
+/* Alvo de toque generoso sem inflar o desenho da bolinha de cor.
+   40px (e não 44) porque o alvo não pode passar do "pitch" entre bolinhas
+   vizinhas — senão um alvo cobre o outro e o toque cai na cor errada. */
+.uni-swatch::after,
+.uni-color-swatch-big::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, 40px);
+  height: max(100%, 40px);
+}
+
+/* Trilhos horizontais (filtros, galerias) sem barra de rolagem visível. */
+.uni-cat-filter,
+.uni-color-filter,
+.uni-qv-thumbs,
+.uni-pdp-stage {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.uni-cat-filter::-webkit-scrollbar,
+.uni-color-filter::-webkit-scrollbar,
+.uni-qv-thumbs::-webkit-scrollbar,
+.uni-pdp-stage::-webkit-scrollbar { display: none; }
+
+/* Reveal: o conteúdo só é escondido quando existe JS pra revelá-lo de volta.
+   O `js-ready` entra no <html> por um script inline antes da primeira pintura
+   (app/layout.tsx), então não há flash — e sem JS a página nasce visível. */
+.uni-reveal {
+  opacity: 1;
+  transform: none;
+}
+.js-ready .uni-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0ms),
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0ms);
+}
+.js-ready .uni-reveal.is-shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .js-ready .uni-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Elementos fixos respeitam notch e barra de gestos do iPhone. */
+.uni-float-wa-wrap {
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  right: calc(16px + env(safe-area-inset-right));
+}
+.uni-mobile-menu {
+  padding:
+    calc(20px + env(safe-area-inset-top))
+    calc(20px + env(safe-area-inset-right))
+    calc(24px + env(safe-area-inset-bottom))
+    calc(20px + env(safe-area-inset-left));
+}
+
+/* Carousel do hero: banner largo no desktop, mais alto (menos corte) no mobile.
+   As artes têm texto embutido na lateral esquerda — cortar demais come o texto. */
+@media (min-width: 768px) {
+  .uni-carousel { aspect-ratio: 21 / 9; }
+}
+
+/* ---- Tablet ---- */
+
+@media (max-width: 1080px) {
+  .uni-section { padding: 96px 0; }
+  .uni-hero-image-frame { margin-bottom: 40px; }
+  .uni-h1 { font-size: clamp(48px, 9vw, 90px); }
+  .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .uni-location-grid { grid-template-columns: 1fr; gap: 32px; }
+  .uni-footer-grid { grid-template-columns: 1.5fr 1fr 1fr; gap: 32px; }
+  .uni-cred-grid { grid-template-columns: repeat(2, 1fr); gap: 0; }
+  .uni-cred-cell:nth-child(2) { border-right: none; }
+  .uni-cred-cell:nth-child(1),
+  .uni-cred-cell:nth-child(2) { padding-bottom: 32px; border-bottom: 1px solid var(--color-whisper); }
+  .uni-cred-cell:nth-child(3) { padding-top: 32px; grid-column: 1 / -1; }
+  .uni-wsr-grid { grid-template-columns: 1fr; gap: 16px; }
+  .uni-wsr-card.is-wholesale { transform: none; }
+  .uni-wsr-card.is-wholesale:hover { transform: translateY(-4px); }
+  .uni-test-grid { grid-template-columns: 1fr; gap: 0; }
+  .uni-test-card { padding: 28px 0; }
+  .uni-news-inner { grid-template-columns: 1fr; gap: 24px; }
+  .uni-qv-modal { grid-template-columns: 1fr; max-height: 96dvh; overflow-y: auto; }
+  .uni-qv-gallery { grid-template-columns: 1fr; min-height: 0; padding: 16px; }
+  .uni-header-nav { display: none; }
+  .uni-header-menu-btn { display: inline-flex; }
+  .uni-header-inner { grid-template-columns: 1fr auto; }
+}
+
+/* ---- Mobile ---- */
+
 @media (max-width: 600px) {
-  .uni-carousel { aspect-ratio: 4 / 3 !important; }
-  .uni-product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
-  .uni-card-body { padding: 10px 10px 12px !important; }
-  .uni-card-name { font-size: 13px !important; }
-  .uni-card-price { font-size: 11px !important; }
-  .uni-card-tagline { display: none !important; }
-  .uni-card-sizes { display: none !important; }
-  .uni-card-colors-label { display: none !important; }
-  .uni-card-cta-row { flex-direction: column !important; gap: 6px !important; }
-  .uni-card-cta-detail, .uni-card-cta-wa { padding: 8px 6px !important; font-size: 9px !important; letter-spacing: 0.10em !important; gap: 4px !important; }
-  .uni-card-badge { font-size: 8px !important; padding: 4px 8px !important; top: 8px !important; left: 8px !important; }
-  .uni-card-head-row { gap: 4px !important; margin-bottom: 4px !important; }
-  .uni-card-colors { margin-bottom: 8px !important; padding-top: 8px !important; }
+  /* Ritmo e escala tipográfica */
+  .uni-container { padding: 0 20px; }
+  .uni-section { padding: 72px 0; }
+  .uni-section-head { margin-bottom: 40px; }
+  .uni-section-lede { font-size: 15px; }
+  .uni-h1 { font-size: clamp(40px, 11.5vw, 64px); }
+  .uni-h2 { font-size: clamp(30px, 8.6vw, 44px); }
+  .uni-h3 { font-size: 22px; }
+  /* 0.4em de tracking em caixa alta quebra feio em tela estreita. */
+  .uni-eyebrow { font-size: 10px; letter-spacing: 0.26em; margin-bottom: 14px; }
+  .uni-eyebrow-wide { letter-spacing: 0.3em; }
+
+  /* Faixa promocional: uma linha só (antes empilhava em três). */
+  .uni-promo-strip-inner {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    gap: 8px;
+    padding: 10px 40px 10px 16px;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+  .uni-promo-strip-inner em { font-size: 13px; }
+  .uni-promo-word-optional { display: none; }
+  .uni-promo-strip-close { right: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0; }
+
+  /* Header: o logo precisa caber ao lado do CTA sem quebrar linha. */
+  .uni-header-inner { padding: 8px 16px; gap: 10px; }
+  .uni-logo { gap: 8px; }
+  .uni-logo-name { font-size: 19px; }
+  .uni-logo-city { display: none; }
+  .uni-logo-mark { height: 32px; width: auto; }
+  .uni-header-cta { padding: 0 14px; height: 42px; font-size: 11px; letter-spacing: 0.1em; }
+  .uni-header-menu-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Menu mobile */
+  .uni-mobile-menu { gap: 24px; }
+  .uni-mobile-menu-link { font-size: 30px; padding: 16px 0; }
+
+  /* Hero */
+  .uni-hero { padding: 32px 0 64px; }
+  .uni-hero-image-frame {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    margin-bottom: 32px;
+  }
+  .uni-carousel { aspect-ratio: 16 / 9; }
+  .uni-carousel-arrow { display: none; }
+  .uni-carousel-tag { font-size: 9px; padding: 6px 12px; }
+  .uni-carousel-dot { width: 24px; height: 4px; }
+  /* A bolinha continua fina, mas o dedo acerta uma faixa de 28px. */
+  .uni-carousel-dot::after { content: ""; position: absolute; inset: -12px -2px; }
+  .uni-carousel-dots { padding: 12px; gap: 10px; }
+  .uni-footer-link { min-height: 40px; align-items: center; }
+  .uni-hero-h1 { margin-bottom: 24px; }
+  .uni-hero-lede { font-size: 16px; margin-bottom: 32px; }
+  /* CTA de largura total: alvo grande e hierarquia clara no polegar. */
+  .uni-hero-ctas { flex-direction: column; width: 100%; gap: 10px; }
+  .uni-hero-ctas > * { width: 100%; justify-content: center; min-height: 52px; }
+
+  /* Botões gerais */
+  .uni-wa-btn,
+  .uni-secondary-btn,
+  .uni-loc-btn { min-height: 48px; padding: 12px 20px; }
+  .uni-location-ctas { display: flex; flex-direction: column; gap: 10px; }
+  .uni-loc-btn { width: 100%; }
+
+  /* Filtros: trilho que rola de ponta a ponta da tela */
+  .uni-cat-filter {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scroll-padding-left: 20px;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -20px 32px;
+    padding: 2px 20px 10px;
+    gap: 8px;
+  }
+  .uni-cat-btn {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    min-height: 42px;
+    padding: 10px 18px;
+  }
+  .uni-color-filter {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0 -20px;
+    padding: 0 20px;
+  }
+  .uni-color-swatch-big { flex-shrink: 0; }
+
+  /* Card de produto */
+  .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .uni-card-body { padding: 12px 12px 14px; }
+  .uni-card-name { font-size: 14px; }
+  .uni-card-price { font-size: 12px; }
+  .uni-card-tagline { display: none; }
+  .uni-card-sizes { display: none; }
+  .uni-card-colors-label { display: none; }
+  .uni-card-head-row { gap: 6px; margin-bottom: 6px; }
+  .uni-card-colors { margin-bottom: 10px; padding-top: 10px; }
+  .uni-card-swatches { gap: 14px; row-gap: 10px; }
+  .uni-swatch { width: 26px; height: 26px; }
+  .uni-card-badge { font-size: 9px; padding: 5px 9px; top: 8px; left: 8px; }
+  .uni-card-arrow { width: 36px; height: 36px; }
+  .uni-card-arrow-prev { left: 6px; }
+  .uni-card-arrow-next { right: 6px; }
+  /* Ação principal (WhatsApp) ocupa a linha; "ver detalhes" vira ícone quadrado
+     de 44px ao lado — dois alvos confortáveis num card de ~160px. */
+  .uni-card-cta-row { display: grid; grid-template-columns: 44px 1fr; gap: 8px; }
+  .uni-card-cta-detail,
+  .uni-card-cta-wa {
+    min-height: 44px;
+    padding: 8px 6px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    gap: 5px;
+  }
+  .uni-card-cta-detail { padding: 0; }
+  .uni-card-cta-label { display: none; }
+
+  /* Quick view */
+  .uni-qv-overlay { padding: 0; }
+  .uni-qv-modal { height: 100dvh; max-height: 100dvh; border-radius: 0; }
+  .uni-qv-close { top: 12px; right: 12px; width: 44px; height: 44px; }
+  .uni-qv-gallery { padding: 0; }
+  .uni-qv-thumbs { display: none; }
+  .uni-qv-stage { overflow-x: auto; scroll-snap-type: x mandatory; border-radius: 0; }
+  .uni-qv-dots { display: flex; }
+  .uni-qv-info { padding: 24px 20px 20px; }
+  .uni-qv-name { font-size: 26px; }
+  .uni-qv-desc { font-size: 14px; }
+  /* CTA gruda no rodapé do modal: o botão que converte nunca fica fora da tela. */
+  .uni-qv-cta {
+    position: sticky;
+    bottom: 0;
+    margin-top: 24px;
+    padding: 14px 0 calc(10px + env(safe-area-inset-bottom));
+    background: var(--color-pearl);
+    box-shadow: 0 -14px 22px -14px rgba(17, 17, 17, 0.22);
+  }
+  .uni-qv-spec-grid { gap: 14px; }
+  .uni-qv-size-chip { min-height: 44px; }
+
+  /* Atacado x varejo */
+  .uni-wsr-card { padding: 36px 24px; }
+
+  /* FAQ */
+  .uni-faq-q { padding: 22px 12px 22px 0; gap: 16px; font-size: 17px; min-height: 56px; }
+
+  /* Localização */
+  .uni-store-name { font-size: 32px; }
+  .uni-map-wrap { aspect-ratio: 4 / 3; }
+  .uni-map-pill { bottom: 12px; right: 12px; min-height: 40px; }
+
+  /* Newsletter: campo e botão empilhados (antes espremiam em ~150px cada). */
+  .uni-news-input-row { flex-direction: column; border: none; gap: 10px; }
+  .uni-news-input {
+    border: 1px solid rgba(244, 239, 230, 0.25);
+    padding: 14px 16px;
+    min-height: 50px;
+  }
+  .uni-news-submit { justify-content: center; min-height: 50px; }
+  .uni-news-toggle-btn { min-height: 44px; }
+
+  /* Rodapé: respiro extra pro botão flutuante do WhatsApp não cobrir links. */
+  .uni-footer { padding: 56px 0 calc(80px + env(safe-area-inset-bottom)); }
+  .uni-footer-grid { grid-template-columns: 1fr; gap: 28px; }
+  .uni-footer-bottom { flex-direction: column; align-items: flex-start; gap: 6px; }
+
+  /* Botão flutuante */
+  .uni-float-wa-wrap { flex-direction: column; align-items: flex-end; gap: 8px; }
+  .uni-float-wa { width: 56px; height: 56px; }
+  .uni-float-wa-tip {
+    white-space: normal;
+    max-width: 220px;
+    line-height: 1.35;
+    font-size: 11px;
+    transform: translateY(6px);
+  }
+  .uni-float-wa-tip.is-shown { transform: translateY(0); }
+}
+
+/* ---- Mobile pequeno (iPhone SE, Android 360px e abaixo) ---- */
+
+@media (max-width: 380px) {
+  .uni-container { padding: 0 16px; }
+  .uni-header-cta-label { display: none; }
+  .uni-header-cta { width: 44px; height: 44px; padding: 0; justify-content: center; }
+  .uni-cat-filter { margin: 0 -16px 32px; padding: 2px 16px 10px; scroll-padding-left: 16px; }
+  .uni-color-filter { margin: 0 -16px; padding: 0 16px; }
+  .uni-product-grid { gap: 10px; }
+  .uni-card-cta-row { grid-template-columns: 1fr; }
+  .uni-card-cta-detail { display: none; }
+}
+
+/* ---- Página de produto (PDP) ---- */
+
+@media (max-width: 768px) {
+  .uni-pdp { padding: 64px 0 40px; }
+  .uni-pdp-grid { grid-template-columns: 1fr; gap: 28px; }
+  .uni-pdp-gallery { grid-template-columns: 1fr; gap: 12px; }
+  /* No mobile o palco vira carrossel com swipe e as miniaturas viram pontinhos. */
+  .uni-pdp-gallery-thumbs { display: none; }
+  .uni-pdp-stage { overflow-x: auto; scroll-snap-type: x mandatory; }
+  .uni-pdp-dots { display: flex; }
+  .uni-pdp-related { padding: 56px 0 90px; }
+  .uni-pdp-related-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .uni-pdp-related-name { font-size: 15px; }
+  .uni-pdp-related-price { font-size: 12px; }
+  /* Barra de compra fixa: o preço e o CTA acompanham a rolagem da página. */
+  .uni-pdp-buybar { display: flex; }
+  .uni-pdp-cta-inline { display: none; }
+  body:has(.uni-pdp-buybar) .uni-footer { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
 }
