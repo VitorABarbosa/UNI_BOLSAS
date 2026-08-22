@@ -4,6 +4,7 @@ import type { ProductWithRelations } from '@/lib/queries/products';
 import { ColorSwatches } from './ColorSwatches';
 import { SizePicker } from './SizePicker';
 import { PdpWhatsAppCTA } from './PdpWhatsAppCTA';
+import { ShopeeCTA } from './ShopeeCTA';
 import { formatPriceBRL } from '@/lib/format';
 
 type ProductInfoProps = {
@@ -97,6 +98,7 @@ export function ProductInfo({
         </div>
       )}
       <PdpWhatsAppCTA product={product} color={color} size={sizeForWa} />
+      <ShopeeCTA offers={product.shopee_items} />
     </div>
   );
 }

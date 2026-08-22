@@ -1,5 +1,10 @@
 // DO NOT EDIT - generated from the Supabase project schema.
 // Regenerate with: pnpm db:types
+//
+// Exception: the `shopee_items` / `shopee_shops` entries were hand-written to
+// match 20260822000000_shopee_integration.sql, because the migration is applied
+// to the remote project separately. The next `pnpm db:types` run overwrites
+// them with the real generated shape.
 
 export type Json =
   | string
@@ -209,6 +214,129 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shopee_items: {
+        Row: {
+          created_at: string
+          currency: string
+          has_model: boolean
+          id: string
+          image_url: string | null
+          item_id: number
+          item_name: string
+          item_sku: string | null
+          item_status: string
+          item_url: string
+          original_price: number | null
+          price: number | null
+          product_id: string | null
+          shop_id: number
+          shopee_update_time: string | null
+          stock: number | null
+          synced_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          has_model?: boolean
+          id?: string
+          image_url?: string | null
+          item_id: number
+          item_name: string
+          item_sku?: string | null
+          item_status: string
+          item_url: string
+          original_price?: number | null
+          price?: number | null
+          product_id?: string | null
+          shop_id: number
+          shopee_update_time?: string | null
+          stock?: number | null
+          synced_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          has_model?: boolean
+          id?: string
+          image_url?: string | null
+          item_id?: number
+          item_name?: string
+          item_sku?: string | null
+          item_status?: string
+          item_url?: string
+          original_price?: number | null
+          price?: number | null
+          product_id?: string | null
+          shop_id?: number
+          shopee_update_time?: string | null
+          stock?: number | null
+          synced_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopee_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopee_items_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shopee_shops"
+            referencedColumns: ["shop_id"]
+          },
+        ]
+      }
+      shopee_shops: {
+        Row: {
+          access_token: string
+          authorized_at: string
+          expires_at: string
+          last_sync_at: string | null
+          last_sync_error: string | null
+          last_sync_item_count: number | null
+          refresh_expires_at: string
+          refresh_token: string
+          region: string
+          shop_id: number
+          shop_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          authorized_at?: string
+          expires_at: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_item_count?: number | null
+          refresh_expires_at: string
+          refresh_token: string
+          region?: string
+          shop_id: number
+          shop_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          authorized_at?: string
+          expires_at?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_item_count?: number | null
+          refresh_expires_at?: string
+          refresh_token?: string
+          region?: string
+          shop_id?: number
+          shop_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

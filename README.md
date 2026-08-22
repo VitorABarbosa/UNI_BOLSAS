@@ -73,8 +73,41 @@ Sem isso, o login até funciona, mas o proxy redireciona com `?error=unauthorize
 4. **Editar produto** (`/admin/produtos/[id]`): tabs Básico / Preço / Detalhes / SEO / Cores / Imagens. Cores e Imagens persistem **independentemente** (cada mudança grava na hora). Os outros tabs gravam só ao clicar em **Salvar** no rodapé.
 5. **Imagens**: drag-and-drop até 4 paralelos, 5MB por arquivo, formatos webp/jpg/png/svg. Cada cor cria uma tab própria + tab "Genéricas" sempre presente. Reorder por drag, click na thumb edita o `alt`.
 6. **Categorias** (`/admin/categorias`): tabela inline editável com reorder por drag e add inline no fim. Delete cascade com confirm que mostra quantos produtos serão apagados junto.
+7. **Shopee** (`/admin/shopee`): conectar/desconectar a loja, sincronizar o catálogo na hora e vincular cada item da Shopee a um produto do site (ver seção abaixo).
 
 Mudanças refletem no site público em ≤5s via `revalidatePath` específico (a home, o sitemap, e cada PDP afetado).
+
+## Integração Shopee (Shopee → site)
+
+O site puxa o catálogo da nossa loja na Shopee e mostra um CTA secundário
+"Comprar na Shopee" na PDP, com preço e estoque em cache. O checkout continua
+na Shopee — a API não permite finalizar a compra fora do marketplace.
+
+**1. Criar o app na Shopee.** Em [open.shopee.com](https://open.shopee.com),
+com CNPJ ativo, crie o app e anote `partner_id` + `partner_key` (Console App →
+App Detail). Cadastre o redirect `https://unibolsas.store/api/shopee/callback`
+(e o de `localhost` para testar).
+
+**2. Preencher as envs** (`.env.local` e Vercel → Settings → Environment
+Variables): `SHOPEE_PARTNER_ID`, `SHOPEE_PARTNER_KEY`, `SHOPEE_REGION=br`,
+`CRON_SECRET`. Ver `.env.example`.
+
+**3. Aplicar a migration** `supabase/migrations/20260822000000_shopee_integration.sql`
+(cria `shopee_shops` e `shopee_items`) e regerar os tipos com `pnpm db:types`.
+
+**4. Conectar a loja.** `/admin/shopee` → **Conectar loja Shopee** → autorizar
+com a conta vendedora. O callback grava o par de tokens.
+
+**5. Sincronizar.** Botão **Sincronizar agora** no admin, ou o cron diário
+(`vercel.json` → `/api/shopee/sync`, autenticado por `CRON_SECRET`). O cron
+também renova o `access_token` (vive 4h) e, com isso, mantém o `refresh_token`
+(30 dias) vivo — **se ninguém sincronizar por 30 dias, a loja precisa ser
+reconectada na mão**.
+
+Cada item da Shopee é vinculado a um produto do site: automaticamente quando os
+nomes batem (normalizados), ou manualmente no select da tabela em
+`/admin/shopee`. A relação é 1:1 e só itens com status `NORMAL` aparecem para o
+público.
 
 ## Layout do projeto
 
@@ -84,6 +117,10 @@ app/
   globals.css                      # Tailwind v4 + tokens + 1500+ linhas de uni-* @layer components
   robots.ts                        # /robots.txt
   sitemap.ts                       # /sitemap.xml (landing + 5 PDPs)
+  api/shopee/
+    authorize/route.ts             # redirect p/ a tela de autorização da Shopee
+    callback/route.ts              # troca o code pelo par de tokens
+    sync/route.ts                  # cron diário (Bearer CRON_SECRET)
   (public)/
     layout.tsx                     # casca: PromoStrip, Header, Footer, FloatingWA
     page.tsx                       # landing single-page (RSC + ISR 60s)
@@ -92,7 +129,7 @@ app/
       opengraph-image.tsx          # OG PNG 1200x630 dinâmico
 components/
   public/
-    icons/                         # 12 SVG icons (port da reference)
+    icons/                         # 13 SVG icons (port da reference + StorefrontIcon)
     primitives/                    # Reveal, CountUp, WhatsAppButton, Logo
     shell/                         # PromoStrip, Header, MobileMenu, Footer, FloatingWA
     home/
@@ -104,7 +141,7 @@ components/
       HomeContent                  # client wrapper que mantém o state do QuickView
     quickview/QuickView            # modal de detalhes
     pdp/                           # PdpContent, Gallery, ProductInfo, ColorSwatches,
-                                   # SizePicker, PdpWhatsAppCTA, RelatedProducts
+                                   # SizePicker, PdpWhatsAppCTA, ShopeeCTA, RelatedProducts
   ui/                              # primitivas shadcn (Plano 03 vai consumir)
 lib/
   tokens.ts                        # paleta TS (espelha CSS vars)
@@ -113,6 +150,9 @@ lib/
   seo.ts                           # SITE_URL, SITE_NAME
   whatsapp.ts                      # waLink, waProduct, waGeneral, waWholesale, waRetail, waNewsletter
   product-images.ts                # galleryImages, cardCoverImage, productHasColor
+  shopee-offer.ts                  # helpers client-safe da oferta Shopee (PDP)
+  shopee/                          # server-only: config, assinatura HMAC, tokens,
+                                   # leitura do catálogo (catalog.ts) e sync.ts
   content/                         # FAQ, TIMELINE, TESTIMONIALS, STORE, CREDIBILITY, PROMO, COLOR_PALETTE
   queries/                         # listActiveProducts, getProductBySlug, listRelatedProducts, listProductSlugs
   supabase/
@@ -141,6 +181,7 @@ docs/superpowers/                  # plans + specs da migração
 - [x] **Plano 01 — Foundation:** scaffold Next.js + Tailwind + shadcn, projeto Supabase, schema com RLS, Storage com policies, seed dos 5 produtos, smoke test, primeiro admin
 - [x] **Plano 02 — Public site:** landing single-page, PDP `/produtos/[slug]`, sitemap, robots, OG images dinâmicas
 - [x] **Plano 03 — Admin:** auth via JWT claim `is_admin`, shell admin, CRUD de produtos com upload drag-and-drop e editor de cores, CRUD de categorias com cascade delete
+- [x] **Integração Shopee (Shopee → site):** OAuth da loja, mirror de itens/preço/estoque em `shopee_items`, painel `/admin/shopee`, CTA na PDP, cron diário de sync
 - [ ] **Plano 04 — Deploy + cleanup:** Vercel, custom domain, smoke em produção, remoção da reference, polish (loading states, OG fonts)
 
 A spec viva está em `docs/superpowers/specs/2026-05-08-uni-bolsas-stack-migration-design.md`.

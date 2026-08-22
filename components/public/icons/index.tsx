@@ -325,3 +325,30 @@ export function WazeIcon({
     </svg>
   );
 }
+
+export function StorefrontIcon({
+  size = 18,
+  color = 'currentColor',
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path d="M3.5 9V6.6A1.6 1.6 0 0 1 5.1 5h13.8a1.6 1.6 0 0 1 1.6 1.6V9" />
+      <path d="M3.5 9h17l-.9 2.6a2.6 2.6 0 0 1-4.9.2 2.6 2.6 0 0 1-4.9 0 2.6 2.6 0 0 1-4.9-.2L3.5 9Z" />
+      <path d="M5.4 13.3v5.1A1.6 1.6 0 0 0 7 20h10a1.6 1.6 0 0 0 1.6-1.6v-5.1" />
+    </svg>
+  );
+}
