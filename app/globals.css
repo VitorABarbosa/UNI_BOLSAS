@@ -759,7 +759,7 @@ html, body {
 
   /* ---- Credibility strip ---- */
   .uni-cred {
-    background: var(--color-bone-light);
+    background: var(--color-bone);
     border-top: 1px solid var(--color-whisper);
     border-bottom: 1px solid var(--color-whisper);
     padding: 56px 0;
@@ -807,7 +807,7 @@ html, body {
   }
 
   /* ---- Wholesale vs retail ---- */
-  .uni-wsr { background: var(--color-bone); }
+  .uni-wsr { background: var(--color-bone-light); }
   .uni-wsr-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -883,7 +883,7 @@ html, body {
   }
 
   /* ---- Catalog ---- */
-  .uni-catalog { background: var(--color-bone); }
+  .uni-catalog { background: var(--color-bone-light); }
   .uni-color-filter {
     display: flex;
     align-items: center;

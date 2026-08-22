@@ -42,12 +42,13 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <CredibilityStrip />
-      <WholesaleVsRetail />
+      {/* O catálogo vem logo depois do hero: é o que a pessoa veio ver. */}
       <HomeContent
         products={products}
         categories={categoriesWithTodos}
       />
+      <CredibilityStrip />
+      <WholesaleVsRetail />
       <Social />
       <FAQSection />
       <Location />
