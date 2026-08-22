@@ -28,6 +28,7 @@ export type ShopAuth = { shopId: number; accessToken: string };
 export type ShopeeItemSnapshot = {
   itemId: number;
   name: string;
+  description: string | null;
   sku: string | null;
   status: string;
   currency: string;
@@ -37,6 +38,8 @@ export type ShopeeItemSnapshot = {
   /** Total available stock across models; null when Shopee omits it. */
   stock: number | null;
   imageUrl: string | null;
+  /** Every photo of the listing, in Shopee's order (the import copies them). */
+  imageUrls: string[];
   itemUrl: string;
   hasModel: boolean;
   updateTime: string | null;
@@ -72,6 +75,7 @@ type BaseInfoResponse = ShopeeBaseResponse & {
       item_sku?: string;
       item_status?: string;
       has_model?: boolean;
+      description?: string;
       update_time?: number;
       image?: { image_url_list?: string[] };
       price_info?: PriceInfo[];
@@ -116,16 +120,20 @@ export async function fetchShopCatalog(
         (item.has_model ?? false) && (price.current === null || stock === undefined);
       const models = needsModels ? await fetchModelAggregate(auth, item.item_id) : null;
 
+      const imageUrls = item.image?.image_url_list ?? [];
+
       snapshots.push({
         itemId: item.item_id,
         name: item.item_name ?? `Item ${item.item_id}`,
+        description: item.description?.trim() ? item.description.trim() : null,
         sku: item.item_sku?.trim() ? item.item_sku.trim() : null,
         status: item.item_status ?? 'NORMAL',
         currency: price.currency ?? models?.currency ?? 'BRL',
         price: price.current ?? models?.price ?? null,
         originalPrice: price.original ?? models?.originalPrice ?? null,
         stock: stock ?? models?.stock ?? null,
-        imageUrl: item.image?.image_url_list?.[0] ?? null,
+        imageUrl: imageUrls[0] ?? null,
+        imageUrls,
         itemUrl: shopeeItemUrl(auth.shopId, item.item_id, region),
         hasModel: item.has_model ?? false,
         updateTime: item.update_time

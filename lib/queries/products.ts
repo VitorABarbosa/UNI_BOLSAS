@@ -2,7 +2,6 @@ import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 import { createAnonClient } from '@/lib/supabase/anon';
 import type { Database } from '@/types/db';
-import type { ShopeeOffer } from '@/lib/shopee-offer';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
@@ -13,17 +12,13 @@ export type ProductWithRelations = ProductRow & {
   category: Pick<CategoryRow, 'slug' | 'label'>;
   colors: ColorRow[];
   images: ImageRow[];
-  // Array because PostgREST models the FK as one-to-many; the partial unique
-  // index on shopee_items.product_id keeps it to at most one row.
-  shopee_items: ShopeeOffer[];
 };
 
 const LIST_SELECT = `
   id, slug, name, tagline, badge, price_retail, sizes, sort_order, active, category_id,
   category:categories(slug, label),
   colors:product_colors(id, name, hex, accent_hex, sort_order, product_id),
-  images:product_images(id, color_id, storage_path, alt, sort_order, product_id),
-  shopee_items(item_id, item_url, price, stock, item_status, synced_at)
+  images:product_images(id, color_id, storage_path, alt, sort_order, product_id)
 `;
 
 const PDP_SELECT = `
@@ -32,8 +27,7 @@ const PDP_SELECT = `
   seo_title, seo_description, category_id, created_at, updated_at,
   category:categories(slug, label),
   colors:product_colors(id, name, hex, accent_hex, sort_order, product_id),
-  images:product_images(id, color_id, storage_path, alt, sort_order, product_id),
-  shopee_items(item_id, item_url, price, stock, item_status, synced_at)
+  images:product_images(id, color_id, storage_path, alt, sort_order, product_id)
 `;
 
 function sortRelations<T extends ProductWithRelations>(p: T): T {
@@ -41,7 +35,6 @@ function sortRelations<T extends ProductWithRelations>(p: T): T {
     ...p,
     colors: [...p.colors].sort((a, b) => a.sort_order - b.sort_order),
     images: [...p.images].sort((a, b) => a.sort_order - b.sort_order),
-    shopee_items: p.shopee_items ?? [],
   };
 }
 

@@ -73,15 +73,16 @@ Sem isso, o login até funciona, mas o proxy redireciona com `?error=unauthorize
 4. **Editar produto** (`/admin/produtos/[id]`): tabs Básico / Preço / Detalhes / SEO / Cores / Imagens. Cores e Imagens persistem **independentemente** (cada mudança grava na hora). Os outros tabs gravam só ao clicar em **Salvar** no rodapé.
 5. **Imagens**: drag-and-drop até 4 paralelos, 5MB por arquivo, formatos webp/jpg/png/svg. Cada cor cria uma tab própria + tab "Genéricas" sempre presente. Reorder por drag, click na thumb edita o `alt`.
 6. **Categorias** (`/admin/categorias`): tabela inline editável com reorder por drag e add inline no fim. Delete cascade com confirm que mostra quantos produtos serão apagados junto.
-7. **Shopee** (`/admin/shopee`): conectar/desconectar a loja, sincronizar o catálogo na hora e vincular cada item da Shopee a um produto do site (ver seção abaixo).
+7. **Shopee** (`/admin/shopee`): conectar/desconectar a loja, sincronizar e importar os anúncios da Shopee como produtos do site (ver seção abaixo).
 
 Mudanças refletem no site público em ≤5s via `revalidatePath` específico (a home, o sitemap, e cada PDP afetado).
 
-## Integração Shopee (Shopee → site)
+## Integração Shopee (Shopee → catálogo do site)
 
-O site puxa o catálogo da nossa loja na Shopee e mostra um CTA secundário
-"Comprar na Shopee" na PDP, com preço e estoque em cache. O checkout continua
-na Shopee — a API não permite finalizar a compra fora do marketplace.
+A Shopee é usada como **fonte do catálogo**: o que está listado lá vira produto
+aqui — com nome, descrição, preço e as fotos copiadas para o nosso Storage. A
+venda continua sendo pelo WhatsApp, como no resto do site; **não há botão de
+comprar na Shopee**, porque o site é vitrine.
 
 **1. Criar o app na Shopee.** Em [open.shopee.com](https://open.shopee.com),
 com CNPJ ativo, crie o app e anote `partner_id` + `partner_key` (Console App →
@@ -92,22 +93,36 @@ App Detail). Cadastre o redirect `https://unibolsas.store/api/shopee/callback`
 Variables): `SHOPEE_PARTNER_ID`, `SHOPEE_PARTNER_KEY`, `SHOPEE_REGION=br`,
 `CRON_SECRET`. Ver `.env.example`.
 
-**3. Aplicar a migration** `supabase/migrations/20260822000000_shopee_integration.sql`
-(cria `shopee_shops` e `shopee_items`) e regerar os tipos com `pnpm db:types`.
+**3. Aplicar as migrations** `20260822000000_shopee_integration.sql` e
+`20260822000001_shopee_import.sql`, depois regerar os tipos com `pnpm db:types`.
 
 **4. Conectar a loja.** `/admin/shopee` → **Conectar loja Shopee** → autorizar
 com a conta vendedora. O callback grava o par de tokens.
 
-**5. Sincronizar.** Botão **Sincronizar agora** no admin, ou o cron diário
-(`vercel.json` → `/api/shopee/sync`, autenticado por `CRON_SECRET`). O cron
-também renova o `access_token` (vive 4h) e, com isso, mantém o `refresh_token`
-(30 dias) vivo — **se ninguém sincronizar por 30 dias, a loja precisa ser
-reconectada na mão**.
+**5. Importar.** Escolha a **categoria dos importados**, clique em
+**Sincronizar agora** e depois em **Importar pendentes** (ou importe item a
+item). Ligando **Importar itens novos automaticamente**, o cron diário passa a
+criar sozinho os produtos que aparecerem na Shopee — até 25 por execução.
 
-Cada item da Shopee é vinculado a um produto do site: automaticamente quando os
-nomes batem (normalizados), ou manualmente no select da tabela em
-`/admin/shopee`. A relação é 1:1 e só itens com status `NORMAL` aparecem para o
-público.
+### O que a importação faz (e o que não faz)
+
+| Campo | De onde vem |
+|---|---|
+| Nome, descrição | Do anúncio da Shopee |
+| Preço de varejo | Do anúncio, e **continua sincronizado** a cada sync |
+| Fotos | Baixadas do CDN da Shopee para o bucket `products` (até 9, 5MB cada) |
+| Slug, ordem | Gerados aqui (slug único a partir do nome) |
+| Categoria | A escolhida no painel |
+| **Cores e tamanhos** | **Não importados** — a Shopee não dá o hex das cores e as variações não mapeiam 1:1 nos nossos `sizes`. Preencher no form do produto. |
+
+Itens que somem da Shopee (despublicados, banidos) são marcados como
+`GONE` no painel, mas **o produto continua ativo no site** — vocês seguem
+vendendo por WhatsApp. Desconectar a loja também não apaga nada do catálogo:
+só interrompe a atualização de preço e a entrada de novidades.
+
+Um item também pode ser vinculado a um produto que já existia (em vez de criar
+outro): automaticamente quando os nomes batem, ou pelo select da tabela. A
+relação é 1:1.
 
 ## Layout do projeto
 
@@ -129,7 +144,7 @@ app/
       opengraph-image.tsx          # OG PNG 1200x630 dinâmico
 components/
   public/
-    icons/                         # 13 SVG icons (port da reference + StorefrontIcon)
+    icons/                         # 12 SVG icons (port da reference)
     primitives/                    # Reveal, CountUp, WhatsAppButton, Logo
     shell/                         # PromoStrip, Header, MobileMenu, Footer, FloatingWA
     home/
@@ -141,7 +156,7 @@ components/
       HomeContent                  # client wrapper que mantém o state do QuickView
     quickview/QuickView            # modal de detalhes
     pdp/                           # PdpContent, Gallery, ProductInfo, ColorSwatches,
-                                   # SizePicker, PdpWhatsAppCTA, ShopeeCTA, RelatedProducts
+                                   # SizePicker, PdpWhatsAppCTA, RelatedProducts
   ui/                              # primitivas shadcn (Plano 03 vai consumir)
 lib/
   tokens.ts                        # paleta TS (espelha CSS vars)
@@ -150,9 +165,9 @@ lib/
   seo.ts                           # SITE_URL, SITE_NAME
   whatsapp.ts                      # waLink, waProduct, waGeneral, waWholesale, waRetail, waNewsletter
   product-images.ts                # galleryImages, cardCoverImage, productHasColor
-  shopee-offer.ts                  # helpers client-safe da oferta Shopee (PDP)
   shopee/                          # server-only: config, assinatura HMAC, tokens,
-                                   # leitura do catálogo (catalog.ts) e sync.ts
+                                   # catalog.ts (leitura), import.ts (item -> produto)
+                                   # e sync.ts (orquestra tudo)
   content/                         # FAQ, TIMELINE, TESTIMONIALS, STORE, CREDIBILITY, PROMO, COLOR_PALETTE
   queries/                         # listActiveProducts, getProductBySlug, listRelatedProducts, listProductSlugs
   supabase/
@@ -181,7 +196,7 @@ docs/superpowers/                  # plans + specs da migração
 - [x] **Plano 01 — Foundation:** scaffold Next.js + Tailwind + shadcn, projeto Supabase, schema com RLS, Storage com policies, seed dos 5 produtos, smoke test, primeiro admin
 - [x] **Plano 02 — Public site:** landing single-page, PDP `/produtos/[slug]`, sitemap, robots, OG images dinâmicas
 - [x] **Plano 03 — Admin:** auth via JWT claim `is_admin`, shell admin, CRUD de produtos com upload drag-and-drop e editor de cores, CRUD de categorias com cascade delete
-- [x] **Integração Shopee (Shopee → site):** OAuth da loja, mirror de itens/preço/estoque em `shopee_items`, painel `/admin/shopee`, CTA na PDP, cron diário de sync
+- [x] **Integração Shopee (Shopee → catálogo):** OAuth da loja, mirror em `shopee_items`, importação do item como produto (fotos incluídas), preço sempre sincronizado, painel `/admin/shopee` e cron diário
 - [ ] **Plano 04 — Deploy + cleanup:** Vercel, custom domain, smoke em produção, remoção da reference, polish (loading states, OG fonts)
 
 A spec viva está em `docs/superpowers/specs/2026-05-08-uni-bolsas-stack-migration-design.md`.

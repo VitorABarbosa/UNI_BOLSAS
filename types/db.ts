@@ -219,6 +219,8 @@ export type Database = {
         Row: {
           created_at: string
           currency: string
+          description: string | null
+          image_urls: string[]
           has_model: boolean
           id: string
           image_url: string | null
@@ -239,7 +241,9 @@ export type Database = {
         Insert: {
           created_at?: string
           currency?: string
+          description?: string | null
           has_model?: boolean
+          image_urls?: string[]
           id?: string
           image_url?: string | null
           item_id: number
@@ -259,7 +263,9 @@ export type Database = {
         Update: {
           created_at?: string
           currency?: string
+          description?: string | null
           has_model?: boolean
+          image_urls?: string[]
           id?: string
           image_url?: string | null
           item_id?: number
@@ -297,6 +303,8 @@ export type Database = {
         Row: {
           access_token: string
           authorized_at: string
+          auto_import: boolean
+          default_category_id: string | null
           expires_at: string
           last_sync_at: string | null
           last_sync_error: string | null
@@ -311,6 +319,8 @@ export type Database = {
         Insert: {
           access_token: string
           authorized_at?: string
+          auto_import?: boolean
+          default_category_id?: string | null
           expires_at: string
           last_sync_at?: string | null
           last_sync_error?: string | null
@@ -325,6 +335,8 @@ export type Database = {
         Update: {
           access_token?: string
           authorized_at?: string
+          auto_import?: boolean
+          default_category_id?: string | null
           expires_at?: string
           last_sync_at?: string | null
           last_sync_error?: string | null
@@ -336,7 +348,15 @@ export type Database = {
           shop_name?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "shopee_shops_default_category_id_fkey"
+            columns: ["default_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

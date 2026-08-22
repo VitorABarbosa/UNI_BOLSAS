@@ -21,7 +21,7 @@ export default async function ShopeePage({
 
   const shop = await getShopeeShop();
 
-  const [{ data: items }, { data: products }] = await Promise.all([
+  const [{ data: items }, { data: products }, { data: categories }] = await Promise.all([
     supabase
       .from('shopee_items')
       .select(
@@ -29,6 +29,7 @@ export default async function ShopeePage({
       )
       .order('item_name'),
     supabase.from('products').select('id, name, slug').order('name'),
+    supabase.from('categories').select('id, label').order('sort_order'),
   ]);
 
   return (
@@ -45,11 +46,14 @@ export default async function ShopeePage({
                 last_sync_at: shop.last_sync_at,
                 last_sync_error: shop.last_sync_error,
                 last_sync_item_count: shop.last_sync_item_count,
+                default_category_id: shop.default_category_id,
+                auto_import: shop.auto_import,
               }
             : null
         }
         items={items ?? []}
         products={products ?? []}
+        categories={categories ?? []}
         notice={{ connected: params.connected ?? null, error: params.error ?? null }}
       />
     </AdminShell>

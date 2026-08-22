@@ -6,6 +6,12 @@ import { requireAdmin } from '@/lib/auth/require-admin';
 import { syncShopeeCatalog, type SyncResult } from '@/lib/shopee/sync';
 import { disconnectShop } from '@/lib/shopee/tokens';
 import { ShopeeApiError } from '@/lib/shopee/client';
+import {
+  importShopeeItem,
+  ShopeeImportError,
+  type ImportResult,
+} from '@/lib/shopee/import';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 type ActionResult<T = void> =
   | { ok: true; data: T }
@@ -106,4 +112,117 @@ export async function disconnectShopeeShop(
   revalidatePath('/admin/shopee');
   revalidatePath('/');
   return { ok: true, data: undefined };
+}
+
+const ImportSchema = z.object({
+  itemRowId: z.string().uuid(),
+  categoryId: z.string().uuid(),
+});
+
+/** Creates a product from one Shopee item (photos included). */
+export async function importShopeeItemToCatalog(
+  input: z.infer<typeof ImportSchema>,
+): Promise<ActionResult<ImportResult>> {
+  await requireAdmin();
+  const parsed = ImportSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'Dados inválidos' };
+
+  try {
+    const result = await importShopeeItem(
+      parsed.data.itemRowId,
+      parsed.data.categoryId,
+    );
+    revalidateCatalog(result.slug);
+    return { ok: true, data: result };
+  } catch (err) {
+    if (err instanceof ShopeeImportError) return { ok: false, error: err.message };
+    console.error('[shopee] import falhou:', err);
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+const ImportAllSchema = z.object({ categoryId: z.string().uuid() });
+
+/**
+ * Imports every unlinked listing that is live on Shopee. Partial success is
+ * the normal outcome — the count of failures comes back so the panel can say
+ * so instead of pretending everything worked.
+ */
+export async function importAllShopeeItems(
+  input: z.infer<typeof ImportAllSchema>,
+): Promise<ActionResult<{ imported: number; failed: number }>> {
+  await requireAdmin();
+  const parsed = ImportAllSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'Dados inválidos' };
+
+  const supabase = createAdminClient();
+  const { data: items, error } = await supabase
+    .from('shopee_items')
+    .select('id')
+    .eq('item_status', 'NORMAL')
+    .is('product_id', null);
+
+  if (error) return { ok: false, error: error.message };
+  if (!items || items.length === 0) {
+    return { ok: false, error: 'Nenhum item pendente para importar' };
+  }
+
+  let imported = 0;
+  let failed = 0;
+  for (const item of items) {
+    try {
+      await importShopeeItem(item.id, parsed.data.categoryId);
+      imported += 1;
+    } catch (err) {
+      console.warn('[shopee] import em lote falhou para', item.id, err);
+      failed += 1;
+    }
+  }
+
+  revalidateCatalog();
+  return { ok: true, data: { imported, failed } };
+}
+
+const SettingsSchema = z.object({
+  shopId: z.number().int().positive(),
+  defaultCategoryId: z.string().uuid().nullable(),
+  autoImport: z.boolean(),
+});
+
+/** Where automatic imports land, and whether the cron may run them at all. */
+export async function updateShopeeImportSettings(
+  input: z.infer<typeof SettingsSchema>,
+): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = SettingsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'Dados inválidos' };
+
+  if (parsed.data.autoImport && !parsed.data.defaultCategoryId) {
+    return {
+      ok: false,
+      error: 'Escolha a categoria padrão antes de ligar a importação automática',
+    };
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from('shopee_shops')
+    .update({
+      default_category_id: parsed.data.defaultCategoryId,
+      auto_import: parsed.data.autoImport,
+    })
+    .eq('shop_id', parsed.data.shopId);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/admin/shopee');
+  return { ok: true, data: undefined };
+}
+
+/** The home lists the catalog; each PDP is its own ISR entry. */
+function revalidateCatalog(slug?: string) {
+  revalidatePath('/admin/shopee');
+  revalidatePath('/');
+  revalidatePath('/sitemap.xml');
+  if (slug) revalidatePath(`/produtos/${slug}`);
 }

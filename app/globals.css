@@ -20,7 +20,6 @@
   --color-black: #0A0A0A;
   --color-whatsapp: #25D366;
   --color-whatsapp-dark: #128C7E;
-  --color-shopee: #EE4D2D;
 
   --font-sans: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-fraunces), Georgia, serif;
@@ -1428,69 +1427,6 @@ html, body {
     color: var(--color-stone);
     text-align: center;
     margin: 0;
-  }
-
-  /* ---- Shopee (CTA secundário na PDP) ---- */
-  .uni-shopee {
-    margin-top: 14px;
-    border: 1px solid var(--color-whisper);
-    border-radius: 12px;
-    padding: 12px 14px;
-    background: var(--color-bone-light);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .uni-shopee-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-    flex: 1;
-  }
-  .uni-shopee-label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-stone);
-  }
-  .uni-shopee-price {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--color-ink);
-  }
-  .uni-shopee-stock {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    color: var(--color-stone);
-  }
-  .uni-shopee-stock.is-out {
-    color: var(--color-wine);
-  }
-  .uni-shopee-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border-radius: 999px;
-    padding: 9px 16px;
-    background: var(--color-shopee);
-    color: var(--color-pearl);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: filter 0.2s ease;
-    white-space: nowrap;
-  }
-  .uni-shopee-btn:hover {
-    filter: brightness(0.92);
-  }
-  .uni-shopee-btn.is-out {
-    background: transparent;
-    color: var(--color-stone);
-    border: 1px solid var(--color-whisper);
   }
 
   /* ---- Manifesto ---- */
