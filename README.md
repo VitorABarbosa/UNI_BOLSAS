@@ -73,8 +73,113 @@ Sem isso, o login até funciona, mas o proxy redireciona com `?error=unauthorize
 4. **Editar produto** (`/admin/produtos/[id]`): tabs Básico / Preço / Detalhes / SEO / Cores / Imagens. Cores e Imagens persistem **independentemente** (cada mudança grava na hora). Os outros tabs gravam só ao clicar em **Salvar** no rodapé.
 5. **Imagens**: drag-and-drop até 4 paralelos, 5MB por arquivo, formatos webp/jpg/png/svg. Cada cor cria uma tab própria + tab "Genéricas" sempre presente. Reorder por drag, click na thumb edita o `alt`.
 6. **Categorias** (`/admin/categorias`): tabela inline editável com reorder por drag e add inline no fim. Delete cascade com confirm que mostra quantos produtos serão apagados junto.
+7. **Importar planilha** (`/admin/importar`): sobe o `.xlsx`/`.csv` exportado da Shopee e cria os produtos (ver seção abaixo).
+8. **Shopee** (`/admin/shopee`): conectar/desconectar a loja, sincronizar e importar os anúncios da Shopee como produtos do site (ver seção abaixo).
 
 Mudanças refletem no site público em ≤5s via `revalidatePath` específico (a home, o sitemap, e cada PDP afetado).
+
+## Importar produtos por planilha
+
+Caminho mais curto para trazer o catálogo da Shopee sem depender da API:
+`/admin/importar`. Não precisa de app aprovado, chave, migration nem variável
+de ambiente — só estar logado no admin.
+
+### Com o export do Seller Center (caminho principal)
+
+No Seller Center: **Produtos → Editar em Massa → Baixar**, e gere os três
+modelos (deixe os filtros em "Todos"):
+
+| Modelo | O que traz |
+|---|---|
+| Informações básicas | nome e descrição |
+| Informações de Mídia | categoria da Shopee, foto de capa + até 8 fotos, e a foto de cada cor |
+| Informações de vendas | uma linha por variação, com preço e estoque |
+
+Em `/admin/importar`, selecione **os três de uma vez**. O leitor reconhece cada
+template pelo marcador interno (linha 2 da planilha), junta tudo pelo *ID do
+Produto* e mostra um resumo antes de criar qualquer coisa: quantos produtos,
+quantas fotos, quantos têm cor, quantos já existem no site.
+
+O que cada produto recebe:
+
+- **nome e descrição** do anúncio;
+- **preço** = a variação mais barata (o site mostra "a partir de");
+- **fotos** baixadas para o nosso Storage (nunca hotlink do CDN da Shopee);
+- **cores**: as variações que são realmente cor viram swatch, com a foto
+  daquela cor quando a Shopee tem uma. O hex vem de um vocabulário em
+  `lib/import/color-map.ts`; variação que não é cor (`kit com 2`, `01`, `02`)
+  é ignorada e aparece no relatório;
+- **tamanho**, quando o vendedor empacotou os dois no mesmo campo
+  (`Preto,grande`).
+
+A importação anda em **blocos de 5 produtos** com barra de progresso: um
+catálogo de 200 itens significa ~800 downloads de foto, muito além do que uma
+requisição aguenta. Nomes repetidos são descartados, e por padrão produtos que
+já existem no site são pulados.
+
+### Com qualquer outra planilha
+
+Se o arquivo não for um export da Shopee, a tela cai no modo genérico: você
+escolhe quais colunas são nome, descrição, preço e fotos, vê a prévia e
+importa. Aceita `.xlsx` e `.csv` (com `;` ou `,`), até 500 linhas.
+
+### Detalhes que evitam surpresa
+
+- **Formato das fotos** é detectado pelos bytes do arquivo, não pelo
+  `content-type` nem pela extensão — as URLs da Shopee não têm extensão.
+- **Preço** aceita `R$ 189,90`, `1.234,56` e `89.90`.
+- Foto que falhar no download é pulada com aviso no relatório, sem derrubar a
+  importação.
+- Depois de importar, revise em `/admin/produtos`: os textos da Shopee vêm
+  cheios de palavra-chave, e as cores que não foram reconhecidas precisam ser
+  cadastradas à mão.
+
+## Integração Shopee (Shopee → catálogo do site)
+
+A Shopee é usada como **fonte do catálogo**: o que está listado lá vira produto
+aqui — com nome, descrição, preço e as fotos copiadas para o nosso Storage. A
+venda continua sendo pelo WhatsApp, como no resto do site; **não há botão de
+comprar na Shopee**, porque o site é vitrine.
+
+**1. Criar o app na Shopee.** Em [open.shopee.com](https://open.shopee.com),
+com CNPJ ativo, crie o app e anote `partner_id` + `partner_key` (Console App →
+App Detail). Cadastre o redirect `https://unibolsas.store/api/shopee/callback`
+(e o de `localhost` para testar).
+
+**2. Preencher as envs** (`.env.local` e Vercel → Settings → Environment
+Variables): `SHOPEE_PARTNER_ID`, `SHOPEE_PARTNER_KEY`, `SHOPEE_REGION=br`,
+`CRON_SECRET`. Ver `.env.example`.
+
+**3. Aplicar as migrations** `20260822000000_shopee_integration.sql` e
+`20260822000001_shopee_import.sql`, depois regerar os tipos com `pnpm db:types`.
+
+**4. Conectar a loja.** `/admin/shopee` → **Conectar loja Shopee** → autorizar
+com a conta vendedora. O callback grava o par de tokens.
+
+**5. Importar.** Escolha a **categoria dos importados**, clique em
+**Sincronizar agora** e depois em **Importar pendentes** (ou importe item a
+item). Ligando **Importar itens novos automaticamente**, o cron diário passa a
+criar sozinho os produtos que aparecerem na Shopee — até 25 por execução.
+
+### O que a importação faz (e o que não faz)
+
+| Campo | De onde vem |
+|---|---|
+| Nome, descrição | Do anúncio da Shopee |
+| Preço de varejo | Do anúncio, e **continua sincronizado** a cada sync |
+| Fotos | Baixadas do CDN da Shopee para o bucket `products` (até 9, 5MB cada) |
+| Slug, ordem | Gerados aqui (slug único a partir do nome) |
+| Categoria | A escolhida no painel |
+| **Cores e tamanhos** | **Não importados** — a Shopee não dá o hex das cores e as variações não mapeiam 1:1 nos nossos `sizes`. Preencher no form do produto. |
+
+Itens que somem da Shopee (despublicados, banidos) são marcados como
+`GONE` no painel, mas **o produto continua ativo no site** — vocês seguem
+vendendo por WhatsApp. Desconectar a loja também não apaga nada do catálogo:
+só interrompe a atualização de preço e a entrada de novidades.
+
+Um item também pode ser vinculado a um produto que já existia (em vez de criar
+outro): automaticamente quando os nomes batem, ou pelo select da tabela. A
+relação é 1:1.
 
 ## Layout do projeto
 
@@ -84,6 +189,10 @@ app/
   globals.css                      # Tailwind v4 + tokens + 1500+ linhas de uni-* @layer components
   robots.ts                        # /robots.txt
   sitemap.ts                       # /sitemap.xml (landing + 5 PDPs)
+  api/shopee/
+    authorize/route.ts             # redirect p/ a tela de autorização da Shopee
+    callback/route.ts              # troca o code pelo par de tokens
+    sync/route.ts                  # cron diário (Bearer CRON_SECRET)
   (public)/
     layout.tsx                     # casca: PromoStrip, Header, Footer, FloatingWA
     page.tsx                       # landing single-page (RSC + ISR 60s)
@@ -113,6 +222,12 @@ lib/
   seo.ts                           # SITE_URL, SITE_NAME
   whatsapp.ts                      # waLink, waProduct, waGeneral, waWholesale, waRetail, waNewsletter
   product-images.ts                # galleryImages, cardCoverImage, productHasColor
+  catalog/create-product.ts        # cria produto + copia fotos (usado pelos 2 importadores)
+  import/                          # sheet.ts (.xlsx/.csv genérico), shopee-export.ts
+                                   # (templates do Seller Center), color-map.ts, columns.ts
+  shopee/                          # server-only: config, assinatura HMAC, tokens,
+                                   # catalog.ts (leitura), import.ts (item -> produto)
+                                   # e sync.ts (orquestra tudo)
   content/                         # FAQ, TIMELINE, TESTIMONIALS, STORE, CREDIBILITY, PROMO, COLOR_PALETTE
   queries/                         # listActiveProducts, getProductBySlug, listRelatedProducts, listProductSlugs
   supabase/
@@ -141,6 +256,8 @@ docs/superpowers/                  # plans + specs da migração
 - [x] **Plano 01 — Foundation:** scaffold Next.js + Tailwind + shadcn, projeto Supabase, schema com RLS, Storage com policies, seed dos 5 produtos, smoke test, primeiro admin
 - [x] **Plano 02 — Public site:** landing single-page, PDP `/produtos/[slug]`, sitemap, robots, OG images dinâmicas
 - [x] **Plano 03 — Admin:** auth via JWT claim `is_admin`, shell admin, CRUD de produtos com upload drag-and-drop e editor de cores, CRUD de categorias com cascade delete
+- [x] **Importador de planilha:** `/admin/importar` — export do Seller Center (básicas + mídia + vendas) → produtos com fotos e cores, sem depender da API
+- [x] **Integração Shopee (Shopee → catálogo):** OAuth da loja, mirror em `shopee_items`, importação do item como produto (fotos incluídas), preço sempre sincronizado, painel `/admin/shopee` e cron diário
 - [ ] **Plano 04 — Deploy + cleanup:** Vercel, custom domain, smoke em produção, remoção da reference, polish (loading states, OG fonts)
 
 A spec viva está em `docs/superpowers/specs/2026-05-08-uni-bolsas-stack-migration-design.md`.
