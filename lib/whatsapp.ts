@@ -1,4 +1,5 @@
 import { WHATSAPP_NUMBER } from '@/lib/tokens';
+import { productPrice, type ShopeePricing } from '@/lib/product-price';
 import type { Database } from '@/types/db';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -9,15 +10,18 @@ export function waLink(message: string): string {
 }
 
 export function waProduct(
-  product: Pick<ProductRow, 'name' | 'price_retail'>,
+  product: Pick<ProductRow, 'name' | 'price_retail'> & { shopee?: ShopeePricing },
   color: Pick<ColorRow, 'name'> | null,
   size?: string,
 ): string {
   const colorPart = color ? ` na cor ${color.name}` : '';
   const sizePart = size ? ` tamanho ${size}` : '';
+  // A mensagem cita o preço que a pessoa viu na tela: quem clicou vendo o
+  // promocional não deve chegar no atendimento com o preço cheio.
+  const price = productPrice(product);
   const priceMsg =
     product.price_retail != null
-      ? ` (R$ ${product.price_retail.toFixed(2).replace('.', ',')})`
+      ? ` (${price.currentLabel}${price.isPromo ? ' — promoção' : ''})`
       : '';
   return waLink(
     `Olá! Tenho interesse na ${product.name}${colorPart}${sizePart}${priceMsg}. Está disponível?`,

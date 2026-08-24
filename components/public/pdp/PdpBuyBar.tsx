@@ -1,7 +1,7 @@
 'use client';
 
 import { WhatsAppIcon } from '@/components/public/icons';
-import { formatPriceBRL } from '@/lib/format';
+import { productPrice, type ShopeePricing } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
 import type { Database } from '@/types/db';
 
@@ -9,7 +9,7 @@ type ProductRow = Database['public']['Tables']['products']['Row'];
 type ColorRow = Database['public']['Tables']['product_colors']['Row'];
 
 type PdpBuyBarProps = {
-  product: Pick<ProductRow, 'name' | 'price_retail'>;
+  product: Pick<ProductRow, 'name' | 'price_retail'> & { shopee?: ShopeePricing };
   color: Pick<ColorRow, 'name'> | null;
   size?: string;
 };
@@ -22,13 +22,20 @@ type PdpBuyBarProps = {
  * botão. Aqui o preço e o "pedir" acompanham a rolagem.
  */
 export function PdpBuyBar({ product, color, size }: PdpBuyBarProps) {
+  const price = productPrice(product);
   return (
     <div className="uni-pdp-buybar">
       <div className="uni-pdp-buybar-price">
         <span className="uni-pdp-buybar-label">
-          {color?.name ? `Cor ${color.name}` : 'A partir de'}
+          {price.isPromo
+            ? `${price.originalLabel} · -${price.discountPct}%`
+            : color?.name
+              ? `Cor ${color.name}`
+              : 'A partir de'}
         </span>
-        <strong>{formatPriceBRL(product.price_retail)}</strong>
+        <strong className={price.isPromo ? 'is-promo' : undefined}>
+          {price.currentLabel}
+        </strong>
       </div>
       <a
         className="uni-pdp-buybar-cta"
