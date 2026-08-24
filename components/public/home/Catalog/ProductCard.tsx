@@ -6,6 +6,7 @@ import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { cardCoverImage, galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
+import { productPrice } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
 
 type ProductCardProps = {
@@ -93,6 +94,7 @@ export function ProductCard({
     setImgIdx(0);
   };
 
+  const price = productPrice(product);
   const selectedImages = galleryImages(product, selected);
   const showArrows = product.colors.length > 1 && !previewing;
   const categorySlug = product.category?.slug ?? 'todos';
@@ -123,10 +125,16 @@ export function ProductCard({
         }}
         aria-label={`Ver detalhes ${product.name} cor ${activeColor?.name ?? ''}`}
       >
-        {product.badge && (
-          <div className={`uni-card-badge cat-${categorySlug}`}>
-            {product.badge}
-          </div>
+        {/* O selo de desconto tem prioridade sobre o badge editorial: é o que
+            muda a decisão de quem está passando o olho pelo grid. */}
+        {price.isPromo ? (
+          <div className="uni-card-badge is-promo">-{price.discountPct}%</div>
+        ) : (
+          product.badge && (
+            <div className={`uni-card-badge cat-${categorySlug}`}>
+              {product.badge}
+            </div>
+          )
         )}
         {hasAnyImage &&
           layers.map(({ key, img }, i) =>
@@ -238,7 +246,10 @@ export function ProductCard({
             {product.name}
           </h3>
           <div className="uni-card-price">
-            R$ {product.price_retail.toFixed(2).replace('.', ',')}
+            {price.currentLabel}
+            {price.originalLabel && (
+              <s className="uni-card-price-was">{price.originalLabel}</s>
+            )}
           </div>
           {product.price_wholesale && (
             <div className="uni-card-price-wholesale">

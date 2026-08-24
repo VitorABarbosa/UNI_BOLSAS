@@ -2,7 +2,7 @@ import Image from 'next/image';
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { cardCoverImage } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
-import { formatPriceBRL } from '@/lib/format';
+import { productPrice } from '@/lib/product-price';
 
 type RelatedProductsProps = {
   products: ProductWithRelations[];
@@ -44,7 +44,7 @@ export function RelatedProducts({ products }: RelatedProductsProps) {
                 </div>
                 <div className="uni-pdp-related-name">{p.name}</div>
                 <div className="uni-pdp-related-price">
-                  {formatPriceBRL(p.price_retail)}
+                  {productPrice(p).currentLabel}
                 </div>
               </a>
             );

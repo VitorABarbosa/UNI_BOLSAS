@@ -271,14 +271,29 @@ async function importUnlinkedItems(
 
 /**
  * Shopee is the price of record for linked products: whatever the listing
- * charges is what the site quotes. Only differing prices are written, so the
- * `updated_at` trigger doesn't fire for every product on every run.
+ * charges is what the site quotes.
+ *
+ * A Shopee devolve dois valores: `price` é o que o cliente paga hoje (já com
+ * a promoção da loja aplicada) e `original_price` é o preço cheio. Antes só o
+ * `price` era gravado, em `price_retail` — o site mostrava o valor
+ * promocional como se fosse o normal e o desconto se perdia. Agora, quando há
+ * diferença entre os dois, o cheio vai pro `price_retail` e o vigente pro
+ * `price_promo`, e o site ganha o "de/por" sozinho.
+ *
+ * Promoções da Shopee não têm prazo conhecido aqui, então `promo_ends_at`
+ * fica nulo: quem encerra é o próprio sync, no dia em que a Shopee voltar a
+ * cobrar o preço cheio.
+ *
+ * Só o que mudou é escrito, pro trigger de `updated_at` não disparar em todo
+ * produto a cada rodada.
  */
 async function pushPricesToProducts(shopId: number): Promise<number> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('shopee_items')
-    .select('price, product:products(id, price_retail)')
+    .select(
+      'price, original_price, product:products(id, price_retail, price_promo)',
+    )
     .eq('shop_id', shopId)
     .not('product_id', 'is', null)
     .not('price', 'is', null);
@@ -287,13 +302,29 @@ async function pushPricesToProducts(shopId: number): Promise<number> {
 
   let updated = 0;
   for (const row of data ?? []) {
-    const product = row.product as { id: string; price_retail: number } | null;
+    const product = row.product as {
+      id: string;
+      price_retail: number;
+      price_promo: number | null;
+    } | null;
     if (!product || row.price === null) continue;
-    if (Number(product.price_retail) === Number(row.price)) continue;
+
+    const current = Number(row.price);
+    const original = row.original_price === null ? null : Number(row.original_price);
+    const hasDiscount = original !== null && original > current;
+
+    const nextRetail = hasDiscount ? original : current;
+    const nextPromo = hasDiscount ? current : null;
+
+    const sameRetail = Number(product.price_retail) === nextRetail;
+    const samePromo =
+      (product.price_promo === null ? null : Number(product.price_promo)) ===
+      nextPromo;
+    if (sameRetail && samePromo) continue;
 
     const { error: updateError } = await supabase
       .from('products')
-      .update({ price_retail: row.price })
+      .update({ price_retail: nextRetail, price_promo: nextPromo })
       .eq('id', product.id);
     if (updateError) {
       console.warn(`[shopee] preço não atualizado para ${product.id}:`, updateError.message);
