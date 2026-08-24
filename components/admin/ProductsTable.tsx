@@ -32,8 +32,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ConfirmDialog } from './ConfirmDialog';
-import { BulkPromoBar } from './BulkPromoBar';
-import { productPrice } from '@/lib/product-price';
 import { deleteProduct } from '@/app/admin/_actions/products';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 
@@ -47,14 +45,7 @@ export type ProductListRow = {
   category_label: string;
   image_count: number;
   cover_storage_path: string | null;
-  color_count: number;
-  price_retail: number;
-  price_promo: number | null;
-  promo_ends_at: string | null;
 };
-
-/** Filtros de saúde do catálogo — os problemas que a importação em massa deixa. */
-type HealthFilter = 'all' | 'no_image' | 'no_color' | 'on_promo';
 
 type SortKey = 'sort_order' | 'name';
 
@@ -70,8 +61,6 @@ export function ProductsTable({
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterCat, setFilterCat] = useState<string>('all');
   const [onlyActive, setOnlyActive] = useState(false);
-  const [health, setHealth] = useState<HealthFilter>('all');
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>('sort_order');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [confirm, setConfirm] = useState<{
@@ -98,9 +87,6 @@ export function ProductsTable({
         return false;
       if (filterCat !== 'all' && p.category_id !== filterCat) return false;
       if (onlyActive && !p.active) return false;
-      if (health === 'no_image' && p.image_count > 0) return false;
-      if (health === 'no_color' && p.color_count > 0) return false;
-      if (health === 'on_promo' && !productPrice(p).isPromo) return false;
       return true;
     });
     r = [...r].sort((a, b) => {
@@ -111,28 +97,7 @@ export function ProductsTable({
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return r;
-  }, [initial, debouncedSearch, filterCat, onlyActive, health, sortKey, sortDir]);
-
-  const allShownSelected =
-    rows.length > 0 && rows.every((r) => selected.has(r.id));
-
-  const toggleAllShown = () => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (allShownSelected) rows.forEach((r) => next.delete(r.id));
-      else rows.forEach((r) => next.add(r.id));
-      return next;
-    });
-  };
-
-  const toggleOne = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  }, [initial, debouncedSearch, filterCat, onlyActive, sortKey, sortDir]);
 
   const performDelete = async () => {
     if (!confirm) return;
@@ -177,17 +142,6 @@ export function ProductsTable({
             ))}
           </SelectContent>
         </Select>
-        <Select value={health} onValueChange={(v) => setHealth(v as HealthFilter)}>
-          <SelectTrigger className="max-w-[190px]">
-            <SelectValue placeholder="Situação" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os produtos</SelectItem>
-            <SelectItem value="no_image">Sem foto</SelectItem>
-            <SelectItem value="no_color">Sem cor cadastrada</SelectItem>
-            <SelectItem value="on_promo">Em promoção</SelectItem>
-          </SelectContent>
-        </Select>
         <label className="flex items-center gap-2 text-sm text-stone">
           <Switch checked={onlyActive} onCheckedChange={setOnlyActive} />
           Só ativos
@@ -202,26 +156,9 @@ export function ProductsTable({
         </div>
       </div>
 
-      {selected.size > 0 && (
-        <BulkPromoBar
-          ids={[...selected]}
-          categories={categories}
-          onDone={() => setSelected(new Set())}
-        />
-      )}
-
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[36px]">
-              <input
-                type="checkbox"
-                aria-label="Selecionar todos os produtos filtrados"
-                checked={allShownSelected}
-                onChange={toggleAllShown}
-                className="h-4 w-4 cursor-pointer accent-ink"
-              />
-            </TableHead>
             <TableHead className="w-[60px]">Capa</TableHead>
             <TableHead>
               <button
@@ -234,7 +171,6 @@ export function ProductsTable({
             </TableHead>
             <TableHead>Slug</TableHead>
             <TableHead>Categoria</TableHead>
-            <TableHead>Preço</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>
               <button
@@ -252,22 +188,13 @@ export function ProductsTable({
         <TableBody>
           {rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={10} className="py-10 text-center text-sm text-stone">
+              <TableCell colSpan={8} className="py-10 text-center text-sm text-stone">
                 Nenhum produto encontrado.
               </TableCell>
             </TableRow>
           ) : (
             rows.map((row) => (
-              <TableRow key={row.id} data-selected={selected.has(row.id)}>
-                <TableCell>
-                  <input
-                    type="checkbox"
-                    aria-label={`Selecionar ${row.name}`}
-                    checked={selected.has(row.id)}
-                    onChange={() => toggleOne(row.id)}
-                    className="h-4 w-4 cursor-pointer accent-ink"
-                  />
-                </TableCell>
+              <TableRow key={row.id}>
                 <TableCell>
                   <div className="relative h-10 w-10 overflow-hidden rounded-sm bg-whisper">
                     {row.cover_storage_path && (
@@ -293,22 +220,6 @@ export function ProductsTable({
                   {row.slug}
                 </TableCell>
                 <TableCell className="text-sm">{row.category_label}</TableCell>
-                <TableCell className="whitespace-nowrap text-sm">
-                  {(() => {
-                    const price = productPrice(row);
-                    return price.isPromo ? (
-                      <span className="flex items-center gap-1.5">
-                        <span className="font-medium text-wine">
-                          {price.currentLabel}
-                        </span>
-                        <s className="text-xs text-stone">{price.originalLabel}</s>
-                        <Badge variant="secondary">-{price.discountPct}%</Badge>
-                      </span>
-                    ) : (
-                      <span className="text-ink">{price.currentLabel}</span>
-                    );
-                  })()}
-                </TableCell>
                 <TableCell>
                   <Badge variant={row.active ? 'default' : 'secondary'}>
                     {row.active ? 'Ativo' : 'Inativo'}

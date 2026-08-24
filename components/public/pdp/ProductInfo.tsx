@@ -4,7 +4,7 @@ import type { ProductWithRelations } from '@/lib/queries/products';
 import { ColorSwatches } from './ColorSwatches';
 import { SizePicker } from './SizePicker';
 import { PdpWhatsAppCTA } from './PdpWhatsAppCTA';
-import { productPrice } from '@/lib/product-price';
+import { formatPriceBRL } from '@/lib/format';
 
 type ProductInfoProps = {
   product: ProductWithRelations;
@@ -22,7 +22,6 @@ export function ProductInfo({
   onSizeChange,
 }: ProductInfoProps) {
   const color = product.colors[colorIdx] ?? product.colors[0] ?? null;
-  const price = productPrice(product);
   const sizeForWa =
     product.sizes && product.sizes.length > 1
       ? product.sizes[sizeIdx]
@@ -41,13 +40,9 @@ export function ProductInfo({
       </div>
       <h1 className="uni-pdp-name">{product.name}</h1>
       <div className="uni-qv-price-row">
-        <span className="uni-qv-price">{price.currentLabel}</span>
-        {price.originalLabel && (
-          <>
-            <s className="uni-qv-price-was">{price.originalLabel}</s>
-            <span className="uni-qv-price-off">-{price.discountPct}%</span>
-          </>
-        )}
+        <span className="uni-qv-price">
+          {formatPriceBRL(product.price_retail)}
+        </span>
         {product.price_wholesale && (
           <span className="uni-qv-price-w">
             Atacado · {product.price_wholesale}
