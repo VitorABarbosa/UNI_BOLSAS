@@ -72,6 +72,27 @@ As famílias tipográficas vêm dos tokens `--font-sans` / `--font-serif` /
 `next/font` registra a fonte com um nome com hash, e o nome literal cai no
 fallback do sistema.
 
+## Promoções
+
+O site não guarda preço promocional próprio: o "de/por" vem do espelho da
+Shopee. A tabela `shopee_items` (integração já existente) tem `price` — o que
+a Shopee cobra hoje, já com a promoção aplicada — e `original_price`, o preço
+cheio. Quando o segundo é maior que o primeiro, o produto aparece em promoção.
+
+Para colocar uma peça em promoção, **crie a promoção na Shopee**: o cron
+diário sincroniza e o site mostra sozinho. Produto sem anúncio vinculado nunca
+entra em promoção — não há como marcá-la só pelo site.
+
+A regra vive em `lib/product-price.ts` e é usada por card, quick view, PDP e
+pela mensagem do WhatsApp. Descontos abaixo de 3% são ignorados: viram ruído
+visual em vez de argumento de venda.
+
+**As consultas toleram a ausência do espelho.** Cada uma tenta ler
+`shopee_items` e, se falhar (integração não aplicada no projeto, por
+exemplo), repete sem esse trecho. O pior caso é "a promoção não aparece",
+nunca "a página não carrega" — regra que vale para qualquer coisa nova que
+dependa de uma tabela.
+
 ## Cadastrar um admin
 
 ```powershell
