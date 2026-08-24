@@ -11,6 +11,8 @@ type ProductPhotoProps = {
   loading?: 'lazy' | 'eager';
   /** Aplicado só na foto de cima (o parallax do card, por exemplo). */
   style?: React.CSSProperties;
+  /** Passa direto pro `next/image` de cima. */
+  fetchPriority?: 'high' | 'low' | 'auto';
 };
 
 /**
@@ -32,6 +34,7 @@ export function ProductPhoto({
   priority,
   loading,
   style,
+  fetchPriority,
 }: ProductPhotoProps) {
   return (
     <>
@@ -44,6 +47,7 @@ export function ProductPhoto({
         sizes={sizes}
         priority={priority}
         loading={loading}
+        fetchPriority={fetchPriority}
       />
       <Image
         src={src}
@@ -53,6 +57,7 @@ export function ProductPhoto({
         sizes={sizes}
         priority={priority}
         loading={loading}
+        fetchPriority={fetchPriority}
         style={style}
       />
     </>

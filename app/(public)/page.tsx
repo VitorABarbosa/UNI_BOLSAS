@@ -47,8 +47,8 @@ export default async function HomePage() {
         products={products}
         categories={categoriesWithTodos}
       />
-      <CredibilityStrip />
       <WholesaleVsRetail />
+      <CredibilityStrip />
       <Social />
       <FAQSection />
       <Location />

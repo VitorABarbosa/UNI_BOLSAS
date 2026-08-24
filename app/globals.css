@@ -805,7 +805,7 @@ html, body {
   }
 
   /* ---- Wholesale vs retail ---- */
-  .uni-wsr { background: var(--color-bone-light); }
+  .uni-wsr { background: var(--color-bone); }
   .uni-wsr-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2156,6 +2156,17 @@ html, body {
   letter-spacing: 0.04em;
 }
 
+/* Camadas de cor do card: trocar de cor é só um crossfade entre camadas que
+   já estão baixadas, em vez de esperar a foto nova chegar da rede. */
+.uni-card-photo-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  pointer-events: none;
+}
+.uni-card-photo-layer.is-active { opacity: 1; }
+
 /* ---- Foto de produto (ProductPhoto) ----
    A foto entra inteira e o que sobra do quadro é preenchido por uma cópia
    desfocada dela mesma. Foto já quadrada cobre tudo e o fundo nem aparece. */
@@ -2201,6 +2212,33 @@ html {
 /* `clip` em vez de `hidden`: corta o estouro horizontal (hero full-bleed) sem
    quebrar o `position: sticky` do header, que `overflow: hidden` quebraria. */
 body { overflow-x: clip; }
+
+/* Arrastar pro lado no mobile levava pra fora da página: o gesto escapava dos
+   trilhos horizontais e virava o "voltar" do navegador. Aqui o eixo X para de
+   encadear com o histórico; o Y segue normal (pull-to-refresh preservado). */
+html, body { overscroll-behavior-x: none; }
+
+/* Trilhos e galerias contêm o próprio arrasto em vez de repassá-lo à página. */
+.uni-cat-filter,
+.uni-color-filter,
+.uni-qv-thumbs,
+.uni-qv-stage,
+.uni-pdp-stage {
+  overscroll-behavior-x: contain;
+}
+
+/* O carrossel do hero interpreta o arrasto por conta própria (troca de slide):
+   o navegador só cuida da rolagem vertical ali. */
+.uni-carousel { touch-action: pan-y; }
+
+/* Arrastar uma foto não deve "descolar" a imagem nem selecionar texto junto. */
+.uni-photo,
+.uni-photo-backdrop,
+.uni-carousel-img,
+.uni-logo-mark {
+  -webkit-user-drag: none;
+  user-select: none;
+}
 
 /* Itens de grid têm `min-width: auto` por padrão: um filho que não quebra
    linha (o preço, o rótulo do botão) empurra a coluna além de 1fr e o grid
