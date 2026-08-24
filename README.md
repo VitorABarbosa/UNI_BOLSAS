@@ -72,30 +72,6 @@ As famílias tipográficas vêm dos tokens `--font-sans` / `--font-serif` /
 `next/font` registra a fonte com um nome com hash, e o nome literal cai no
 fallback do sistema.
 
-## Promoções
-
-`products` tem dois campos de promoção, aplicados pela migration
-`20260824000000_product_promo.sql`:
-
-| campo | papel |
-|---|---|
-| `price_retail` | preço cheio — o "de" riscado quando há promoção |
-| `price_promo` | preço vigente — o "por". NULL = sem promoção |
-| `promo_ends_at` | fim opcional. Passada a data, o site volta sozinho ao cheio |
-
-A promoção está ativa quando `price_promo` existe, é menor que `price_retail`
-e o prazo não passou — regra única em `lib/product-price.ts`, usada por card,
-quick view, PDP e pela mensagem do WhatsApp. Como as páginas revalidam a cada
-minuto, promoção vencida some sem ninguém precisar apagar o campo.
-
-No admin dá pra aplicar produto a produto (aba Preços) ou em massa: selecione
-as linhas na lista e use a barra que aparece (desconto percentual, preço fixo,
-remover promoção, publicar/despublicar, mover de categoria).
-
-**Shopee:** o sync trata `original_price` como preço cheio e `price` como
-promocional. Enquanto a loja estiver conectada, as promoções da Shopee viram
-"de/por" no site sozinhas, todo dia, pelo cron.
-
 ## Cadastrar um admin
 
 ```powershell

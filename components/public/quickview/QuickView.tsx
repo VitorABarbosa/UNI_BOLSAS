@@ -8,7 +8,6 @@ import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
-import { productPrice } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
 
 type QuickViewProps = {
@@ -33,7 +32,6 @@ export function QuickView({
 
   const color = product.colors[colorIdx] ?? product.colors[0] ?? null;
   const images = galleryImages(product, color);
-  const price = productPrice(product);
 
   useEffect(() => {
     setImgIdx(0);
@@ -175,15 +173,9 @@ export function QuickView({
           </div>
           <h2 className="uni-qv-name">{product.name}</h2>
           <div className="uni-qv-price-row">
-            <span className="uni-qv-price">{price.currentLabel}</span>
-            {price.originalLabel && (
-              <>
-                <s className="uni-qv-price-was">{price.originalLabel}</s>
-                <span className="uni-qv-price-off">
-                  -{price.discountPct}%
-                </span>
-              </>
-            )}
+            <span className="uni-qv-price">
+              R$ {product.price_retail.toFixed(2).replace('.', ',')}
+            </span>
             {product.price_wholesale && (
               <span className="uni-qv-price-w">
                 Atacado · {product.price_wholesale}
@@ -256,7 +248,8 @@ export function QuickView({
           )}
           <div className="uni-qv-cta">
             <WhatsAppButton href={waProduct(product, color, sizeForWa)} full>
-              Pedir no WhatsApp · {price.currentLabel}
+              Pedir no WhatsApp · R${' '}
+              {product.price_retail.toFixed(2).replace('.', ',')}
             </WhatsAppButton>
             <p className="uni-qv-cta-note">
               Atendimento humano · respondemos em até 5min

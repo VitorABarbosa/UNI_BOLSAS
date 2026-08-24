@@ -152,10 +152,8 @@ export type Database = {
           id: string
           material: string | null
           name: string
-          price_promo: number | null
           price_retail: number
           price_wholesale: string | null
-          promo_ends_at: string | null
           seo_description: string | null
           seo_title: string | null
           sizes: string[]
@@ -175,10 +173,8 @@ export type Database = {
           id?: string
           material?: string | null
           name: string
-          price_promo?: number | null
           price_retail: number
           price_wholesale?: string | null
-          promo_ends_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
           sizes?: string[]
@@ -198,10 +194,8 @@ export type Database = {
           id?: string
           material?: string | null
           name?: string
-          price_promo?: number | null
           price_retail?: number
           price_wholesale?: string | null
-          promo_ends_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
           sizes?: string[]
