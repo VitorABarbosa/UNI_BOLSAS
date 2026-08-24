@@ -18,7 +18,9 @@ export function Footer() {
             <p className="uni-footer-blurb">
               Bolsas, mochilas e malas. Atacado e varejo direto do nosso stand
               no Shopping 900, Brás · SP.{' '}
-              <span style={{ color: TOKENS.caramel }}>Desde 2014.</span>
+              <span style={{ color: TOKENS.caramel }}>
+                Há mais de 25 anos no Brás.
+              </span>
             </p>
           </div>
           <div>

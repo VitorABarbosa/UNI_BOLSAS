@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 import { ArrowIcon, WhatsAppIcon } from '@/components/public/icons';
+import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
 import type { ProductWithRelations } from '@/lib/queries/products';
-import { galleryImages } from '@/lib/product-images';
+import { cardCoverImage, galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { waProduct } from '@/lib/whatsapp';
 
@@ -46,10 +46,27 @@ export function ProductCard({
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
 
   const activeImages = galleryImages(product, activeColor);
-  const baseImg =
-    activeImages[Math.min(imgIdx, activeImages.length - 1)] ??
-    activeImages[0] ??
-    null;
+  const activeColorIdx = previewColorIdx ?? selectedColorIdx;
+
+  /**
+   * Uma camada por cor, todas montadas e sobrepostas.
+   *
+   * Antes só a cor ativa existia no DOM: trocar de cor trocava o `src` e a
+   * foto nova só então começava a baixar — daí a demora até a imagem
+   * aparecer. Agora a troca é só opacidade, e é instantânea. As camadas
+   * inativas ficam em `loading="lazy"` com prioridade baixa, então o
+   * navegador só busca as cores dos cards que chegaram perto da tela.
+   */
+  const layers = product.colors.map((color, i) => {
+    const images = galleryImages(product, color);
+    // Só a cor ativa acompanha a troca de foto do hover (desktop).
+    const img =
+      i === activeColorIdx
+        ? images[Math.min(imgIdx, images.length - 1)] ?? images[0]
+        : cardCoverImage(product, color);
+    return { color, img };
+  });
+  const hasAnyImage = layers.some((l) => l.img != null);
 
   const onMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     // Ponteiro grosso (dedo) não tem parallax — só gastaria render no mobile.
@@ -99,20 +116,32 @@ export function ProductCard({
             {product.badge}
           </div>
         )}
-        {baseImg && (
-          <Image
-            src={publicImageUrl(baseImg.storage_path)}
-            alt={baseImg.alt}
-            className="uni-card-img"
-            fill
-            sizes={CARD_SIZES}
-            // O catálogo nunca é a primeira dobra: tudo entra sob demanda.
-            loading="lazy"
-            style={{
-              transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0) scale(1.02)`,
-            }}
-          />
-        )}
+        {hasAnyImage &&
+          layers.map(({ color, img }, i) =>
+            img ? (
+              <div
+                key={color.id}
+                className={
+                  'uni-card-photo-layer ' +
+                  (i === activeColorIdx ? 'is-active' : '')
+                }
+                aria-hidden={i !== activeColorIdx}
+              >
+                <ProductPhoto
+                  src={publicImageUrl(img.storage_path)}
+                  alt={i === activeColorIdx ? img.alt : ''}
+                  className="uni-card-img"
+                  sizes={CARD_SIZES}
+                  // O catálogo nunca é a primeira dobra: tudo entra sob demanda.
+                  loading="lazy"
+                  fetchPriority={i === activeColorIdx ? 'auto' : 'low'}
+                  style={{
+                    transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0) scale(1.02)`,
+                  }}
+                />
+              </div>
+            ) : null,
+          )}
         {showArrows && (
           <>
             <button
@@ -184,10 +213,21 @@ export function ProductCard({
       </div>
       <div className="uni-card-body">
         <div className="uni-card-head-row">
-          <h3 className="uni-card-name">{product.name}</h3>
+          {/* Títulos vindos da Shopee são longos ("Bolsa Feminina Transversal
+              Couro PU Alça Ajustável..."); o CSS corta em 2 linhas para o
+              preço nunca ser empurrado pra fora do card. O nome completo
+              continua no quick view e na página do produto. */}
+          <h3 className="uni-card-name" title={product.name}>
+            {product.name}
+          </h3>
           <div className="uni-card-price">
             R$ {product.price_retail.toFixed(2).replace('.', ',')}
           </div>
+          {product.price_wholesale && (
+            <div className="uni-card-price-wholesale">
+              Atacado · {product.price_wholesale}
+            </div>
+          )}
         </div>
         {product.tagline && (
           <p className="uni-card-tagline">{product.tagline}</p>

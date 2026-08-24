@@ -759,9 +759,7 @@ html, body {
 
   /* ---- Credibility strip ---- */
   .uni-cred {
-    background: var(--color-bone-light);
-    border-top: 1px solid var(--color-whisper);
-    border-bottom: 1px solid var(--color-whisper);
+    background: var(--color-ink);
     padding: 56px 0;
   }
   .uni-cred-grid {
@@ -773,7 +771,7 @@ html, body {
   .uni-cred-cell {
     text-align: center;
     padding: 0 24px;
-    border-right: 1px solid var(--color-whisper);
+    border-right: 1px solid var(--color-charcoal);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -785,7 +783,7 @@ html, body {
     font-style: italic;
     font-size: clamp(40px, 4.5vw, 56px);
     line-height: 1;
-    color: var(--color-ink);
+    color: var(--color-bone);
     letter-spacing: -0.03em;
     font-weight: 400;
   }
@@ -794,14 +792,14 @@ html, body {
     font-style: normal;
     font-size: 0.6em;
     margin-left: 2px;
-    color: var(--color-leather-dark);
+    color: var(--color-caramel);
   }
   .uni-cred-label {
     font-family: var(--font-sans);
     font-size: 10px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
-    color: var(--color-stone);
+    color: var(--color-whisper);
     max-width: 180px;
     line-height: 1.5;
   }
@@ -883,7 +881,7 @@ html, body {
   }
 
   /* ---- Catalog ---- */
-  .uni-catalog { background: var(--color-bone); }
+  .uni-catalog { background: var(--color-bone-light); }
   .uni-color-filter {
     display: flex;
     align-items: center;
@@ -991,7 +989,7 @@ html, body {
     display: block;
     aspect-ratio: 1 / 1;
     overflow: hidden;
-    background: var(--color-whisper);
+    background: var(--color-bone-light);
     cursor: pointer;
     outline: none;
     border: none;
@@ -1003,8 +1001,6 @@ html, body {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center;
     transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease;
   }
   .uni-card-img.is-preview { z-index: 1; }
@@ -1078,22 +1074,37 @@ html, body {
     padding: 22px 22px 24px;
     display: flex;
     flex-direction: column;
+    flex: 1;
   }
   .uni-card-head-row {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
+    flex-direction: column;
+    gap: 4px;
     margin-bottom: 6px;
   }
   .uni-card-name {
     font-family: var(--font-serif);
-    font-size: 22px;
-    line-height: 1.15;
+    font-size: 20px;
+    line-height: 1.2;
     letter-spacing: -0.015em;
     font-weight: 400;
     color: var(--color-ink);
     margin: 0;
+    /* Corta em 2 linhas. Sem isto, um título longo da Shopee empurrava o
+       preço pra fora do card no mobile. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .uni-card-price-wholesale {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-leather-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .uni-card-price {
     font-family: var(--font-mono);
@@ -1283,7 +1294,7 @@ html, body {
     overflow: hidden;
     transition: border-color 0.2s ease;
   }
-  .uni-qv-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .uni-qv-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .uni-qv-thumb.is-active { border-color: var(--color-ink); }
 
   .uni-qv-info {
@@ -1808,6 +1819,7 @@ html, body {
     gap: 10px;
   }
   .uni-float-wa-tip {
+    pointer-events: none;
     background: var(--color-ink);
     color: var(--color-bone);
     font-family: var(--font-sans);
@@ -1905,7 +1917,7 @@ html, body {
   }
   .uni-pdp-gallery-thumb:hover { border-color: var(--color-leather); }
   .uni-pdp-gallery-thumb.is-active { border-color: var(--color-ink); }
-  .uni-pdp-gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .uni-pdp-gallery-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
   /* ---- Related products ---- */
   .uni-pdp-related { padding: 80px 0 130px; }
   .uni-pdp-related-grid {
@@ -1930,7 +1942,7 @@ html, body {
     overflow: hidden;
     margin-bottom: 12px;
   }
-  .uni-pdp-related-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .uni-pdp-related-img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .uni-pdp-related-name {
     font-family: var(--font-serif);
     font-size: 18px;
@@ -2014,7 +2026,7 @@ html, body {
   overflow: hidden;
 }
 .uni-qv-slide img,
-.uni-pdp-slide img { object-fit: cover; }
+.uni-pdp-slide img { object-fit: contain; }
 .uni-qv-slide.is-empty,
 .uni-pdp-stage.is-empty {
   display: flex;
@@ -2144,6 +2156,32 @@ html, body {
   letter-spacing: 0.04em;
 }
 
+/* Camadas de cor do card: trocar de cor é só um crossfade entre camadas que
+   já estão baixadas, em vez de esperar a foto nova chegar da rede. */
+.uni-card-photo-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  pointer-events: none;
+}
+.uni-card-photo-layer.is-active { opacity: 1; }
+
+/* ---- Foto de produto (ProductPhoto) ----
+   A foto entra inteira e o que sobra do quadro é preenchido por uma cópia
+   desfocada dela mesma. Foto já quadrada cobre tudo e o fundo nem aparece. */
+.uni-photo-backdrop {
+  object-fit: cover;
+  filter: blur(22px) saturate(1.15);
+  transform: scale(1.15);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.uni-photo {
+  object-fit: contain;
+  object-position: center;
+}
+
 /* ---- Placeholder de imagem ausente ---- */
 
 /* ============================================================================
@@ -2174,6 +2212,33 @@ html {
 /* `clip` em vez de `hidden`: corta o estouro horizontal (hero full-bleed) sem
    quebrar o `position: sticky` do header, que `overflow: hidden` quebraria. */
 body { overflow-x: clip; }
+
+/* Arrastar pro lado no mobile levava pra fora da página: o gesto escapava dos
+   trilhos horizontais e virava o "voltar" do navegador. Aqui o eixo X para de
+   encadear com o histórico; o Y segue normal (pull-to-refresh preservado). */
+html, body { overscroll-behavior-x: none; }
+
+/* Trilhos e galerias contêm o próprio arrasto em vez de repassá-lo à página. */
+.uni-cat-filter,
+.uni-color-filter,
+.uni-qv-thumbs,
+.uni-qv-stage,
+.uni-pdp-stage {
+  overscroll-behavior-x: contain;
+}
+
+/* O carrossel do hero interpreta o arrasto por conta própria (troca de slide):
+   o navegador só cuida da rolagem vertical ali. */
+.uni-carousel { touch-action: pan-y; }
+
+/* Arrastar uma foto não deve "descolar" a imagem nem selecionar texto junto. */
+.uni-photo,
+.uni-photo-backdrop,
+.uni-carousel-img,
+.uni-logo-mark {
+  -webkit-user-drag: none;
+  user-select: none;
+}
 
 /* Itens de grid têm `min-width: auto` por padrão: um filho que não quebra
    linha (o preço, o rótulo do botão) empurra a coluna além de 1fr e o grid
@@ -2269,7 +2334,7 @@ input, select, textarea { font-size: 16px; }
   .uni-cred-grid { grid-template-columns: repeat(2, 1fr); gap: 0; }
   .uni-cred-cell:nth-child(2) { border-right: none; }
   .uni-cred-cell:nth-child(1),
-  .uni-cred-cell:nth-child(2) { padding-bottom: 32px; border-bottom: 1px solid var(--color-whisper); }
+  .uni-cred-cell:nth-child(2) { padding-bottom: 32px; border-bottom: 1px solid var(--color-charcoal); }
   .uni-cred-cell:nth-child(3) { padding-top: 32px; grid-column: 1 / -1; }
   .uni-wsr-grid { grid-template-columns: 1fr; gap: 16px; }
   .uni-wsr-card.is-wholesale { transform: none; }
@@ -2292,12 +2357,15 @@ input, select, textarea { font-size: 16px; }
   .uni-section { padding: 72px 0; }
   .uni-section-head { margin-bottom: 40px; }
   .uni-section-lede { font-size: 15px; }
-  .uni-h1 { font-size: clamp(40px, 11.5vw, 64px); }
+  .uni-h1 { font-size: clamp(34px, 9.4vw, 56px); }
   .uni-h2 { font-size: clamp(30px, 8.6vw, 44px); }
   .uni-h3 { font-size: 22px; }
   /* 0.4em de tracking em caixa alta quebra feio em tela estreita. */
-  .uni-eyebrow { font-size: 10px; letter-spacing: 0.26em; margin-bottom: 14px; }
-  .uni-eyebrow-wide { letter-spacing: 0.3em; }
+  .uni-eyebrow { font-size: 10px; letter-spacing: 0.18em; margin-bottom: 14px; }
+  .uni-eyebrow-wide { letter-spacing: 0.22em; }
+  .uni-cred-label { letter-spacing: 0.16em; }
+  .uni-store-transport-head,
+  .uni-location-tag { letter-spacing: 0.18em; }
 
   /* Faixa promocional: uma linha só (antes empilhava em três). */
   .uni-promo-strip-inner {
@@ -2331,13 +2399,14 @@ input, select, textarea { font-size: 16px; }
   .uni-mobile-menu { gap: 24px; }
   .uni-mobile-menu-link { font-size: 30px; padding: 16px 0; }
 
-  /* Hero */
-  .uni-hero { padding: 32px 0 64px; }
+  /* Hero enxuto: antes o primeiro CTA nascia abaixo da dobra (y=741 numa
+     tela de 664px) e o primeiro produto ficava a quase duas telas. */
+  .uni-hero { padding: 16px 0 48px; }
   .uni-hero-image-frame {
     width: 100vw;
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
-    margin-bottom: 32px;
+    margin-bottom: 20px;
   }
   .uni-carousel { aspect-ratio: 16 / 9; }
   .uni-carousel-arrow { display: none; }
@@ -2347,8 +2416,10 @@ input, select, textarea { font-size: 16px; }
   .uni-carousel-dot::after { content: ""; position: absolute; inset: -12px -2px; }
   .uni-carousel-dots { padding: 12px; gap: 10px; }
   .uni-footer-link { min-height: 40px; align-items: center; }
-  .uni-hero-h1 { margin-bottom: 24px; }
-  .uni-hero-lede { font-size: 16px; margin-bottom: 32px; }
+  .uni-hero-eyebrow { margin-bottom: 14px; }
+  .uni-hero-h1 { margin-bottom: 16px; }
+  .uni-hero-divider { margin-bottom: 20px; }
+  .uni-hero-lede { font-size: 15px; margin-bottom: 22px; }
   /* CTA de largura total: alvo grande e hierarquia clara no polegar. */
   .uni-hero-ctas { flex-direction: column; width: 100%; gap: 10px; }
   .uni-hero-ctas > * { width: 100%; justify-content: center; min-height: 52px; }
@@ -2387,15 +2458,20 @@ input, select, textarea { font-size: 16px; }
   }
   .uni-color-swatch-big { flex-shrink: 0; }
 
+  /* O filtro se explica sozinho; a lede custava 3 linhas antes do 1º produto. */
+  .uni-catalog .uni-section-lede { display: none; }
+  .uni-catalog .uni-section-head { margin-bottom: 28px; }
+
   /* Card de produto */
   .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .uni-card-body { padding: 12px 12px 14px; }
-  .uni-card-name { font-size: 14px; }
-  .uni-card-price { font-size: 12px; }
+  .uni-card-name { font-size: 13px; line-height: 1.25; }
+  .uni-card-price { font-size: 13px; }
+  .uni-card-price-wholesale { font-size: 10px; }
   .uni-card-tagline { display: none; }
   .uni-card-sizes { display: none; }
   .uni-card-colors-label { display: none; }
-  .uni-card-head-row { gap: 6px; margin-bottom: 6px; }
+  .uni-card-head-row { gap: 2px; margin-bottom: 6px; }
   .uni-card-colors { margin-bottom: 10px; padding-top: 10px; }
   .uni-card-swatches { gap: 14px; row-gap: 10px; }
   .uni-swatch { width: 26px; height: 26px; }

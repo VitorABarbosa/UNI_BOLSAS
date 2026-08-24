@@ -15,7 +15,7 @@ export type ProductWithRelations = ProductRow & {
 };
 
 const LIST_SELECT = `
-  id, slug, name, tagline, badge, price_retail, sizes, sort_order, active, category_id,
+  id, slug, name, tagline, badge, price_retail, price_wholesale, sizes, sort_order, active, category_id,
   category:categories(slug, label),
   colors:product_colors(id, name, hex, accent_hex, sort_order, product_id),
   images:product_images(id, color_id, storage_path, alt, sort_order, product_id)
