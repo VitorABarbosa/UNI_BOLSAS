@@ -122,7 +122,6 @@ export function HeroCarousel() {
               sizes="100vw"
               // O primeiro slide é LCP: carrega sem lazy e entra no preload.
               priority={i === 0}
-              quality={72}
             />
             <div className="uni-carousel-overlay" />
             <div className="uni-carousel-tag">{slide.tag}</div>

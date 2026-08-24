@@ -1,11 +1,12 @@
 /**
- * Reencoda as imagens estáticas de `public/` para tamanhos web-friendly.
+ * Rede de segurança para imagens estáticas absurdamente grandes em `public/`.
  *
- * Por que: as fotos entregues pela produção vêm em resolução de impressão
- * (3168px, PNG de 5MB). O `next/image` gera as variantes responsivas a partir
- * do arquivo original, mas o original ainda precisa ser um master razoável —
- * senão o build/otimização carrega dezenas de MB pra memória e, em fallback
- * (`unoptimized`), o navegador baixa o arquivo cru.
+ * Não é para uso rotineiro. Quem entrega as imagens ao navegador é o
+ * `next/image`, que gera as variantes responsivas (WebP/AVIF no tamanho da
+ * tela) a partir do arquivo original — ou seja, um master em alta resolução
+ * NÃO pesa na página, e vale a pena manter pela qualidade em telas retina.
+ * Os limites abaixo existem só para pegar arquivo de resolução de impressão
+ * (dezenas de MB), que faz o otimizador consumir memória à toa.
  *
  * Uso:
  *   pnpm images:optimize            # otimiza tudo que estiver acima do limite
@@ -18,10 +19,10 @@ import { readdir, stat, readFile, writeFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import sharp from 'sharp';
 
-/** Largura máxima do master. 2400px cobre telas retina até ~1200px de layout. */
-const MAX_WIDTH = 2400;
+/** Teto de largura. 3840px é o maior tamanho que o `next/image` chega a gerar. */
+const MAX_WIDTH = 3840;
 /** Acima disso o arquivo é reencodado mesmo se já estiver dentro da largura. */
-const MAX_BYTES = 600 * 1024;
+const MAX_BYTES = 8 * 1024 * 1024;
 const QUALITY = 78;
 
 const TARGET_DIRS = ['public/hero'];

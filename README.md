@@ -44,18 +44,19 @@ Next.js 16 (App Router) · TypeScript estrito · Tailwind v4 · shadcn/ui · Sup
 | `pnpm db:types` | Regera `types/db.ts` do schema remoto via supabase CLI (precisa `supabase login` antes) |
 | `pnpm seed` | Limpa e re-popula DB + Storage com os 5 produtos da referência |
 | `pnpm smoke` | Fetch ponta-a-ponta via anon key (verifica RLS pública + nested relations) |
-| `pnpm images:optimize` | Reencoda as imagens de `public/hero` pra tamanho web. Rodar sempre que trocar uma foto |
+| `pnpm images:optimize` | Rede de segurança: reencoda imagens de `public/hero` acima de 3840px ou 8MB. Não precisa rodar a cada troca de foto |
 
 ## Imagens e mobile
 
 O site público serve **todas** as imagens por `next/image` (variantes responsivas,
 WebP/AVIF, lazy loading). Duas regras ao mexer nelas:
 
-1. **Toda foto nova em `public/` passa pelo `pnpm images:optimize`.** As artes
-   chegam em resolução de impressão — os dois slides do hero somavam 9,1 MB e
-   viraram 376 KB sem perda visível. O script é idempotente e ignora o que já
-   está dentro do limite; ao criar uma pasta nova em `public/`, some ela ao
-   `TARGET_DIRS` em `scripts/optimize-images.ts`.
+1. **Os masters em `public/` podem ficar em alta resolução.** Quem entrega a
+   imagem ao navegador é o `next/image`, que serve WebP/AVIF no tamanho da
+   tela — um JPEG de 5 MB no repositório vira ~30 KB no celular. Manter o
+   master grande melhora a nitidez em telas retina e não pesa a página.
+   `pnpm images:optimize` é só uma rede de segurança para arquivos acima de
+   3840px ou 8 MB, que fazem o otimizador consumir memória à toa.
 2. **`next/image` com `fill` exige `position: relative` no container.** Sem isso
    a foto escapa do bloco e cobre a página inteira.
 
