@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
 import type { GalleryImage } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 
@@ -96,10 +97,9 @@ export function Gallery({ images, productName }: GalleryProps) {
       >
         {images.map((img, i) => (
           <div className="uni-pdp-slide" key={i} role="listitem">
-            <Image
+            <ProductPhoto
               src={publicImageUrl(img.storage_path)}
               alt={img.alt}
-              fill
               sizes={PDP_SIZES}
               priority={i === 0}
             />

@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 import { ArrowIcon, WhatsAppIcon } from '@/components/public/icons';
+import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
@@ -100,11 +100,10 @@ export function ProductCard({
           </div>
         )}
         {baseImg && (
-          <Image
+          <ProductPhoto
             src={publicImageUrl(baseImg.storage_path)}
             alt={baseImg.alt}
             className="uni-card-img"
-            fill
             sizes={CARD_SIZES}
             // O catálogo nunca é a primeira dobra: tudo entra sob demanda.
             loading="lazy"
@@ -184,10 +183,21 @@ export function ProductCard({
       </div>
       <div className="uni-card-body">
         <div className="uni-card-head-row">
-          <h3 className="uni-card-name">{product.name}</h3>
+          {/* Títulos vindos da Shopee são longos ("Bolsa Feminina Transversal
+              Couro PU Alça Ajustável..."); o CSS corta em 2 linhas para o
+              preço nunca ser empurrado pra fora do card. O nome completo
+              continua no quick view e na página do produto. */}
+          <h3 className="uni-card-name" title={product.name}>
+            {product.name}
+          </h3>
           <div className="uni-card-price">
             R$ {product.price_retail.toFixed(2).replace('.', ',')}
           </div>
+          {product.price_wholesale && (
+            <div className="uni-card-price-wholesale">
+              Atacado · {product.price_wholesale}
+            </div>
+          )}
         </div>
         {product.tagline && (
           <p className="uni-card-tagline">{product.tagline}</p>

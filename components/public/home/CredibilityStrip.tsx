@@ -22,8 +22,10 @@ export function CredibilityStrip() {
             <div className="uni-cred-label">Lojistas atendidas</div>
           </Reveal>
           <Reveal className="uni-cred-cell" delay={240}>
-            <div className="uni-cred-num">2</div>
-            <div className="uni-cred-label">Atacado · Varejo · Loja física</div>
+            <div className="uni-cred-num">3</div>
+            <div className="uni-cred-label">
+              Jeitos de comprar: atacado, varejo e loja física
+            </div>
           </Reveal>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
 import { CloseIcon } from '@/components/public/icons';
 import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
 import type { ProductWithRelations } from '@/lib/queries/products';
@@ -136,10 +137,9 @@ export function QuickView({
           >
             {images.map((img, i) => (
               <div className="uni-qv-slide" key={i}>
-                <Image
+                <ProductPhoto
                   src={publicImageUrl(img.storage_path)}
                   alt={img.alt}
-                  fill
                   sizes={QV_SIZES}
                   priority={i === 0}
                 />
