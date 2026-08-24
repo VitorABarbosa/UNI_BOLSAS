@@ -19,7 +19,7 @@ export default async function ProdutosPage() {
     supabase
       .from('products')
       .select(
-        'id, slug, name, active, sort_order, category_id, category:categories(id, label), images:product_images(storage_path, sort_order)',
+        'id, slug, name, active, sort_order, category_id, price_retail, price_promo, promo_ends_at, category:categories(id, label), images:product_images(storage_path, sort_order), colors:product_colors(id)',
       )
       .order('sort_order', { ascending: true }),
     supabase.from('categories').select('id, label').order('sort_order'),
@@ -42,6 +42,10 @@ export default async function ProdutosPage() {
         (p.category as unknown as { label: string } | null)?.label ?? '—',
       image_count: sortedImgs.length,
       cover_storage_path: sortedImgs[0]?.storage_path ?? null,
+      color_count: (p.colors ?? []).length,
+      price_retail: Number(p.price_retail),
+      price_promo: p.price_promo == null ? null : Number(p.price_promo),
+      promo_ends_at: p.promo_ends_at,
     };
   });
 

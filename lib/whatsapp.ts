@@ -1,4 +1,5 @@
 import { WHATSAPP_NUMBER } from '@/lib/tokens';
+import { productPrice } from '@/lib/product-price';
 import type { Database } from '@/types/db';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -9,15 +10,23 @@ export function waLink(message: string): string {
 }
 
 export function waProduct(
-  product: Pick<ProductRow, 'name' | 'price_retail'>,
+  product: Pick<ProductRow, 'name' | 'price_retail'> &
+    Partial<Pick<ProductRow, 'price_promo' | 'promo_ends_at'>>,
   color: Pick<ColorRow, 'name'> | null,
   size?: string,
 ): string {
   const colorPart = color ? ` na cor ${color.name}` : '';
   const sizePart = size ? ` tamanho ${size}` : '';
+  // A mensagem precisa citar o preço que a pessoa viu na tela — se ela clicou
+  // vendo o promocional, chegar no atendimento com o preço cheio é ruído.
+  const price = productPrice({
+    price_retail: product.price_retail,
+    price_promo: product.price_promo ?? null,
+    promo_ends_at: product.promo_ends_at ?? null,
+  });
   const priceMsg =
     product.price_retail != null
-      ? ` (R$ ${product.price_retail.toFixed(2).replace('.', ',')})`
+      ? ` (${price.currentLabel}${price.isPromo ? ' — promoção' : ''})`
       : '';
   return waLink(
     `Olá! Tenho interesse na ${product.name}${colorPart}${sizePart}${priceMsg}. Está disponível?`,

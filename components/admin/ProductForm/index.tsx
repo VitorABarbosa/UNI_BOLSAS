@@ -50,6 +50,8 @@ function defaultsForCreate(
     badge: null,
     price_retail: 0,
     price_wholesale: null,
+    price_promo: null,
+    promo_ends_at: null,
     dimensions: null,
     weight: null,
     material: null,
@@ -59,6 +61,15 @@ function defaultsForCreate(
     seo_title: null,
     seo_description: null,
   };
+}
+
+/** ISO em UTC -> "YYYY-MM-DDTHH:mm" no fuso local, que é o que o input aceita. */
+function toLocalInput(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export function ProductForm({
@@ -89,6 +100,8 @@ export function ProductForm({
         badge: product.badge ?? null,
         price_retail: product.price_retail,
         price_wholesale: product.price_wholesale ?? null,
+        price_promo: product.price_promo ?? null,
+        promo_ends_at: toLocalInput(product.promo_ends_at),
         dimensions: product.dimensions ?? null,
         weight: product.weight ?? null,
         material: product.material ?? null,
@@ -107,11 +120,22 @@ export function ProductForm({
   });
 
   const onSubmit = form.handleSubmit((values) => {
+    // <input type="datetime-local"> devolve "2026-08-31T18:00", sem fuso. Se
+    // isso for direto pro `timestamptz`, o Postgres lê como UTC e a promoção
+    // vence 3h antes do que o admin marcou. A conversão precisa ser aqui, no
+    // navegador, que é quem conhece o fuso de quem digitou.
+    const payload: ProductInput = {
+      ...values,
+      promo_ends_at: values.promo_ends_at
+        ? new Date(values.promo_ends_at).toISOString()
+        : null,
+    };
+
     startTransition(async () => {
       const result =
         mode === 'edit' && product
-          ? await updateProduct(product.id, values)
-          : await createProduct(values);
+          ? await updateProduct(product.id, payload)
+          : await createProduct(payload);
 
       if (result.ok) {
         toast.success(mode === 'edit' ? 'Produto atualizado' : 'Produto criado');
