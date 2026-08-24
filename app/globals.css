@@ -2156,6 +2156,21 @@ html, body {
   letter-spacing: 0.04em;
 }
 
+/* Anúncio sem nenhuma foto: bloco neutro no lugar do vazio. */
+.uni-card-noimg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bone-light);
+  color: var(--color-stone);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
 /* Camadas de cor do card: trocar de cor é só um crossfade entre camadas que
    já estão baixadas, em vez de esperar a foto nova chegar da rede. */
 .uni-card-photo-layer {

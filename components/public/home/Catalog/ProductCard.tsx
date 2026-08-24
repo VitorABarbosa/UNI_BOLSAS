@@ -57,15 +57,27 @@ export function ProductCard({
    * inativas ficam em `loading="lazy"` com prioridade baixa, então o
    * navegador só busca as cores dos cards que chegaram perto da tela.
    */
-  const layers = product.colors.map((color, i) => {
-    const images = galleryImages(product, color);
-    // Só a cor ativa acompanha a troca de foto do hover (desktop).
-    const img =
-      i === activeColorIdx
-        ? images[Math.min(imgIdx, images.length - 1)] ?? images[0]
-        : cardCoverImage(product, color);
-    return { color, img };
-  });
+  const layers = product.colors.length
+    ? product.colors.map((color, i) => {
+        const images = galleryImages(product, color);
+        // Só a cor ativa acompanha a troca de foto do hover (desktop).
+        const img =
+          i === activeColorIdx
+            ? images[Math.min(imgIdx, images.length - 1)] ?? images[0]
+            : cardCoverImage(product, color);
+        return { key: color.id, img };
+      })
+    : // Produto sem cor cadastrada (comum nos anúncios importados da Shopee)
+      // ainda tem fotos genéricas — sem este ramo o card ficava vazio.
+      [
+        {
+          key: 'sem-cor',
+          img:
+            activeImages[Math.min(imgIdx, activeImages.length - 1)] ??
+            activeImages[0] ??
+            null,
+        },
+      ];
   const hasAnyImage = layers.some((l) => l.img != null);
 
   const onMouseMove = (e: React.MouseEvent<HTMLElement>) => {
@@ -117,10 +129,10 @@ export function ProductCard({
           </div>
         )}
         {hasAnyImage &&
-          layers.map(({ color, img }, i) =>
+          layers.map(({ key, img }, i) =>
             img ? (
               <div
-                key={color.id}
+                key={key}
                 className={
                   'uni-card-photo-layer ' +
                   (i === activeColorIdx ? 'is-active' : '')
@@ -142,6 +154,11 @@ export function ProductCard({
               </div>
             ) : null,
           )}
+        {!hasAnyImage && (
+          <div className="uni-card-noimg">
+            <span>Foto em breve</span>
+          </div>
+        )}
         {showArrows && (
           <>
             <button
@@ -241,6 +258,7 @@ export function ProductCard({
             ))}
           </div>
         )}
+        {product.colors.length > 0 && (
         <div className="uni-card-colors">
           <div className="uni-card-colors-label">
             <span>Cor:</span>
@@ -270,6 +288,7 @@ export function ProductCard({
             ))}
           </div>
         </div>
+        )}
         <div className="uni-card-cta-row">
           <button
             className="uni-card-cta-detail"
