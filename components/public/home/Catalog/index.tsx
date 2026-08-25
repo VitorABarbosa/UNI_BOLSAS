@@ -116,14 +116,19 @@ export function Catalog({
             </p>
           </div>
         </Reveal>
-        <Reveal>
-          <CategoryFilter
-            categories={categories}
-            activeCat={activeCat}
-            counts={counts}
-            onChange={setActiveCat}
-          />
-        </Reveal>
+        {/* O wrapper (e não o filtro) é sticky: dentro de um Reveal o filtro
+            não teria espaço pra grudar, porque sticky só desliza dentro do
+            pai direto — e o pai seria o próprio Reveal, do tamanho dele. */}
+        <div className="uni-cat-sticky">
+          <Reveal>
+            <CategoryFilter
+              categories={categories}
+              activeCat={activeCat}
+              counts={counts}
+              onChange={setActiveCat}
+            />
+          </Reveal>
+        </div>
         <ProductGrid
           displayed={displayed}
           selectedColors={selectedColors}

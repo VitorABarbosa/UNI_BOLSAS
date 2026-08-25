@@ -6,7 +6,9 @@ export const STORE = {
   cep: '03009-100',
   hours: ['Seg-Ter · 4h às 12h', 'Qua-Sex · 5h às 11h'],
   hoursShort: ['Seg-Ter · 4h-12h', 'Qua-Sex · 5h-11h'],
-  cnpj: '00.000.000/0001-00',
+  /* Vazio = a linha do CNPJ não aparece no rodapé. Preencher com o CNPJ real
+     (formato 00.000.000/0001-00) pra ele voltar a ser exibido. */
+  cnpj: '',
   transport: [
     { mode: 'Metrô Brás', time: '8 min' },
     { mode: 'CPTM Brás', time: '5 min' },
