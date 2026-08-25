@@ -48,6 +48,9 @@ export function ProductInfo({
             <span className="uni-qv-price-off">-{price.discountPct}%</span>
           </>
         )}
+        {price.campaignName && (
+          <span className="uni-qv-price-campaign">{price.campaignName}</span>
+        )}
         {product.price_wholesale && (
           <span className="uni-qv-price-w">
             Atacado · {product.price_wholesale}

@@ -2182,6 +2182,16 @@ html, body {
   margin-left: 8px;
 }
 .uni-pdp-buybar-price strong.is-promo { color: var(--color-wine); }
+/* Nome da campanha ao lado do preço: dá contexto ao desconto ("Dia das Mães"
+   explica melhor que um selo solto de -20%). */
+.uni-qv-price-campaign {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-leather-dark);
+  margin-left: 8px;
+}
 
 /* Anúncio sem nenhuma foto: bloco neutro no lugar do vazio. */
 .uni-card-noimg {

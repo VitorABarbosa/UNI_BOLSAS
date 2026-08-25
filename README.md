@@ -72,26 +72,32 @@ As famílias tipográficas vêm dos tokens `--font-sans` / `--font-serif` /
 `next/font` registra a fonte com um nome com hash, e o nome literal cai no
 fallback do sistema.
 
-## Promoções
+## Promoções e campanhas
 
-O site não guarda preço promocional próprio: o "de/por" vem do espelho da
-Shopee. A tabela `shopee_items` (integração já existente) tem `price` — o que
-a Shopee cobra hoje, já com a promoção aplicada — e `original_price`, o preço
-cheio. Quando o segundo é maior que o primeiro, o produto aparece em promoção.
+O preço vigente de um produto sai de `lib/product-price.ts`, que conhece duas
+origens de desconto:
 
-Para colocar uma peça em promoção, **crie a promoção na Shopee**: o cron
-diário sincroniza e o site mostra sozinho. Produto sem anúncio vinculado nunca
-entra em promoção — não há como marcá-la só pelo site.
+1. **Espelho da Shopee** — `shopee_items.price` (o que a Shopee cobra hoje) e
+   `original_price` (o cheio). Criada na Shopee, aparece no site sozinha pelo
+   cron. Só vale para produto com anúncio vinculado.
+2. **Campanha do painel** — `/admin/campanhas`. Você dá um nome, escolhe as
+   peças, define percentual ou preço fixo e um período opcional. Vale para
+   qualquer produto.
 
-A regra vive em `lib/product-price.ts` e é usada por card, quick view, PDP e
-pela mensagem do WhatsApp. Descontos abaixo de 3% são ignorados: viram ruído
-visual em vez de argumento de venda.
+**Quando as duas se aplicam, vence a mais barata.** Cotar acima do que a
+pessoa acha na Shopee seria pior que não ter desconto. Cada origem carrega o
+próprio preço cheio: o sync grava o valor já promocional em `price_retail`,
+então usar o retail como "de" apagaria o desconto dos produtos vindos de lá.
 
-**As consultas toleram a ausência do espelho.** Cada uma tenta ler
-`shopee_items` e, se falhar (integração não aplicada no projeto, por
-exemplo), repete sem esse trecho. O pior caso é "a promoção não aparece",
-nunca "a página não carrega" — regra que vale para qualquer coisa nova que
-dependa de uma tabela.
+Descontos abaixo de 3% são ignorados: viram ruído visual em vez de argumento.
+Campanha pausada, vencida ou ainda não iniciada não desconta — e como as
+páginas revalidam a cada minuto, o preço volta ao normal sozinho no fim.
+
+**Nada disso derruba o site se as tabelas não existirem.** As consultas são
+tentadas em degraus (Shopee + campanhas → só Shopee → nenhuma), então a
+migration `20260824000100_campaigns.sql` é opcional e pode ser aplicada a
+qualquer momento, sem janela de manutenção. Enquanto não for, a aba Campanhas
+explica isso em vez de quebrar.
 
 ## Cadastrar um admin
 

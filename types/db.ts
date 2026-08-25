@@ -37,6 +37,60 @@ export type Database = {
         }
         Relationships: []
       }
+      campaigns: {
+        Row: {
+          active: boolean
+          created_at: string
+          discount_kind: string
+          discount_value: number
+          ends_at: string | null
+          id: string
+          name: string
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          discount_kind?: string
+          discount_value: number
+          ends_at?: string | null
+          id?: string
+          name: string
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          discount_kind?: string
+          discount_value?: number
+          ends_at?: string | null
+          id?: string
+          name?: string
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      campaign_products: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          product_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          product_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          product_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
