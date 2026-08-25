@@ -839,8 +839,12 @@ html, body {
     transform: translateY(-4px);
     box-shadow: 0 24px 60px -20px rgba(17,17,17,0.14);
   }
-  .uni-wsr-card.is-wholesale { transform: translateY(20px); }
-  .uni-wsr-card.is-wholesale:hover { transform: translateY(16px); }
+  /* Os dois cards têm a mesma altura e o CTA cravado na base: com listas de
+     tamanhos diferentes, os botões ficavam em linhas distintas e parecia
+     desalinhamento acidental. */
+  .uni-wsr-grid > * { display: flex; }
+  .uni-wsr-grid .uni-wsr-card { flex: 1; }
+  .uni-wsr-card .uni-wa-btn { margin-top: auto; }
   .uni-wsr-card-icon {
     width: 56px;
     height: 56px;
@@ -972,9 +976,8 @@ html, body {
 
   .uni-product-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 36px;
-    max-width: 1100px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
     margin: 0 auto;
   }
   .uni-product-grid-empty {
@@ -1768,6 +1771,8 @@ html, body {
     color: var(--color-bone);
     padding: 70px 0 40px;
   }
+  /* O PNG da sacola é preto: sobre o fundo preto do rodapé ele sumia. */
+  .uni-footer .uni-logo-mark { filter: invert(1); }
   .uni-footer-grid {
     display: grid;
     grid-template-columns: 1.4fr 1fr 1fr 1fr;
@@ -2139,6 +2144,20 @@ html, body {
   text-decoration: none;
 }
 
+/* ---- Filtro de categorias fixo no scroll ----
+   O catálogo em 3 colunas ainda é longo; sem isso, refiltrar exigia voltar
+   ao topo da seção. O wrapper gruda logo abaixo do header e leva o fundo da
+   seção junto, pra os cards passarem por baixo sem vazar entre os chips. */
+.uni-cat-sticky {
+  position: sticky;
+  top: var(--uni-header-h, 72px);
+  z-index: 30;
+  background: var(--color-bone-light);
+  padding: 12px 0 8px;
+  margin-bottom: 40px;
+}
+.uni-cat-sticky .uni-cat-filter { margin-bottom: 0; }
+
 /* ---- "Carregar mais" do catálogo ---- */
 .uni-load-more-wrap {
   display: flex;
@@ -2270,6 +2289,9 @@ html {
   scroll-behavior: smooth;
   /* Header sticky cobre o topo da seção quando o link âncora salta pra ela. */
   scroll-padding-top: 84px;
+  /* Altura real do header sticky — quem gruda logo abaixo dele (o filtro do
+     catálogo) usa esse valor como `top`. Ajustado no bloco mobile. */
+  --uni-header-h: 80px;
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -2403,8 +2425,6 @@ input, select, textarea { font-size: 16px; }
   .uni-cred-cell:nth-child(2) { padding-bottom: 32px; border-bottom: 1px solid var(--color-charcoal); }
   .uni-cred-cell:nth-child(3) { padding-top: 32px; grid-column: 1 / -1; }
   .uni-wsr-grid { grid-template-columns: 1fr; gap: 16px; }
-  .uni-wsr-card.is-wholesale { transform: none; }
-  .uni-wsr-card.is-wholesale:hover { transform: translateY(-4px); }
   .uni-test-grid { grid-template-columns: 1fr; gap: 0; }
   .uni-test-card { padding: 28px 0; }
   .uni-news-inner { grid-template-columns: 1fr; gap: 24px; }
@@ -2524,6 +2544,12 @@ input, select, textarea { font-size: 16px; }
   }
   .uni-color-swatch-big { flex-shrink: 0; }
 
+  html { --uni-header-h: 60px; }
+  /* O full-bleed passa pro wrapper: se ficasse só no trilho (margem negativa),
+     os cards apareceriam nas frestas laterais ao rolar por baixo do filtro. */
+  .uni-cat-sticky { padding: 8px 0 4px; margin: 0 -20px 28px; }
+  .uni-cat-sticky .uni-cat-filter { margin-left: 0; margin-right: 0; }
+
   /* O filtro se explica sozinho; a lede custava 3 linhas antes do 1º produto. */
   .uni-catalog .uni-section-lede { display: none; }
   .uni-catalog .uni-section-head { margin-bottom: 28px; }
@@ -2628,6 +2654,7 @@ input, select, textarea { font-size: 16px; }
   .uni-header-cta-label { display: none; }
   .uni-header-cta { width: 44px; height: 44px; padding: 0; justify-content: center; }
   .uni-cat-filter { margin: 0 -16px 32px; padding: 2px 16px 10px; scroll-padding-left: 16px; }
+  .uni-cat-sticky { margin: 0 -16px 28px; }
   .uni-color-filter { margin: 0 -16px; padding: 0 16px; }
   .uni-product-grid { gap: 10px; }
   .uni-card-cta-row { grid-template-columns: 1fr; }

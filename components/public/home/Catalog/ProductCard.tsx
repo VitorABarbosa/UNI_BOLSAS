@@ -27,11 +27,11 @@ type ProductCardProps = {
  * esticada — que era o motivo das bolsas aparecerem borradas no desktop.
  *
  *   ≤600px   grid de 2 colunas, container 20px, gap 10-14px → ~48vw
- *   ≤1080px  grid de 2 colunas, container 24px, gap 24px    → ~47vw
- *   acima    grid de 2 colunas com max-width 1100 e gap 36  → (1100-36)/2 = 532px
+ *   ≤1080px  grid de 2 colunas, container 24px, gap 24px       → ~47vw
+ *   acima    grid de 3 colunas no container 1320 com gap 28    → (1320-48-56)/3 ≈ 405px
  */
 const CARD_SIZES =
-  '(max-width: 600px) 48vw, (max-width: 1080px) 47vw, 540px';
+  '(max-width: 600px) 48vw, (max-width: 1080px) 47vw, 410px';
 
 export function ProductCard({
   product,

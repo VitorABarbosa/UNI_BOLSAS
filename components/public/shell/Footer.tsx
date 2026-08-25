@@ -90,7 +90,10 @@ export function Footer() {
           </div>
         </div>
         <div className="uni-footer-bottom">
-          <span>© 2026 Uni Bolsas · CNPJ {STORE.cnpj}</span>
+          <span>
+            © 2026 Uni Bolsas
+            {STORE.cnpj ? ` · CNPJ ${STORE.cnpj}` : ''}
+          </span>
           <span>Feito com cuidado em São Paulo · Brás</span>
         </div>
       </div>
