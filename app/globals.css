@@ -170,9 +170,12 @@ html, body {
   100% { max-height: 60px; opacity: 1; }
 }
 
+/* As palavras nascem abaixo da linha de base e sobem por dentro da máscara
+   (`.uni-hero-line` tem overflow hidden), como um letreiro virando. O blur
+   some antes do fim pro texto assentar nítido em vez de "chegar borrado". */
 @keyframes uni-word-rise {
-  0% { opacity: 0; transform: translateY(38px); filter: blur(8px); }
-  60% { filter: blur(0); }
+  0%   { opacity: 0; transform: translateY(105%); filter: blur(7px); }
+  55%  { filter: blur(0); }
   100% { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
@@ -281,7 +284,9 @@ html, body {
 
   .uni-h1 {
     font-family: var(--font-serif);
-    font-size: clamp(56px, 11vw, 140px);
+    /* 8.2vw mantém "Bolsas que carregam" numa linha só até telas largas;
+       acima disso o teto de 118px segura o título dentro do max-width. */
+    font-size: clamp(56px, 8.2vw, 118px);
     line-height: 0.95;
     letter-spacing: -0.04em;
     font-weight: 400;
@@ -530,12 +535,21 @@ html, body {
   }
   .uni-hero-h1 {
     margin: 0 0 32px;
-    max-width: 880px;
+    /* Largura suficiente pra "Bolsas que carregam" caber numa linha só. */
+    max-width: 1120px;
+  }
+  /* Cada linha é a máscara por onde as palavras sobem. O padding devolve o
+     espaço dos descendentes (o "g" de carregam), que o overflow cortaria. */
+  .uni-hero-line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
   }
   .uni-hero-h1 .uni-word {
     display: inline-block;
     opacity: 0;
-    animation: uni-word-rise 1.0s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation: uni-word-rise 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   .uni-hero-divider {
     width: 0;
