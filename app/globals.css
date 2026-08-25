@@ -2269,6 +2269,118 @@ html, body {
 
 /* ---- Placeholder de imagem ausente ---- */
 
+/* ---- Reels do Instagram ("Spoiler do feed") ----
+   Cards 9:16 estáticos que levam pro Reel — nada de embed da Meta (script
+   pesado, visual de fora) nem de API com token que expira. Enquanto a capa
+   real não chega, a foto de campanha entra desfocada (.is-teaser): provoca
+   sem fingir que é um frame do vídeo. */
+.uni-reels { background: var(--color-bone-light); }
+.uni-reels-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+.uni-reel-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.uni-reel-media {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  background: var(--color-whisper);
+  isolation: isolate;
+}
+.uni-reel-img {
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.uni-reel-img.is-teaser {
+  filter: blur(14px) saturate(1.05);
+  transform: scale(1.12);
+}
+.uni-reel-card:hover .uni-reel-img { transform: scale(1.05); }
+.uni-reel-card:hover .uni-reel-img.is-teaser { transform: scale(1.16); }
+.uni-reel-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom,
+      rgba(17, 17, 17, 0.25) 0%,
+      rgba(17, 17, 17, 0) 30%,
+      rgba(17, 17, 17, 0) 55%,
+      rgba(17, 17, 17, 0.55) 100%);
+}
+.uni-reel-tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-bone);
+  border: 1px solid rgba(244, 239, 230, 0.55);
+  padding: 6px 10px;
+  backdrop-filter: blur(4px);
+}
+.uni-reel-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(244, 239, 230, 0.92);
+  color: var(--color-ink);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.35s ease;
+}
+.uni-reel-play svg { margin-left: 3px; }
+.uni-reel-card:hover .uni-reel-play {
+  transform: translate(-50%, -50%) scale(1.1);
+  background: var(--color-bone);
+}
+.uni-reel-hint {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-bone);
+}
+.uni-reels-cta {
+  text-align: center;
+  margin-top: 44px;
+}
+.uni-reels-profile {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  text-decoration: none;
+  border: 1px solid var(--color-ink);
+  padding: 14px 26px;
+  display: inline-block;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.uni-reels-profile:hover {
+  background: var(--color-ink);
+  color: var(--color-bone);
+}
+
 /* ============================================================================
    RESPONSIVO — fonte única de verdade
    ----------------------------------------------------------------------------
@@ -2417,6 +2529,7 @@ input, select, textarea { font-size: 16px; }
   .uni-hero-image-frame { margin-bottom: 40px; }
   .uni-h1 { font-size: clamp(48px, 9vw, 90px); }
   .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .uni-reels-grid { gap: 18px; max-width: none; }
   .uni-location-grid { grid-template-columns: 1fr; gap: 32px; }
   .uni-footer-grid { grid-template-columns: 1.5fr 1fr 1fr; gap: 32px; }
   .uni-cred-grid { grid-template-columns: repeat(2, 1fr); gap: 0; }
@@ -2543,6 +2656,27 @@ input, select, textarea { font-size: 16px; }
     padding: 0 20px;
   }
   .uni-color-swatch-big { flex-shrink: 0; }
+
+  /* Reels: trilho horizontal com snap, de ponta a ponta da tela —
+     três cards 9:16 empilhados custariam ~3 telas de rolagem. */
+  .uni-reels-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 20px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    margin: 0 -20px;
+    padding: 0 20px;
+    gap: 12px;
+    scrollbar-width: none;
+  }
+  .uni-reels-grid::-webkit-scrollbar { display: none; }
+  .uni-reels-grid > * {
+    flex: 0 0 68vw;
+    scroll-snap-align: start;
+  }
+  .uni-reels-cta { margin-top: 32px; }
 
   html { --uni-header-h: 60px; }
   /* O full-bleed passa pro wrapper: se ficasse só no trilho (margem negativa),
