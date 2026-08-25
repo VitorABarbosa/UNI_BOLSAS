@@ -1,6 +1,7 @@
 import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 import { createAnonClient } from '@/lib/supabase/anon';
+import type { CampaignPricing } from '@/lib/product-price';
 import type { Database } from '@/types/db';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -18,18 +19,32 @@ export type ProductWithRelations = ProductRow & {
    * em que o site apenas não mostra promoção.
    */
   shopee?: { price: number | null; original_price: number | null } | null;
+  /** Campanhas do painel às quais o produto pertence. */
+  campaigns?: { campaign: CampaignPricing | null }[] | null;
 };
 
 /**
- * Preço promocional espelhado da Shopee.
+ * Trechos OPCIONAIS do select — cada um depende de uma tabela que pode não
+ * existir no projeto (integração nunca conectada, migration de campanhas
+ * ainda não aplicada). Se qualquer uma faltar, o PostgREST rejeita a consulta
+ * INTEIRA e a página cai.
  *
- * Fica isolado de propósito: se a tabela não existir no projeto (integração
- * nunca aplicada), a consulta inteira falharia e derrubaria a página. Por
- * isso cada consulta tenta com este trecho e, dando errado, repete sem ele —
- * o pior caso vira "a promoção não aparece", nunca "o site não carrega".
+ * Por isso a consulta é tentada em degraus: tudo, depois só a Shopee, depois
+ * nada. O pior caso vira "o desconto não aparece", nunca "o site não
+ * carrega".
  */
 const SHOPEE_SELECT = `,
   shopee:shopee_items(price, original_price)`;
+
+const CAMPAIGN_SELECT = `,
+  campaigns:campaign_products(campaign:campaigns(id, name, discount_kind, discount_value, starts_at, ends_at, active))`;
+
+/** Do mais completo ao mínimo — a primeira que funcionar é a que vale. */
+const SELECT_TIERS = [
+  SHOPEE_SELECT + CAMPAIGN_SELECT,
+  SHOPEE_SELECT,
+  '',
+] as const;
 
 const LIST_SELECT = `
   id, slug, name, tagline, badge, price_retail, price_wholesale, sizes, sort_order, active, category_id,
@@ -55,25 +70,33 @@ function sortRelations<T extends ProductWithRelations>(p: T): T {
     // O PostgREST devolve a relação como lista; a unique em product_id
     // garante no máximo um anúncio por produto.
     shopee: Array.isArray(p.shopee) ? (p.shopee[0] ?? null) : (p.shopee ?? null),
+    campaigns: p.campaigns ?? null,
   };
 }
 
-/** Roda a consulta com o espelho da Shopee e, se falhar, sem ele. */
+/** Tenta a consulta do select mais completo ao mais simples. */
 async function withShopeeFallback<T>(
   run: (select: string) => PromiseLike<{ data: T | null; error: { message: string } | null }>,
   baseSelect: string,
   label: string,
 ): Promise<T | null> {
-  const enriched = await run(baseSelect + SHOPEE_SELECT);
-  if (!enriched.error) return enriched.data;
+  let lastError: { message: string } | null = null;
 
-  console.warn(
-    `[${label}] espelho da Shopee indisponível, seguindo sem promoção:`,
-    enriched.error.message,
-  );
-  const plain = await run(baseSelect);
-  if (plain.error) throw new Error(`${label} failed: ${plain.error.message}`);
-  return plain.data;
+  for (const [index, extra] of SELECT_TIERS.entries()) {
+    const result = await run(baseSelect + extra);
+    if (!result.error) {
+      if (index > 0) {
+        console.warn(
+          `[${label}] tabela de desconto indisponível, seguindo sem ela:`,
+          lastError?.message,
+        );
+      }
+      return result.data;
+    }
+    lastError = result.error;
+  }
+
+  throw new Error(`${label} failed: ${lastError?.message ?? 'erro desconhecido'}`);
 }
 
 export async function listActiveProducts(): Promise<ProductWithRelations[]> {

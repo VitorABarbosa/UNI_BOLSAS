@@ -6,6 +6,7 @@ import {
   FileSpreadsheet,
   LayoutDashboard,
   Package,
+  Percent,
   ShoppingBag,
   Tag,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/produtos', label: 'Produtos', icon: Package, exact: false },
   { href: '/admin/categorias', label: 'Categorias', icon: Tag, exact: false },
+  { href: '/admin/campanhas', label: 'Campanhas', icon: Percent, exact: false },
   { href: '/admin/importar', label: 'Importar', icon: FileSpreadsheet, exact: false },
   { href: '/admin/shopee', label: 'Shopee', icon: ShoppingBag, exact: false },
 ] as const;

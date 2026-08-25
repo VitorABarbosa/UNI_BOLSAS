@@ -26,6 +26,13 @@ type ProductPhotoProps = {
  *
  * As duas camadas usam a mesma URL, então o navegador baixa um arquivo só.
  */
+/**
+ * Qualidade das fotos de produto. Acima do padrão (75) porque aqui a textura
+ * do material é argumento de venda — precisa estar declarada em
+ * `images.qualities` no next.config, senão o otimizador responde 400.
+ */
+const PHOTO_QUALITY = 90;
+
 export function ProductPhoto({
   src,
   alt,
@@ -48,6 +55,7 @@ export function ProductPhoto({
         priority={priority}
         loading={loading}
         fetchPriority={fetchPriority}
+        quality={PHOTO_QUALITY}
       />
       <Image
         src={src}
@@ -58,6 +66,7 @@ export function ProductPhoto({
         priority={priority}
         loading={loading}
         fetchPriority={fetchPriority}
+        quality={PHOTO_QUALITY}
         style={style}
       />
     </>
