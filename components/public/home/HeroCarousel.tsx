@@ -11,9 +11,17 @@ import {
 import { HERO_SLIDES } from '@/lib/content/hero-slides';
 
 const ADVANCE_MS = 5000;
+/** O vídeo ganha mais tempo de tela — 5s cortariam ele no meio da cena. */
+const VIDEO_ADVANCE_MS = 12000;
 const TRANSITION_MS = 900;
 /** Distância mínima (px) do arrasto pra contar como troca de slide. */
 const SWIPE_THRESHOLD = 45;
+
+const advanceMsFor = (idx: number) =>
+  HERO_SLIDES[idx]?.vimeoId ? VIDEO_ADVANCE_MS : ADVANCE_MS;
+
+/** O primeiro slide de FOTO é o candidato a LCP — o vídeo carrega à parte. */
+const FIRST_IMAGE_IDX = HERO_SLIDES.findIndex((s) => s.image != null);
 
 export function HeroCarousel() {
   const [active, setActive] = useState(0);
@@ -21,7 +29,7 @@ export function HeroCarousel() {
   const [dir, setDir] = useState<1 | -1>(1);
   const [transitioning, setTransitioning] = useState(false);
   const [paused, setPaused] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const goTo = useCallback(
@@ -49,13 +57,16 @@ export function HeroCarousel() {
   );
   const goIdx = (i: number) => goTo(i, i > active ? 1 : -1);
 
+  // setTimeout (e não setInterval): cada slide tem seu próprio tempo de
+  // exibição — o vídeo fica mais que as fotos. O efeito re-arma a cada troca
+  // porque `next` muda junto com `active`.
   useEffect(() => {
     if (paused) return;
-    timerRef.current = setInterval(next, ADVANCE_MS);
+    timerRef.current = setTimeout(next, advanceMsFor(active));
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [next, paused]);
+  }, [next, active, paused]);
 
   // Não gasta bateria nem "pula" slides enquanto a aba está em segundo plano.
   useEffect(() => {
@@ -65,7 +76,7 @@ export function HeroCarousel() {
   }, []);
 
   const resetTimer = (fn: () => void) => {
-    if (timerRef.current) clearInterval(timerRef.current);
+    if (timerRef.current) clearTimeout(timerRef.current);
     fn();
   };
 
@@ -95,11 +106,16 @@ export function HeroCarousel() {
       role="region"
       aria-roledescription="carrossel"
       aria-label="Destaques Uni Bolsas"
+      style={
+        { ['--advance' as string]: `${advanceMsFor(active)}ms` } as CSSProperties
+      }
     >
       {HERO_SLIDES.map((slide, i) => {
         const isActive = i === active;
         const isPrev = i === prev;
-        if (!isActive && !isPrev) return null;
+        // Slides de vídeo ficam SEMPRE montados: desmontar o iframe faria o
+        // player do Vimeo recarregar do zero a cada volta do carrossel.
+        if (!isActive && !isPrev && !slide.vimeoId) return null;
         return (
           <div
             key={slide.key}
@@ -107,22 +123,34 @@ export function HeroCarousel() {
               'uni-carousel-slide',
               isActive ? 'is-active' : '',
               isPrev ? 'is-prev' : '',
+              !isActive && !isPrev ? 'is-idle' : '',
             ]
               .filter(Boolean)
               .join(' ')}
             style={{ ['--slide-dir' as string]: dir } as CSSProperties}
             data-dir={dir}
           >
-            <Image
-              src={slide.image}
-              alt={slide.alt}
-              className="uni-carousel-img"
-              fill
-              // Full-bleed em qualquer largura — o Next serve a variante certa.
-              sizes="100vw"
-              // O primeiro slide é LCP: carrega sem lazy e entra no preload.
-              priority={i === 0}
-            />
+            {slide.vimeoId ? (
+              <div className="uni-carousel-video">
+                <iframe
+                  src={`https://player.vimeo.com/video/${slide.vimeoId}?background=1&autopause=0&muted=1&loop=1&dnt=1`}
+                  className="uni-carousel-video-iframe"
+                  title={slide.alt}
+                  allow="autoplay; fullscreen"
+                />
+              </div>
+            ) : (
+              <Image
+                src={slide.image ?? ''}
+                alt={slide.alt}
+                className="uni-carousel-img"
+                fill
+                // Full-bleed em qualquer largura — o Next serve a variante certa.
+                sizes="100vw"
+                // A primeira FOTO é candidata a LCP: sem lazy, entra no preload.
+                priority={i === FIRST_IMAGE_IDX}
+              />
+            )}
             <div className="uni-carousel-overlay" />
             <div className="uni-carousel-tag">{slide.tag}</div>
           </div>
