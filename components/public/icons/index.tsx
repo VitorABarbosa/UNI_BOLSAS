@@ -325,3 +325,24 @@ export function WazeIcon({
     </svg>
   );
 }
+
+export function PlayIcon({
+  size = 20,
+  color = 'currentColor',
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={color}
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path d="M8 5.14v13.72c0 .77.83 1.25 1.5.86l11.02-6.86c.64-.4.64-1.32 0-1.72L9.5 4.28A1 1 0 0 0 8 5.14z" />
+    </svg>
+  );
+}
