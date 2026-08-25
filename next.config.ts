@@ -18,6 +18,9 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: '10mb' },
   },
   images: {
+    // O Next 16 recusa (HTTP 400) qualquer `quality` fora desta lista. 75 é o
+    // padrão usado no resto do site; 90 é o das fotos de produto.
+    qualities: [75, 90],
     remotePatterns: supabaseHostname
       ? [
           {
