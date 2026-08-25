@@ -98,6 +98,29 @@ tentadas em degraus (Shopee + campanhas → só Shopee → nenhuma), então a
 migration `20260824000100_campaigns.sql` é opcional e pode ser aplicada a
 qualquer momento, sem janela de manutenção. Enquanto não for, a aba Campanhas
 explica isso em vez de quebrar.
+**As consultas toleram a ausência do espelho.** Cada uma tenta ler
+`shopee_items` e, se falhar (integração não aplicada no projeto, por
+exemplo), repete sem esse trecho. O pior caso é "a promoção não aparece",
+nunca "a página não carrega" — regra que vale para qualquer coisa nova que
+dependa de uma tabela.
+## Organizar o catálogo por categoria
+
+`/admin/categorias` tem um organizador que lê o nome de cada produto e sugere
+a categoria — feito para o catálogo que entra em massa pela Shopee, onde tudo
+cai num balde só.
+
+As regras vivem em `lib/catalog/category-rules.ts`. **A ordem importa: vence a
+primeira que casar.** Por isso `mochila` vem antes de `viagem` (mochila de
+viagem continua sendo mochila) e `viagem` antes de `bolsa` (bolsa de viagem é
+peça de viagem). "sport" de propósito não está em Esportivas: aparece em nome
+de bolsa de viagem e roubaria a peça da categoria certa.
+
+O fluxo é sempre **analisar → conferir → aplicar**: nada muda antes de você
+ver a lista, com a palavra que motivou cada troca, e cada linha pode ser
+desmarcada. Produto em que nenhuma regra casa fica onde está.
+
+Categoria usada por uma regra mas ainda inexistente aparece com um botão para
+criá-la ali mesmo.
 
 ## Cadastrar um admin
 

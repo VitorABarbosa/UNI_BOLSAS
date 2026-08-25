@@ -1,6 +1,7 @@
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { AdminShell } from '@/components/admin/shell/AdminShell';
 import { CategoriesEditor } from '@/components/admin/CategoriesEditor';
+import { CategoryOrganizer } from '@/components/admin/CategoryOrganizer';
 
 export const metadata = {
   title: 'Categorias · Uni Bolsas Admin',
@@ -28,6 +29,9 @@ export default async function CategoriasPage() {
   return (
     <AdminShell user={{ email: user.email ?? '' }} title="Categorias">
       <CategoriesEditor initial={rows} />
+      <div className="p-6 pt-0">
+        <CategoryOrganizer />
+      </div>
     </AdminShell>
   );
 }
