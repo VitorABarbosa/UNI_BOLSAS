@@ -54,9 +54,23 @@ export function HeroVideo({
         aria-label={slide.alt}
         onPlaying={() => setReady(true)}
       >
-        {/* WebM primeiro: onde há suporte, é o arquivo menor. */}
-        <source src={`${slide.video}.webm`} type="video/webm" />
-        <source src={`${slide.video}.mp4`} type="video/mp4" />
+        {/* O navegador desce a lista e para na primeira fonte que ele
+            consegue tocar e cujo `media` bate — só essa é baixada. A ordem
+            resolve duas escolhas de uma vez: resolução pela largura da tela
+            (1080p no desktop, 720p no celular) e formato pelo suporte do
+            navegador (WebM, menor, onde houver; MP4 no Safari). */}
+        <source
+          media="(min-width: 900px)"
+          src={`${slide.video}-1080.webm`}
+          type="video/webm"
+        />
+        <source
+          media="(min-width: 900px)"
+          src={`${slide.video}-1080.mp4`}
+          type="video/mp4"
+        />
+        <source src={`${slide.video}-720.webm`} type="video/webm" />
+        <source src={`${slide.video}-720.mp4`} type="video/mp4" />
       </video>
       {slide.poster && (
         <Image
