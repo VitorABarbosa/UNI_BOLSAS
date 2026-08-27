@@ -12,13 +12,14 @@ import { HERO_SLIDES } from '@/lib/content/hero-slides';
 import { HeroVideo } from '@/components/public/home/HeroVideo';
 
 const ADVANCE_MS = 5000;
-/** O vídeo ganha mais tempo de tela — 5s cortariam ele no meio da cena. */
-const VIDEO_ADVANCE_MS = 12000;
+/** Duração do filme do hero. Casar os dois faz o carrossel avançar quando o
+ *  vídeo termina, então o corte do loop nunca aparece na tela. */
+const VIDEO_ADVANCE_MS = 10000;
 const TRANSITION_MS = 900;
 /** Distância mínima (px) do arrasto pra contar como troca de slide. */
 const SWIPE_THRESHOLD = 45;
 
-const isVideo = (s: (typeof HERO_SLIDES)[number]) => !!(s.vimeoId || s.video);
+const isVideo = (s: (typeof HERO_SLIDES)[number]) => s.video != null;
 
 const advanceMsFor = (idx: number) => {
   const slide = HERO_SLIDES[idx];
@@ -118,9 +119,9 @@ export function HeroCarousel() {
       {HERO_SLIDES.map((slide, i) => {
         const isActive = i === active;
         const isPrev = i === prev;
-        // Slides de vídeo ficam SEMPRE montados: desmontar o iframe faria o
-        // player do Vimeo recarregar do zero a cada volta do carrossel.
-        if (!isActive && !isPrev && !slide.vimeoId && !slide.video) return null;
+        // Slides de vídeo ficam SEMPRE montados: desmontar faria o vídeo
+        // recarregar do zero a cada volta do carrossel.
+        if (!isActive && !isPrev && !isVideo(slide)) return null;
         return (
           <div
             key={slide.key}
@@ -135,7 +136,7 @@ export function HeroCarousel() {
             style={{ ['--slide-dir' as string]: dir } as CSSProperties}
             data-dir={dir}
           >
-            {slide.vimeoId || slide.video ? (
+            {isVideo(slide) ? (
               <HeroVideo
                 slide={slide}
                 priority={i === 0}
