@@ -6,22 +6,23 @@
  *  - `alt`:     descrição do conteúdo (acessibilidade)
  *  - `tag`:     label curto exibido no canto superior direito do slide
  *  - `image`:   slide de FOTO — caminho a partir de `public/`
- *  - `video`:   slide de VÍDEO hospedado aqui — caminho a partir de `public/`
- *  - `vimeoId`: slide de VÍDEO no Vimeo — id do vídeo (o número no fim do link)
+ *  - `video`:   slide de VÍDEO — caminho SEM extensão a partir de `public/`.
+ *               O componente monta `<nome>.webm` e `<nome>.mp4` e deixa o
+ *               navegador escolher: WebM onde houver suporte (arquivo menor),
+ *               MP4/H.264 no resto.
  *  - `poster`:  capa do slide de vídeo, exibida INSTANTANEAMENTE enquanto o
  *               vídeo ainda não tem frame pra mostrar
  *
- * Cada slide tem exatamente um entre `image`, `video` e `vimeoId`.
+ * Cada slide tem OU `image` OU `video`.
  *
- * VÍDEO: `video` (arquivo local) é sempre mais rápido que `vimeoId`. O Vimeo
- * exige abrir conexão com outro domínio, baixar o player deles e só então
- * começar a bufferizar — 2 a 4 segundos de espera. Um MP4 servido pelo próprio
- * site começa quase junto com a página. Para migrar: salve o arquivo em
- * `public/hero/`, troque `vimeoId` por `video: '/hero/<nome>.mp4'` e pronto.
+ * VÍDEO: o arquivo é servido pelo próprio site, não por um player de terceiro.
+ * É o que permite ele começar junto com a página: sem abrir conexão com outro
+ * domínio, sem baixar player nenhum antes. Para trocar o filme, gere os dois
+ * formatos e a capa (veja `scripts/encode-hero-video.md`) e aponte aqui.
  *
- * POSTER: enquanto o vídeo não está pronto, é o poster que aparece — por isso
- * ele nunca deve faltar num slide de vídeo. O ideal é um frame do próprio
- * vídeo, pra transição virar um crossfade imperceptível.
+ * POSTER: enquanto o vídeo não tem frame, é o poster que aparece — por isso
+ * ele nunca deve faltar num slide de vídeo. Use o frame 0 do próprio vídeo:
+ * assim a entrada não tem troca visível, o quadro só ganha movimento.
  */
 
 export type HeroSlide = {
@@ -29,18 +30,18 @@ export type HeroSlide = {
   alt: string;
   tag: string;
   image?: string;
+  /** Caminho sem extensão: `.webm` e `.mp4` são montados a partir dele. */
   video?: string;
-  vimeoId?: string;
   poster?: string;
 };
 
 export const HERO_SLIDES: ReadonlyArray<HeroSlide> = [
   {
     key: 'filme',
-    vimeoId: '1221303809',
-    // TODO: trocar por um frame real do vídeo quando o arquivo chegar —
-    // hoje é uma foto da campanha, que segura o quadro sem deixar preto.
-    poster: '/hero/slide-1.jpg',
+    video: '/hero/filme',
+    // O frame 0 do próprio vídeo: a capa e o primeiro quadro são a mesma
+    // imagem, então a entrada do vídeo não tem troca visível.
+    poster: '/hero/filme-capa.jpg',
     alt: 'Uni Bolsas em movimento — filme da coleção',
     tag: 'Em movimento',
   },

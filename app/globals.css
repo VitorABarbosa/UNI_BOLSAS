@@ -623,10 +623,6 @@ html, body {
     z-index: 0;
     animation: none;
   }
-  /* O iframe do Vimeo não tem object-fit: o wrapper vira um container e o
-     player é dimensionado pra COBRIR o quadro (16:9 estourando as bordas),
-     como uma imagem em cover. pointer-events off: o vídeo é cenário — o
-     toque continua sendo do carrossel (swipe, setas). */
   .uni-carousel-video {
     position: absolute;
     inset: 0;
@@ -634,19 +630,9 @@ html, body {
     /* Creme, não preto: se sobrar qualquer fresta atrás do player, ela lê
        como o fundo do site em vez de um buraco preto no meio do hero. */
     background: var(--color-bone-light);
-    container-type: size;
   }
-  .uni-carousel-video-iframe {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: max(100cqw, calc(100cqh * 16 / 9));
-    height: max(100cqh, calc(100cqw * 9 / 16));
-    border: 0;
-    pointer-events: none;
-  }
-  /* MP4 servido pelo próprio site: sem iframe, o cover é nativo. */
+  /* pointer-events off: o vídeo é cenário — o toque continua sendo do
+     carrossel (swipe, setas). */
   .uni-carousel-video-el {
     position: absolute;
     inset: 0;
@@ -656,9 +642,9 @@ html, body {
     display: block;
     pointer-events: none;
   }
-  /* A capa cobre o player desde a primeira pintura e só sai quando existe
-     frame de verdade — sem ela o visitante encara o quadro preto do Vimeo
-     carregando. Some por fade, então a troca vira corte suave. */
+  /* A capa (frame 0 do vídeo) cobre o quadro desde a primeira pintura e só
+     sai quando existe frame de verdade. Como é a mesma imagem que o vídeo
+     mostra ao começar, a troca não aparece: o quadro só ganha movimento. */
   .uni-carousel-poster {
     position: absolute;
     inset: 0;
