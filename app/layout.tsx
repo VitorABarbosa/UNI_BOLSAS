@@ -62,6 +62,13 @@ export default function RootLayout({
       className={`${dmSans.variable} ${fraunces.variable} ${dmMono.variable}`}
     >
       <head>
+        {/* O vídeo do hero mora no Vimeo: abrir DNS + TLS com esses domínios
+            já na primeira linha do HTML tira ~300ms do tempo até o primeiro
+            frame, em vez de esperar o iframe ser criado pra só então começar
+            o aperto de mão. */}
+        <link rel="preconnect" href="https://player.vimeo.com" />
+        <link rel="preconnect" href="https://f.vimeocdn.com" crossOrigin="" />
+        <link rel="preconnect" href="https://i.vimeocdn.com" crossOrigin="" />
         <script dangerouslySetInnerHTML={{ __html: JS_READY }} />
       </head>
       <body className="font-sans antialiased">

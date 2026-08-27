@@ -640,6 +640,31 @@ html, body {
     border: 0;
     pointer-events: none;
   }
+  /* MP4 servido pelo próprio site: sem iframe, o cover é nativo. */
+  .uni-carousel-video-el {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+  /* A capa cobre o player desde a primeira pintura e só sai quando existe
+     frame de verdade — sem ela o visitante encara o quadro preto do Vimeo
+     carregando. Some por fade, então a troca vira corte suave. */
+  .uni-carousel-poster {
+    position: absolute;
+    inset: 0;
+    object-fit: cover;
+    z-index: 2;
+    opacity: 1;
+    transition: opacity 0.8s ease;
+  }
+  .uni-carousel-poster.is-gone {
+    opacity: 0;
+    pointer-events: none;
+  }
   .uni-carousel-img {
     width: 100%;
     height: 100%;
