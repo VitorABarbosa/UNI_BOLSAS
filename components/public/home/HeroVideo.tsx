@@ -46,13 +46,29 @@ type VimeoMessage = {
 export function HeroVideo({
   slide,
   priority,
+  isActive,
 }: {
   slide: HeroSlide;
   priority: boolean;
+  isActive: boolean;
 }) {
   const [ready, setReady] = useState(false);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Voltando pro slide depois de uma volta do carrossel, cutuca o player: se
+  // o navegador tiver suspendido a reprodução enquanto ele estava fora de
+  // cena, isto religa em vez de deixar o quadro parado.
+  useEffect(() => {
+    if (!isActive) return;
+    if (slide.vimeoId) {
+      frameRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ method: 'play' }),
+        VIMEO_ORIGIN,
+      );
+    }
+    void videoRef.current?.play().catch(() => {});
+  }, [isActive, slide.vimeoId]);
 
   // ---- MP4 local: o elemento pode já estar tocando quando o React hidrata,
   // e aí o `playing` não dispara mais. Confere o estado atual na montagem.

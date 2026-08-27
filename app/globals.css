@@ -613,9 +613,13 @@ html, body {
   }
   /* Slide de vídeo fora de cena: fica montado (senão o player recarrega a
      cada volta), mas invisível e fora do fluxo de interação. */
+  /* Fora de cena o slide fica transparente, NÃO `visibility: hidden`: o
+     navegador para de renderizar o que está hidden e o player do Vimeo
+     suspende junto — na volta do carrossel o vídeo aparecia preto até
+     religar. Com opacity o player segue rodando por baixo, invisível. */
   .uni-carousel-slide.is-idle {
     opacity: 0;
-    visibility: hidden;
+    pointer-events: none;
     z-index: 0;
     animation: none;
   }
@@ -627,7 +631,9 @@ html, body {
     position: absolute;
     inset: 0;
     overflow: hidden;
-    background: var(--color-ink);
+    /* Creme, não preto: se sobrar qualquer fresta atrás do player, ela lê
+       como o fundo do site em vez de um buraco preto no meio do hero. */
+    background: var(--color-bone-light);
     container-type: size;
   }
   .uni-carousel-video-iframe {

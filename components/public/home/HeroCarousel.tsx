@@ -136,7 +136,11 @@ export function HeroCarousel() {
             data-dir={dir}
           >
             {slide.vimeoId || slide.video ? (
-              <HeroVideo slide={slide} priority={i === 0} />
+              <HeroVideo
+                slide={slide}
+                priority={i === 0}
+                isActive={isActive}
+              />
             ) : (
               <Image
                 src={slide.image ?? ''}
