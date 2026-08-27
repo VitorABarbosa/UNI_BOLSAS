@@ -8,6 +8,7 @@ import {
   useState,
   type CSSProperties,
 } from 'react';
+import { preconnect, prefetchDNS } from 'react-dom';
 import { HERO_SLIDES } from '@/lib/content/hero-slides';
 
 const ADVANCE_MS = 5000;
@@ -23,7 +24,26 @@ const advanceMsFor = (idx: number) =>
 /** O primeiro slide de FOTO é o candidato a LCP — o vídeo carrega à parte. */
 const FIRST_IMAGE_IDX = HERO_SLIDES.findIndex((s) => s.image != null);
 
-export function HeroCarousel() {
+export function HeroCarousel({
+  videoPosters,
+}: {
+  /**
+   * Poster por `key` de slide de vídeo (frame do filme, resolvido no
+   * servidor — ver lib/vimeo.ts). Cobre o quadro no lugar do player até o
+   * vídeo estar de fato tocando; sem ele o slide abre num quadro vazio
+   * enquanto o player do Vimeo baixa e inicializa.
+   */
+  videoPosters?: Record<string, string>;
+}) {
+  // O player, os assets e o poster do Vimeo vêm de domínios próprios; abrir
+  // as conexões junto com o HTML corta DNS+TLS do caminho crítico do vídeo.
+  if (HERO_SLIDES.some((s) => s.vimeoId != null)) {
+    preconnect('https://player.vimeo.com');
+    preconnect('https://f.vimeocdn.com');
+    preconnect('https://i.vimeocdn.com');
+    prefetchDNS('https://vod-adaptive-ak.vimeocdn.com');
+  }
+
   const [active, setActive] = useState(0);
   const [prev, setPrev] = useState<number | null>(null);
   const [dir, setDir] = useState<1 | -1>(1);
@@ -131,14 +151,11 @@ export function HeroCarousel() {
             data-dir={dir}
           >
             {slide.vimeoId ? (
-              <div className="uni-carousel-video">
-                <iframe
-                  src={`https://player.vimeo.com/video/${slide.vimeoId}?background=1&autopause=0&muted=1&loop=1&dnt=1`}
-                  className="uni-carousel-video-iframe"
-                  title={slide.alt}
-                  allow="autoplay; fullscreen"
-                />
-              </div>
+              <VimeoBackground
+                vimeoId={slide.vimeoId}
+                title={slide.alt}
+                poster={videoPosters?.[slide.key]}
+              />
             ) : (
               <Image
                 src={slide.image ?? ''}
@@ -216,6 +233,111 @@ export function HeroCarousel() {
       <div className="uni-carousel-progress">
         <div key={active} className="uni-carousel-progress-fill" />
       </div>
+    </div>
+  );
+}
+
+const VIMEO_PLAYER_ORIGIN = 'https://player.vimeo.com';
+/** Cadência da sondagem `getPaused` enquanto o vídeo ainda não confirmou. */
+const VIMEO_PROBE_MS = 700;
+/** Depois disso pára de sondar — o listener continua, o poster continua. */
+const VIMEO_PROBE_GIVE_UP_MS = 20000;
+
+/**
+ * Player do Vimeo em modo background com um poster por cima.
+ *
+ * O poster (frame do filme, já no HTML inicial com prioridade de LCP) segura
+ * o quadro enquanto o player baixa e inicializa. Ele só sai de cena quando o
+ * vídeo está COMPROVADAMENTE tocando, via API postMessage do player: o
+ * componente registra os eventos `play`/`playing` e, por garantia, sonda
+ * `getPaused` — cobre o caso do autoplay disparar antes do registro chegar.
+ * Se o player nunca responder (bloqueado, sem rede), o poster simplesmente
+ * fica: o hero continua "pronto", só sem movimento.
+ */
+function VimeoBackground({
+  vimeoId,
+  title,
+  poster,
+}: {
+  vimeoId: string;
+  title: string;
+  poster?: string;
+}) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [live, setLive] = useState(false);
+
+  useEffect(() => {
+    // Sem poster não há o que revelar; com `live` o trabalho já acabou.
+    if (live || !poster) return;
+    const frame = iframeRef.current;
+    if (!frame) return;
+
+    const post = (payload: Record<string, unknown>) =>
+      frame.contentWindow?.postMessage(
+        JSON.stringify(payload),
+        VIMEO_PLAYER_ORIGIN,
+      );
+
+    const onMessage = (e: MessageEvent) => {
+      if (
+        e.origin !== VIMEO_PLAYER_ORIGIN ||
+        e.source !== frame.contentWindow
+      )
+        return;
+      let data: unknown = e.data;
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          return;
+        }
+      }
+      if (typeof data !== 'object' || data === null) return;
+      const msg = data as { event?: string; method?: string; value?: unknown };
+      if (msg.event === 'ready') {
+        post({ method: 'addEventListener', value: 'play' });
+        post({ method: 'addEventListener', value: 'playing' });
+      }
+      if (
+        msg.event === 'play' ||
+        msg.event === 'playing' ||
+        (msg.method === 'getPaused' && msg.value === false)
+      ) {
+        setLive(true);
+      }
+    };
+
+    window.addEventListener('message', onMessage);
+    const probe = setInterval(() => post({ method: 'getPaused' }), VIMEO_PROBE_MS);
+    const giveUp = setTimeout(() => clearInterval(probe), VIMEO_PROBE_GIVE_UP_MS);
+    return () => {
+      window.removeEventListener('message', onMessage);
+      clearInterval(probe);
+      clearTimeout(giveUp);
+    };
+  }, [live, poster]);
+
+  return (
+    <div className={'uni-carousel-video' + (live ? ' is-live' : '')}>
+      <iframe
+        ref={iframeRef}
+        src={`https://player.vimeo.com/video/${vimeoId}?background=1&autopause=0&muted=1&loop=1&dnt=1`}
+        className="uni-carousel-video-iframe"
+        title={title}
+        allow="autoplay; fullscreen"
+      />
+      {poster ? (
+        <Image
+          src={poster}
+          // O iframe ao lado já descreve o conteúdo; o poster é decorativo.
+          alt=""
+          aria-hidden
+          className="uni-carousel-video-poster"
+          fill
+          sizes="100vw"
+          priority
+        />
+      ) : null}
     </div>
   );
 }

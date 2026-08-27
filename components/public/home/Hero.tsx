@@ -20,14 +20,19 @@ const LINES: ReadonlyArray<ReadonlyArray<string | ReactNode>> = [
 /** Atraso entre uma palavra e a seguinte, em segundos. */
 const WORD_STEP = 0.09;
 
-export function Hero() {
+export function Hero({
+  videoPosters,
+}: {
+  /** Poster (frame do vídeo) por `key` de slide — ver HeroCarousel. */
+  videoPosters?: Record<string, string>;
+}) {
   return (
     <section className="uni-hero" id="hero">
       <div className="uni-hero-bg" />
       <div className="uni-container">
         <div className="uni-hero-inner">
           <div className="uni-hero-image-frame">
-            <HeroCarousel />
+            <HeroCarousel videoPosters={videoPosters} />
           </div>
           <span className="uni-eyebrow uni-eyebrow-wide uni-hero-eyebrow">
             Coleção · 2026 · Brás · SP

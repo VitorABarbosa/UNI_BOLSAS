@@ -10,6 +10,14 @@ const shopeeImagePattern = {
   hostname: '**.susercontent.com',
 } as const;
 
+// Poster do vídeo do hero: o thumbnail vem do CDN de imagens do Vimeo e é
+// servido pelo next/image (ver lib/vimeo.ts e HeroCarousel).
+const vimeoThumbPattern = {
+  protocol: 'https',
+  hostname: 'i.vimeocdn.com',
+  pathname: '/video/**',
+} as const;
+
 const nextConfig: NextConfig = {
   typedRoutes: true,
   experimental: {
@@ -29,8 +37,9 @@ const nextConfig: NextConfig = {
             pathname: '/storage/v1/object/public/products/**',
           },
           shopeeImagePattern,
+          vimeoThumbPattern,
         ]
-      : [shopeeImagePattern],
+      : [shopeeImagePattern, vimeoThumbPattern],
   },
 };
 

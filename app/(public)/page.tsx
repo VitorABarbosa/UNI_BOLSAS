@@ -10,6 +10,8 @@ import { Newsletter } from '@/components/public/home/Newsletter';
 import { HomeContent } from '@/components/public/home/HomeContent';
 import { listActiveProducts } from '@/lib/queries/products';
 import { listCategories } from '@/lib/queries/categories';
+import { HERO_SLIDES } from '@/lib/content/hero-slides';
+import { getVimeoPosterUrl } from '@/lib/vimeo';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
 
 export const revalidate = 60;
@@ -31,18 +33,30 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [products, categoriesFromDb] = await Promise.all([
+  const [products, categoriesFromDb, heroPosterEntries] = await Promise.all([
     listActiveProducts(),
     listCategories(),
+    // Poster de cada slide de vídeo do hero: resolvido aqui no servidor pra
+    // já sair no HTML inicial cobrindo o player enquanto ele carrega.
+    Promise.all(
+      HERO_SLIDES.filter((s) => s.vimeoId != null).map(
+        async (s) => [s.key, await getVimeoPosterUrl(s.vimeoId!)] as const,
+      ),
+    ),
   ]);
   const categoriesWithTodos = [
     { id: 'todos', label: 'Todos' },
     ...categoriesFromDb.map((c) => ({ id: c.slug, label: c.label })),
   ];
+  const heroPosters = Object.fromEntries(
+    heroPosterEntries.filter(
+      (entry): entry is readonly [string, string] => entry[1] != null,
+    ),
+  );
 
   return (
     <>
-      <Hero />
+      <Hero videoPosters={heroPosters} />
       {/* O catálogo vem logo depois do hero: é o que a pessoa veio ver. */}
       <HomeContent
         products={products}
