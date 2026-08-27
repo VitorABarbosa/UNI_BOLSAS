@@ -6,10 +6,11 @@
  *  - `alt`:     descrição do conteúdo (acessibilidade)
  *  - `tag`:     label curto exibido no canto superior direito do slide
  *  - `image`:   slide de FOTO — caminho a partir de `public/`
- *  - `video`:   slide de VÍDEO — caminho SEM extensão a partir de `public/`.
- *               O componente monta `<nome>.webm` e `<nome>.mp4` e deixa o
- *               navegador escolher: WebM onde houver suporte (arquivo menor),
- *               MP4/H.264 no resto.
+ *  - `video`:   slide de VÍDEO — caminho SEM sufixo a partir de `public/`.
+ *               O componente monta quatro arquivos a partir dele — `-1080` e
+ *               `-720`, cada um em `.webm` e `.mp4` — e o navegador baixa só
+ *               um: a resolução pela largura da tela, o formato pelo que ele
+ *               sabe tocar.
  *  - `poster`:  capa do slide de vídeo, exibida INSTANTANEAMENTE enquanto o
  *               vídeo ainda não tem frame pra mostrar
  *
@@ -17,8 +18,8 @@
  *
  * VÍDEO: o arquivo é servido pelo próprio site, não por um player de terceiro.
  * É o que permite ele começar junto com a página: sem abrir conexão com outro
- * domínio, sem baixar player nenhum antes. Para trocar o filme, gere os dois
- * formatos e a capa (veja `scripts/encode-hero-video.md`) e aponte aqui.
+ * domínio, sem baixar player nenhum antes. Para trocar o filme, gere os quatro
+ * arquivos e a capa (veja `scripts/encode-hero-video.md`) e aponte aqui.
  *
  * POSTER: enquanto o vídeo não tem frame, é o poster que aparece — por isso
  * ele nunca deve faltar num slide de vídeo. Use o frame 0 do próprio vídeo:
@@ -30,7 +31,7 @@ export type HeroSlide = {
   alt: string;
   tag: string;
   image?: string;
-  /** Caminho sem extensão: `.webm` e `.mp4` são montados a partir dele. */
+  /** Caminho sem sufixo: `-1080`/`-720` × `.webm`/`.mp4` saem daqui. */
   video?: string;
   poster?: string;
 };
