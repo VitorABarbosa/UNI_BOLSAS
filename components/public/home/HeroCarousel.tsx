@@ -9,6 +9,7 @@ import {
   type CSSProperties,
 } from 'react';
 import { HERO_SLIDES } from '@/lib/content/hero-slides';
+import { HeroVideo } from '@/components/public/home/HeroVideo';
 
 const ADVANCE_MS = 5000;
 /** O vídeo ganha mais tempo de tela — 5s cortariam ele no meio da cena. */
@@ -17,8 +18,12 @@ const TRANSITION_MS = 900;
 /** Distância mínima (px) do arrasto pra contar como troca de slide. */
 const SWIPE_THRESHOLD = 45;
 
-const advanceMsFor = (idx: number) =>
-  HERO_SLIDES[idx]?.vimeoId ? VIDEO_ADVANCE_MS : ADVANCE_MS;
+const isVideo = (s: (typeof HERO_SLIDES)[number]) => !!(s.vimeoId || s.video);
+
+const advanceMsFor = (idx: number) => {
+  const slide = HERO_SLIDES[idx];
+  return slide && isVideo(slide) ? VIDEO_ADVANCE_MS : ADVANCE_MS;
+};
 
 /** O primeiro slide de FOTO é o candidato a LCP — o vídeo carrega à parte. */
 const FIRST_IMAGE_IDX = HERO_SLIDES.findIndex((s) => s.image != null);
@@ -115,7 +120,7 @@ export function HeroCarousel() {
         const isPrev = i === prev;
         // Slides de vídeo ficam SEMPRE montados: desmontar o iframe faria o
         // player do Vimeo recarregar do zero a cada volta do carrossel.
-        if (!isActive && !isPrev && !slide.vimeoId) return null;
+        if (!isActive && !isPrev && !slide.vimeoId && !slide.video) return null;
         return (
           <div
             key={slide.key}
@@ -130,15 +135,8 @@ export function HeroCarousel() {
             style={{ ['--slide-dir' as string]: dir } as CSSProperties}
             data-dir={dir}
           >
-            {slide.vimeoId ? (
-              <div className="uni-carousel-video">
-                <iframe
-                  src={`https://player.vimeo.com/video/${slide.vimeoId}?background=1&autopause=0&muted=1&loop=1&dnt=1`}
-                  className="uni-carousel-video-iframe"
-                  title={slide.alt}
-                  allow="autoplay; fullscreen"
-                />
-              </div>
+            {slide.vimeoId || slide.video ? (
+              <HeroVideo slide={slide} priority={i === 0} />
             ) : (
               <Image
                 src={slide.image ?? ''}

@@ -6,14 +6,22 @@
  *  - `alt`:     descrição do conteúdo (acessibilidade)
  *  - `tag`:     label curto exibido no canto superior direito do slide
  *  - `image`:   slide de FOTO — caminho a partir de `public/`
- *  - `vimeoId`: slide de VÍDEO — id do vídeo no Vimeo, tocado pelo player
- *               em modo background (mudo, em loop, sem controles)
+ *  - `video`:   slide de VÍDEO hospedado aqui — caminho a partir de `public/`
+ *  - `vimeoId`: slide de VÍDEO no Vimeo — id do vídeo (o número no fim do link)
+ *  - `poster`:  capa do slide de vídeo, exibida INSTANTANEAMENTE enquanto o
+ *               vídeo ainda não tem frame pra mostrar
  *
- * Cada slide tem OU `image` OU `vimeoId`, nunca os dois.
+ * Cada slide tem exatamente um entre `image`, `video` e `vimeoId`.
  *
- * Para trocar uma imagem: substitua o arquivo em `public/hero/` mantendo o
- * mesmo nome OU edite `image` aqui apontando para o novo arquivo.
- * Para trocar o vídeo: troque o `vimeoId` (o número no fim do link do Vimeo).
+ * VÍDEO: `video` (arquivo local) é sempre mais rápido que `vimeoId`. O Vimeo
+ * exige abrir conexão com outro domínio, baixar o player deles e só então
+ * começar a bufferizar — 2 a 4 segundos de espera. Um MP4 servido pelo próprio
+ * site começa quase junto com a página. Para migrar: salve o arquivo em
+ * `public/hero/`, troque `vimeoId` por `video: '/hero/<nome>.mp4'` e pronto.
+ *
+ * POSTER: enquanto o vídeo não está pronto, é o poster que aparece — por isso
+ * ele nunca deve faltar num slide de vídeo. O ideal é um frame do próprio
+ * vídeo, pra transição virar um crossfade imperceptível.
  */
 
 export type HeroSlide = {
@@ -21,13 +29,18 @@ export type HeroSlide = {
   alt: string;
   tag: string;
   image?: string;
+  video?: string;
   vimeoId?: string;
+  poster?: string;
 };
 
 export const HERO_SLIDES: ReadonlyArray<HeroSlide> = [
   {
     key: 'filme',
     vimeoId: '1221303809',
+    // TODO: trocar por um frame real do vídeo quando o arquivo chegar —
+    // hoje é uma foto da campanha, que segura o quadro sem deixar preto.
+    poster: '/hero/slide-1.jpg',
     alt: 'Uni Bolsas em movimento — filme da coleção',
     tag: 'Em movimento',
   },
