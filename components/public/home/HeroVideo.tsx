@@ -45,7 +45,10 @@ export function HeroVideo({
       <video
         ref={videoRef}
         className="uni-carousel-video-el"
-        poster={slide.poster}
+        // Sem `poster=` de propósito: quem cobre o quadro é o <Image> abaixo,
+        // que passa pelo otimizador (34 KB em vez dos 179 KB do arquivo cru) e
+        // fica por cima até o vídeo ter frame. Declarar os dois fazia a mesma
+        // capa ser baixada duas vezes, competindo com o vídeo pela banda.
         autoPlay
         muted
         loop

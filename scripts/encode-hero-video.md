@@ -27,6 +27,11 @@ desktop, e servir 720p ali obriga o navegador a ampliar o vídeo — é isso que
 apaga o granulado do couro. No celular o quadro tem ~1170px de pixels reais,
 então 1080p seria peso sem ganho visível.
 
+**Por que o celular também usa CRF mais alto:** ali o vídeo é exibido com ~390px
+de largura, ou seja, reduzido três vezes. A compressão que no desktop apagaria a
+textura, nessa escala some junto com os pixels — conferido lado a lado. E cada
+byte pesa mais no celular, que é onde a conexão costuma ser pior.
+
 **Por que dois formatos:** WebM/VP9 sai menor com a mesma qualidade, mas o
 Safari não toca. H.264 toca em tudo e cobre o resto.
 
@@ -43,14 +48,14 @@ ffmpeg -i ENTRADA.mp4 -an -c:v libx264 -profile:v high -level:v 4.0 \
   -pix_fmt yuv420p -crf 20 -preset slow -movflags +faststart -g 48 \
   public/hero/filme-1080.mp4
 
-# --- Celular (720p)
+# --- Celular (720p, mais comprimido: veja a explicação acima)
 ffmpeg -i ENTRADA.mp4 -an -vf "scale=1280:720:flags=lanczos" \
-  -c:v libvpx-vp9 -crf 24 -b:v 0 -deadline good -cpu-used 3 -row-mt 1 \
+  -c:v libvpx-vp9 -crf 35 -b:v 0 -deadline good -cpu-used 3 -row-mt 1 \
   public/hero/filme-720.webm
 
 ffmpeg -i ENTRADA.mp4 -an -vf "scale=1280:720:flags=lanczos" \
   -c:v libx264 -profile:v high -level:v 4.0 -pix_fmt yuv420p \
-  -crf 20 -preset slow -movflags +faststart -g 48 public/hero/filme-720.mp4
+  -crf 26 -preset slow -movflags +faststart -g 48 public/hero/filme-720.mp4
 
 # --- Capa: o frame 0, o mesmo instante que o vídeo mostra ao começar
 ffmpeg -i ENTRADA.mp4 -frames:v 1 -q:v 2 public/hero/filme-capa.jpg
@@ -58,11 +63,11 @@ ffmpeg -i ENTRADA.mp4 -frames:v 1 -q:v 2 public/hero/filme-capa.jpg
 
 Por que cada pedaço:
 
-- **`-crf`** é o controle de qualidade, e é o número que não vale economizar
-  aqui: o produto é a bolsa, e a textura do couro é a primeira coisa que some
-  quando se comprime demais. Número menor = mais qualidade e mais peso. Já foi
-  tentado apertar mais (H.264 CRF 27 a 720p, VP9 CRF 36) e o resultado foi
-  couro liso, sem granulado.
+- **`-crf`** é o controle de qualidade. **No desktop não vale economizar**: o
+  produto é a bolsa, e a textura do couro é a primeira coisa que some quando se
+  comprime demais — servir 720p comprimido ali já deixou o couro liso uma vez.
+  **No celular vale**, porque a imagem é reduzida três vezes na exibição.
+  Número menor = mais qualidade e mais peso.
 - **`-level:v 4.0`** limita o H.264 a um patamar que qualquer aparelho da
   última década decodifica. Sem isso o x264 marca nível 5.0 no arquivo.
 - **`-an`** joga fora o áudio. O vídeo é mudo por natureza (autoplay com som é
@@ -74,16 +79,25 @@ Por que cada pedaço:
 
 ## Conferindo o resultado
 
-**Olhe a textura.** É o teste que vale. Compare um recorte 1:1 contra o
-original:
+**Olhe a textura, no tamanho em que ela vai ser vista.** É o teste que vale.
+
+Pro arquivo de desktop, recorte 1:1 (o vídeo aparece quase em tamanho real):
 
 ```sh
 ffmpeg -i ENTRADA.mp4 -frames:v 1 -vf "crop=560:400:640:400" orig.jpg
 ffmpeg -i public/hero/filme-1080.mp4 -frames:v 1 -vf "crop=560:400:640:400" novo.jpg
 ```
 
-O granulado do couro tem que continuar visível. Se virou uma superfície lisa,
-o CRF está alto demais.
+Pro arquivo de celular, reduza pra largura real de exibição antes de comparar —
+julgar em 1:1 aqui condena um arquivo que na tela fica perfeito:
+
+```sh
+ffmpeg -i ENTRADA.mp4 -frames:v 1 -vf "scale=390:-2" orig-mob.jpg
+ffmpeg -i public/hero/filme-720.mp4 -frames:v 1 -vf "scale=390:-2" novo-mob.jpg
+```
+
+O granulado do couro tem que continuar visível no de desktop. Se virou uma
+superfície lisa, o CRF está alto demais.
 
 Existe também a medida objetiva, útil **só pro H.264** (mire acima de 0,99):
 
@@ -102,7 +116,7 @@ Referência da versão atual, vinda de 13,5 MB:
 | | WebM | MP4 |
 | --- | --- | --- |
 | 1080p | 2,79 MB | 3,68 MB |
-| 720p | 1,56 MB | 1,85 MB |
+| 720p | 0,67 MB | 0,82 MB |
 
 ## Depois de gerar
 
