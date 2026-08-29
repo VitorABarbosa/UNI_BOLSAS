@@ -75,6 +75,7 @@ const UNLINKED = 'none';
 
 export function ShopeePanel({
   configured,
+  unavailable,
   shop,
   items,
   products,
@@ -82,6 +83,8 @@ export function ShopeePanel({
   notice,
 }: {
   configured: boolean;
+  /** Preenchido quando a integração não pôde nem ser consultada. */
+  unavailable: { reason: string; message: string } | null;
   shop: Shop | null;
   items: Item[];
   products: Product[];
@@ -218,6 +221,56 @@ export function ShopeePanel({
     setConfirmDisconnect(false);
     router.refresh();
   };
+
+  // A integração nem pôde ser consultada. Antes isto era um 500 sem
+  // explicação; aqui o admin lê o que falta e o resto do painel segue de pé.
+  if (unavailable) {
+    return (
+      <div className="space-y-6 p-6">
+        <Card>
+          <CardContent className="space-y-3 p-6">
+            <h2 className="font-serif text-lg text-ink">Shopee</h2>
+            {unavailable.reason === 'missing-tables' ? (
+              <>
+                <p className="max-w-2xl text-sm text-stone">
+                  As tabelas da integração com a Shopee ainda não existem no
+                  banco. O site e o resto do painel seguem funcionando — só esta
+                  aba fica indisponível.
+                </p>
+                <p className="max-w-2xl text-sm text-stone">
+                  Para ativar, rode no editor SQL do Supabase, nesta ordem:{' '}
+                  <code className="rounded bg-bone-light px-1.5 py-0.5 font-mono text-xs">
+                    supabase/migrations/20260822000000_shopee_integration.sql
+                  </code>{' '}
+                  e{' '}
+                  <code className="rounded bg-bone-light px-1.5 py-0.5 font-mono text-xs">
+                    supabase/migrations/20260822000001_shopee_import.sql
+                  </code>
+                  . Pode ser a qualquer momento, sem parada.
+                </p>
+              </>
+            ) : unavailable.reason === 'no-credentials' ? (
+              <p className="max-w-2xl text-sm text-stone">
+                Falta uma variável de ambiente do Supabase no servidor:{' '}
+                <code className="rounded bg-bone-light px-1.5 py-0.5 font-mono text-xs">
+                  {unavailable.message}
+                </code>
+                . Defina na Vercel (Settings → Environment Variables) e publique
+                de novo.
+              </p>
+            ) : (
+              <p className="max-w-2xl text-sm text-stone">
+                Não consegui ler a integração com a Shopee:{' '}
+                <code className="rounded bg-bone-light px-1.5 py-0.5 font-mono text-xs">
+                  {unavailable.message}
+                </code>
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">

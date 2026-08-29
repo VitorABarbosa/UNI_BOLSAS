@@ -64,6 +64,50 @@ export async function getShopeeShop(): Promise<ShopeeShopRow | null> {
   return data;
 }
 
+/** Postgres: relação não existe — a migration da Shopee não foi aplicada. */
+const UNDEFINED_TABLE = '42P01';
+
+/**
+ * Por que a tela precisa disto em vez de chamar `getShopeeShop` direto: aquela
+ * função lança, e é o certo pro cron (falha alta, visível no log). Numa página
+ * um throw vira 500 e o admin fica sem entender o que houve — foi exatamente
+ * assim que /admin/shopee caiu quando as tabelas da Shopee ainda não existiam
+ * no banco. Aqui cada motivo vira um estado que a tela sabe explicar.
+ */
+export type ShopeeShopLookup =
+  | { ok: true; shop: ShopeeShopRow | null }
+  | { ok: false; reason: 'missing-tables' | 'no-credentials' | 'error'; message: string };
+
+export async function lookupShopeeShop(): Promise<ShopeeShopLookup> {
+  let supabase: ReturnType<typeof createAdminClient>;
+  try {
+    // Estoura quando falta SUPABASE_SERVICE_ROLE_KEY / NEXT_PUBLIC_SUPABASE_URL.
+    supabase = createAdminClient();
+  } catch (err) {
+    return {
+      ok: false,
+      reason: 'no-credentials',
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
+
+  const { data, error } = await supabase
+    .from('shopee_shops')
+    .select('*')
+    .order('authorized_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    return {
+      ok: false,
+      reason: error.code === UNDEFINED_TABLE ? 'missing-tables' : 'error',
+      message: error.message,
+    };
+  }
+  return { ok: true, shop: data };
+}
+
 /**
  * Exchanges the `code` from the authorization redirect for a token pair and
  * persists the shop. Idempotent per shop_id (upsert), so re-authorizing an
