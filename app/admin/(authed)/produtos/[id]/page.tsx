@@ -98,7 +98,11 @@ export default async function EditarProdutoPage({
           >
             ← Voltar
           </Link>
-          <DeleteProductButton id={product.id} name={product.name} />
+          <DeleteProductButton
+            id={product.id}
+            name={product.name}
+            active={product.active}
+          />
         </div>
       }
     >

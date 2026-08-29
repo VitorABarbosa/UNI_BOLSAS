@@ -2314,6 +2314,41 @@ html, body {
   object-position: center;
 }
 
+/* ---- Caixa de seleção do painel ----
+   O tique e o traço do estado indeterminado são SVG no background-image.
+   Aqui em CSS puro, e não como classe utilitária arbitrária: escrito como
+   classe, o SVG (com aspas e parênteses) quebrava a extração do Tailwind e as
+   regras do estado marcado não chegavam a ser geradas. */
+.uni-check {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-whisper);
+  border-radius: 3px;
+  background: #fff center no-repeat;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.uni-check:hover { border-color: var(--color-stone); }
+.uni-check:checked,
+.uni-check:indeterminate {
+  background-color: var(--color-ink);
+  border-color: var(--color-ink);
+}
+.uni-check:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.5l3 3 6-6' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.uni-check:indeterminate {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 8h8' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.uni-check:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+  outline-offset: 1px;
+}
+.uni-check:disabled { cursor: not-allowed; opacity: 0.5; }
+
 /* ---- Placeholder de imagem ausente ---- */
 
 /* ---- Reels do Instagram ("Spoiler do feed") ----

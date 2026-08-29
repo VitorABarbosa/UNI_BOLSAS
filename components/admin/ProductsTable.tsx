@@ -4,11 +4,11 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpDown, MoreHorizontal, Plus } from 'lucide-react';
+import { ArrowUpDown, EyeOff, MoreHorizontal, Plus, Undo2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -32,7 +32,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ConfirmDialog } from './ConfirmDialog';
-import { deleteProduct } from '@/app/admin/_actions/products';
+import {
+  deleteProduct,
+  setProductActive,
+  setProductsActive,
+} from '@/app/admin/_actions/products';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 
 export type ProductListRow = {
@@ -60,7 +64,8 @@ export function ProductsTable({
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterCat, setFilterCat] = useState<string>('all');
-  const [onlyActive, setOnlyActive] = useState(false);
+  const [status, setStatus] = useState<'all' | 'on' | 'off'>('all');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>('sort_order');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [confirm, setConfirm] = useState<{
@@ -86,7 +91,8 @@ export function ProductsTable({
       )
         return false;
       if (filterCat !== 'all' && p.category_id !== filterCat) return false;
-      if (onlyActive && !p.active) return false;
+      if (status === 'on' && !p.active) return false;
+      if (status === 'off' && p.active) return false;
       return true;
     });
     r = [...r].sort((a, b) => {
@@ -97,7 +103,10 @@ export function ProductsTable({
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return r;
-  }, [initial, debouncedSearch, filterCat, onlyActive, sortKey, sortDir]);
+  }, [initial, debouncedSearch, filterCat, status, sortKey, sortDir]);
+
+  const countOn = initial.filter((p) => p.active).length;
+  const countOff = initial.length - countOn;
 
   const performDelete = async () => {
     if (!confirm) return;
@@ -109,6 +118,64 @@ export function ProductsTable({
     toast.success('Produto excluído');
     setConfirm(null);
     router.refresh();
+  };
+
+  const toggleActive = (row: { id: string; name: string; active: boolean }) => {
+    startTransition(async () => {
+      const res = await setProductActive(row.id, !row.active);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(
+        row.active
+          ? `“${row.name}” saiu do site (a importação vai pular)`
+          : `“${row.name}” voltou pro site`,
+      );
+      router.refresh();
+    });
+  };
+
+  // A seleção acompanha o que está filtrado: marcar "todos" marca o que a
+  // pessoa está vendo, nunca o catálogo inteiro escondido atrás do filtro.
+  const visibleIds = rows.map((r) => r.id);
+  const selectedVisible = visibleIds.filter((id) => selected.has(id));
+  const allVisibleSelected =
+    visibleIds.length > 0 && selectedVisible.length === visibleIds.length;
+
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const toggleAllVisible = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) visibleIds.forEach((id) => next.delete(id));
+      else visibleIds.forEach((id) => next.add(id));
+      return next;
+    });
+
+  const bulkSetActive = (active: boolean) => {
+    const ids = selectedVisible;
+    if (ids.length === 0) return;
+    startTransition(async () => {
+      const res = await setProductsActive(ids, active);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(
+        active
+          ? `${res.data.count} produto(s) de volta no site`
+          : `${res.data.count} produto(s) fora do site — a importação vai pular`,
+      );
+      setSelected(new Set());
+      router.refresh();
+    });
   };
 
   const toggleSort = (key: SortKey) => {
@@ -131,7 +198,15 @@ export function ProductsTable({
         />
         <Select value={filterCat} onValueChange={(v) => setFilterCat(v as string)}>
           <SelectTrigger className="max-w-[180px]">
-            <SelectValue placeholder="Categoria" />
+            {/* Sem esta função o Base UI mostra o valor cru — aqui aparecia
+                "all", e nas outras telas apareceria o UUID da categoria. */}
+            <SelectValue placeholder="Categoria">
+              {(v) =>
+                v === 'all'
+                  ? 'Todas categorias'
+                  : (categories.find((c) => c.id === v)?.label ?? 'Categoria')
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas categorias</SelectItem>
@@ -142,10 +217,32 @@ export function ProductsTable({
             ))}
           </SelectContent>
         </Select>
-        <label className="flex items-center gap-2 text-sm text-stone">
-          <Switch checked={onlyActive} onCheckedChange={setOnlyActive} />
-          Só ativos
-        </label>
+        {/* Três estados, não um interruptor: depois de tirar produtos do
+            site é preciso conseguir listar justamente os que estão fora pra
+            conferir — coisa que "só ativos" não permitia. */}
+        <div className="flex items-center rounded-lg border border-whisper p-0.5">
+          {(
+            [
+              ['all', `Todos (${initial.length})`],
+              ['on', `No site (${countOn})`],
+              ['off', `Fora do site (${countOff})`],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setStatus(value)}
+              className={
+                'rounded-md px-3 py-1.5 text-sm transition-colors ' +
+                (status === value
+                  ? 'bg-ink text-bone'
+                  : 'text-stone hover:text-ink')
+              }
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div className="ml-auto">
           <Link
             href="/admin/produtos/novo"
@@ -156,9 +253,57 @@ export function ProductsTable({
         </div>
       </div>
 
+      {selectedVisible.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-ink/15 bg-bone-light px-3 py-2">
+          <span className="text-sm text-ink">
+            <strong>{selectedVisible.length}</strong> selecionado
+            {selectedVisible.length > 1 ? 's' : ''}
+          </span>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => bulkSetActive(false)}
+            >
+              <EyeOff className="mr-1 h-4 w-4" /> Remover do site
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => bulkSetActive(true)}
+            >
+              <Undo2 className="mr-1 h-4 w-4" /> Voltar pro site
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelected(new Set())}
+            >
+              <X className="mr-1 h-4 w-4" /> Limpar
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[40px]">
+              <Checkbox
+                aria-label="Selecionar todos os produtos da lista"
+                checked={allVisibleSelected}
+                indeterminate={
+                  selectedVisible.length > 0 && !allVisibleSelected
+                }
+                onChange={toggleAllVisible}
+                disabled={rows.length === 0}
+              />
+            </TableHead>
             <TableHead className="w-[60px]">Capa</TableHead>
             <TableHead>
               <button
@@ -188,13 +333,29 @@ export function ProductsTable({
         <TableBody>
           {rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="py-10 text-center text-sm text-stone">
+              <TableCell colSpan={9} className="py-10 text-center text-sm text-stone">
                 Nenhum produto encontrado.
               </TableCell>
             </TableRow>
           ) : (
             rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow
+                key={row.id}
+                data-selected={selected.has(row.id) || undefined}
+                className={
+                  (selected.has(row.id) ? 'bg-bone-light ' : '') +
+                  // Fora do site fica mais apagado: dá pra varrer a lista e ver
+                  // num relance o que está publicado e o que não está.
+                  (row.active ? '' : 'opacity-60')
+                }
+              >
+                <TableCell>
+                  <Checkbox
+                    aria-label={`Selecionar ${row.name}`}
+                    checked={selected.has(row.id)}
+                    onChange={() => toggleOne(row.id)}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="relative h-10 w-10 overflow-hidden rounded-sm bg-whisper">
                     {row.cover_storage_path && (
@@ -222,7 +383,7 @@ export function ProductsTable({
                 <TableCell className="text-sm">{row.category_label}</TableCell>
                 <TableCell>
                   <Badge variant={row.active ? 'default' : 'secondary'}>
-                    {row.active ? 'Ativo' : 'Inativo'}
+                    {row.active ? 'No site' : 'Fora do site'}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-sm tabular-nums text-stone">
