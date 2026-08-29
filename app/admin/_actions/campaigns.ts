@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { isMissingTable } from '@/lib/supabase/missing-table';
 
 type ActionResult<T = void> =
   | { ok: true; data: T }
@@ -14,11 +15,7 @@ type ActionResult<T = void> =
  * em vez de quebrar. Este é o código que o Postgres devolve pra tabela
  * inexistente.
  */
-const UNDEFINED_TABLE = '42P01';
-
-function tableMissing(error: { code?: string } | null): boolean {
-  return error?.code === UNDEFINED_TABLE;
-}
+const tableMissing = isMissingTable;
 
 export type CampaignRow = {
   id: string;

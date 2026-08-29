@@ -1,5 +1,6 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isMissingTable } from '@/lib/supabase/missing-table';
 import type { Database } from '@/types/db';
 import { shopeeConfig } from './config';
 import { shopeeTimestamp, signPublic } from './sign';
@@ -64,9 +65,6 @@ export async function getShopeeShop(): Promise<ShopeeShopRow | null> {
   return data;
 }
 
-/** Postgres: relação não existe — a migration da Shopee não foi aplicada. */
-const UNDEFINED_TABLE = '42P01';
-
 /**
  * Por que a tela precisa disto em vez de chamar `getShopeeShop` direto: aquela
  * função lança, e é o certo pro cron (falha alta, visível no log). Numa página
@@ -101,7 +99,7 @@ export async function lookupShopeeShop(): Promise<ShopeeShopLookup> {
   if (error) {
     return {
       ok: false,
-      reason: error.code === UNDEFINED_TABLE ? 'missing-tables' : 'error',
+      reason: isMissingTable(error) ? 'missing-tables' : 'error',
       message: error.message,
     };
   }
