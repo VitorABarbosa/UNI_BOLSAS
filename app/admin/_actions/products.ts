@@ -76,6 +76,36 @@ export async function updateProduct(
   return { ok: true, data: undefined };
 }
 
+/**
+ * Tira o produto do site sem apagá-lo do banco.
+ *
+ * É o caminho certo pra "esse produto não faz sentido aqui": a linha continua
+ * existindo, então a importação da planilha reconhece o nome e PULA. Excluir
+ * de verdade apaga essa memória, e a importação seguinte recria o produto —
+ * foi o que aconteceu quando os produtos removidos voltaram sozinhos.
+ */
+export async function setProductActive(
+  id: string,
+  active: boolean,
+): Promise<ActionResult> {
+  const { supabase } = await requireAdmin();
+
+  const { data: product, error } = await supabase
+    .from('products')
+    .update({ active })
+    .eq('id', id)
+    .select('slug')
+    .single();
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/');
+  revalidatePath('/sitemap.xml');
+  revalidatePath('/admin/produtos');
+  if (product?.slug) revalidatePath(`/produtos/${product.slug}`);
+
+  return { ok: true, data: undefined };
+}
+
 export async function deleteProduct(id: string): Promise<ActionResult> {
   const { supabase } = await requireAdmin();
 

@@ -32,7 +32,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ConfirmDialog } from './ConfirmDialog';
-import { deleteProduct } from '@/app/admin/_actions/products';
+import {
+  deleteProduct,
+  setProductActive,
+} from '@/app/admin/_actions/products';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 
 export type ProductListRow = {
@@ -109,6 +112,22 @@ export function ProductsTable({
     toast.success('Produto excluído');
     setConfirm(null);
     router.refresh();
+  };
+
+  const toggleActive = (row: { id: string; name: string; active: boolean }) => {
+    startTransition(async () => {
+      const res = await setProductActive(row.id, !row.active);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(
+        row.active
+          ? `“${row.name}” saiu do site (a importação vai pular)`
+          : `“${row.name}” voltou pro site`,
+      );
+      router.refresh();
+    });
   };
 
   const toggleSort = (key: SortKey) => {
@@ -246,6 +265,9 @@ export function ProductsTable({
                       >
                         Editar
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => toggleActive(row)}>
+                        {row.active ? 'Remover do site' : 'Voltar pro site'}
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         variant="destructive"
                         onClick={() =>
@@ -256,7 +278,7 @@ export function ProductsTable({
                           })
                         }
                       >
-                        Excluir
+                        Excluir definitivamente
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -270,23 +292,28 @@ export function ProductsTable({
       <ConfirmDialog
         open={!!confirm}
         onOpenChange={(o) => !o && setConfirm(null)}
-        title="Excluir produto"
+        title="Excluir definitivamente"
         description={
           confirm ? (
             <>
-              Excluir <strong>“{confirm.name}”</strong>?
+              Apagar <strong>“{confirm.name}”</strong> sem volta
               {confirm.imageCount > 0 && (
                 <>
-                  {' '}
-                  Vai apagar <strong>{confirm.imageCount} imagem(ns)</strong> junto.
+                  , junto com <strong>{confirm.imageCount} imagem(ns)</strong>
                 </>
               )}
+              .
+              <br />
+              <br />
+              Se este produto ainda estiver na planilha da Shopee, a próxima
+              importação vai <strong>criá-lo de novo</strong>. Para tirá-lo do
+              site de forma permanente, use <strong>Remover do site</strong>.
             </>
           ) : (
             ''
           )
         }
-        confirmLabel="Excluir"
+        confirmLabel="Excluir mesmo assim"
         destructive
         onConfirm={performDelete}
       />
