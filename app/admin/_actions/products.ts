@@ -106,6 +106,35 @@ export async function setProductActive(
   return { ok: true, data: undefined };
 }
 
+/**
+ * A mesma coisa, para vários de uma vez.
+ *
+ * Um `update ... in (...)` em vez de N chamadas: tirar trinta produtos do site
+ * vira uma ida ao banco, não trinta. Devolve quantos mudaram de fato, que é o
+ * número que a tela mostra.
+ */
+export async function setProductsActive(
+  ids: string[],
+  active: boolean,
+): Promise<ActionResult<{ count: number }>> {
+  const { supabase } = await requireAdmin();
+  if (ids.length === 0) return { ok: true, data: { count: 0 } };
+
+  const { data, error } = await supabase
+    .from('products')
+    .update({ active })
+    .in('id', ids)
+    .select('slug');
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/');
+  revalidatePath('/sitemap.xml');
+  revalidatePath('/admin/produtos');
+  for (const p of data ?? []) revalidatePath(`/produtos/${p.slug}`);
+
+  return { ok: true, data: { count: data?.length ?? 0 } };
+}
+
 export async function deleteProduct(id: string): Promise<ActionResult> {
   const { supabase } = await requireAdmin();
 
