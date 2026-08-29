@@ -246,7 +246,21 @@ export function ShopeePanel({
                   <code className="rounded bg-bone-light px-1.5 py-0.5 font-mono text-xs">
                     supabase/migrations/20260822000001_shopee_import.sql
                   </code>
-                  . Pode ser a qualquer momento, sem parada.
+                  . As duas só criam tabelas novas — não alteram nem apagam
+                  nada do que já existe, e podem ser rodadas com o site no ar.
+                </p>
+                <p className="max-w-2xl border-t border-whisper pt-3 text-sm text-stone">
+                  <strong className="text-ink">Enquanto isso</strong>, para pôr
+                  um produto novo no site sem depender daqui: use a aba{' '}
+                  <Link href="/admin/importar" className="underline">
+                    Importar
+                  </Link>{' '}
+                  (aceita a planilha exportada da Shopee e pula sozinha o que já
+                  está no site) ou cadastre à mão em{' '}
+                  <Link href="/admin/produtos/novo" className="underline">
+                    Produtos → Novo
+                  </Link>
+                  . Nenhum dos dois usa as tabelas que faltam.
                 </p>
               </>
             ) : unavailable.reason === 'no-credentials' ? (
