@@ -11,7 +11,7 @@ export function waLink(message: string): string {
 }
 
 export function waProduct(
-  product: Pick<ProductRow, 'name' | 'slug' | 'price_retail'> & {
+  product: Pick<ProductRow, 'id' | 'name' | 'price_retail'> & {
     shopee?: ShopeePricing;
   },
   color: Pick<ColorRow, 'name'> | null,
@@ -26,12 +26,15 @@ export function waProduct(
     product.price_retail != null
       ? ` (${price.currentLabel}${price.isPromo ? ' — promoção' : ''})`
       : '';
-  // O link da peça em linha própria: no atendimento, o nome sozinho vira
-  // adivinhação quando há duas parecidas. Abre a mesma página que a pessoa
-  // estava vendo, com foto, cores e preço.
-  const link = `${SITE_URL}/produtos/${product.slug}`;
+  // O link identifica a peça no atendimento — nome sozinho vira adivinhação
+  // quando há duas parecidas. É o link CURTO (/p/<código>) e sem o https://:
+  // o endereço completo de /produtos/<slug> passa de 80 caracteres e engole
+  // a mensagem; o WhatsApp linka o domínio pelado do mesmo jeito.
+  const host = SITE_URL.replace(/^https?:\/\//, '');
+  const link = `${host}/p/${product.id.replace(/-/g, '').slice(0, 8)}`;
+  // *asteriscos* viram negrito no WhatsApp — o nome da peça salta da mensagem.
   return waLink(
-    `Olá! Tenho interesse na ${product.name}${colorPart}${sizePart}${priceMsg}. Está disponível?` +
+    `Olá! Tenho interesse na *${product.name}*${colorPart}${sizePart}${priceMsg}. Está disponível?` +
       `\n\n${link}`,
   );
 }
