@@ -2319,11 +2319,34 @@ html, body {
    vitrine. Rolando de lado, o corte do próximo card na borda já avisa que tem
    mais — sem precisar de seta nem de instrução. */
 .uni-featured { background: var(--color-bone); }
+.uni-featured-frame { position: relative; }
+.uni-featured-arrow {
+  position: absolute;
+  top: 42%;
+  z-index: 5;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--color-whisper);
+  background: var(--color-bone-light);
+  color: var(--color-ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 10px 28px -10px rgba(17, 17, 17, 0.28);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.uni-featured-arrow:hover { background: var(--color-ink); color: var(--color-bone); transform: scale(1.06); }
+.uni-featured-arrow.is-prev { left: -8px; }
+.uni-featured-arrow.is-next { right: -8px; }
 .uni-featured-rail {
   display: flex;
   gap: 24px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
+  /* Sem isto o snap alinhava o 1º card na borda EXTERNA (ignorando o padding)
+     e o trilho descansava 24px deslizado, com o card cortado à esquerda. */
+  scroll-padding: 0 24px;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -2820,9 +2843,11 @@ input, select, textarea { font-size: 16px; }
   }
   .uni-color-swatch-big { flex-shrink: 0; }
 
+  .uni-featured-arrow { display: none; }
   .uni-featured-rail {
     margin: 0 -20px;
     padding: 4px 20px 8px;
+    scroll-padding: 0 20px;
     gap: 14px;
   }
   .uni-featured-rail > * { flex-basis: 74vw; }
