@@ -1,12 +1,14 @@
 /**
  * Rede de segurança para imagens estáticas absurdamente grandes em `public/`.
  *
- * Não é para uso rotineiro. Quem entrega as imagens ao navegador é o
- * `next/image`, que gera as variantes responsivas (WebP/AVIF no tamanho da
- * tela) a partir do arquivo original — ou seja, um master em alta resolução
- * NÃO pesa na página, e vale a pena manter pela qualidade em telas retina.
- * Os limites abaixo existem só para pegar arquivo de resolução de impressão
- * (dezenas de MB), que faz o otimizador consumir memória à toa.
+ * Quem entrega as imagens ao navegador é o `next/image`, que gera as variantes
+ * responsivas a partir do arquivo original. Mas o original NÃO é de graça: a
+ * cada variante ainda não gerada, o otimizador precisa baixar e reprocessar o
+ * arquivo inteiro — e é o visitante daquela hora que espera. As fotos do hero
+ * estavam com 3168px e 5 MB para um quadro que exibe no máximo ~1730px; a
+ * primeira visita depois de cada deploy pagava por isso.
+ *
+ * Daí os limites serem colados no uso real, e não em "resolução de impressão".
  *
  * Uso:
  *   pnpm images:optimize            # otimiza tudo que estiver acima do limite
@@ -19,10 +21,13 @@ import { readdir, stat, readFile, writeFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import sharp from 'sharp';
 
-/** Teto de largura. 3840px é o maior tamanho que o `next/image` chega a gerar. */
-const MAX_WIDTH = 3840;
+/**
+ * Teto de largura. O hero ocupa ~1730px no desktop mais largo; 2400px dá
+ * folga de sobra, inclusive pra tela retina, sem virar peso morto.
+ */
+const MAX_WIDTH = 2400;
 /** Acima disso o arquivo é reencodado mesmo se já estiver dentro da largura. */
-const MAX_BYTES = 8 * 1024 * 1024;
+const MAX_BYTES = 800 * 1024;
 const QUALITY = 78;
 
 const TARGET_DIRS = ['public/hero'];
