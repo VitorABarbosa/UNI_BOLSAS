@@ -10,6 +10,13 @@ export const metadata = {
   title: 'Produtos · Uni Bolsas Admin',
 };
 
+/**
+ * Nunca servir esta página de cache. É a tela onde o admin muda as coisas e
+ * confere o resultado no mesmo segundo: uma versão guardada aqui mostraria o
+ * estado anterior ao clique que a pessoa acabou de dar.
+ */
+export const dynamic = 'force-dynamic';
+
 export default async function ProdutosPage() {
   const { user, supabase } = await requireAdmin();
 

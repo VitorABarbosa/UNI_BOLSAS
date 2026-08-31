@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -36,7 +36,7 @@ import {
   deleteProduct,
   setProductActive,
   setProductsActive,
-  setProductsFeatured,
+  setFeaturedSelection,
 } from '@/app/admin/_actions/products';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { MAX_FEATURED } from '@/lib/catalog/featured';
@@ -80,6 +80,99 @@ export function ProductsTable({
   } | null>(null);
   const [pending, startTransition] = useTransition();
 
+  /**
+   * A VITRINE MORA AQUI, não na prop do servidor.
+   *
+   * Antes a estrela desenhava `row.featured`, que só mudava depois da ação no
+   * servidor mais um `router.refresh()` — dois pulos de rede antes de
+   * qualquer pixel mudar. Enquanto isso a tabela inteira ficava desabilitada.
+   * O clique parecia não ter funcionado, a pessoa clicava de novo, e o
+   * segundo clique desfazia o primeiro.
+   *
+   * Agora o clique muda a tela na hora e a gravação vai atrás. Se ela falhar,
+   * a estrela volta ao que o servidor diz e o erro aparece.
+   */
+  const serverFeatured = useMemo(
+    () => initial.filter((p) => p.featured).map((p) => p.id),
+    [initial],
+  );
+  const [featured, setFeatured] = useState<string[]>(serverFeatured);
+  const featuredSet = useMemo(() => new Set(featured), [featured]);
+  const [savingFeatured, setSavingFeatured] = useState(false);
+
+  // O que queremos que a vitrine seja. Fica em ref porque a gravação em curso
+  // precisa enxergar cliques que aconteceram depois que ela começou.
+  const wanted = useRef<string[]>(serverFeatured);
+  const saving = useRef(false);
+  const again = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Quando o servidor manda dados novos, ele passa a mandar — a não ser que
+  // haja clique nosso ainda não gravado, que não pode ser atropelado por uma
+  // recarga disparada por outra ação da tela.
+  const serverKey = serverFeatured.join(',');
+  useEffect(() => {
+    if (saving.current || timer.current) return;
+    setFeatured(serverFeatured);
+    wanted.current = serverFeatured;
+    // serverFeatured é derivado de serverKey; seguir a string evita repetir o
+    // efeito a cada render só porque o array é novo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverKey]);
+
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+
+  const flushFeatured = useCallback(async () => {
+    // Uma gravação por vez. Se chegar clique no meio, a que está rodando
+    // repete o laço com a lista nova em vez de abrir uma segunda requisição.
+    if (saving.current) {
+      again.current = true;
+      return;
+    }
+    saving.current = true;
+    setSavingFeatured(true);
+    try {
+      do {
+        again.current = false;
+        const res = await setFeaturedSelection(wanted.current);
+        if (!res.ok) {
+          toast.error(res.error);
+          setFeatured(serverFeatured);
+          wanted.current = serverFeatured;
+          again.current = false;
+          return;
+        }
+      } while (again.current);
+      router.refresh();
+    } finally {
+      saving.current = false;
+      setSavingFeatured(false);
+    }
+  }, [router, serverFeatured]);
+
+  /**
+   * Aplica a nova vitrine na tela e agenda a gravação. O respiro de 400ms
+   * junta a rajada de cliques de quem está montando a seleção numa gravação
+   * só — e continua parecendo instantâneo, porque a tela já mudou.
+   */
+  const applyFeatured = (next: string[], message: string): boolean => {
+    if (next.length > MAX_FEATURED) {
+      toast.error(
+        `A vitrine cabe ${MAX_FEATURED} peças — tire alguma antes de pôr mais.`,
+      );
+      return false;
+    }
+    setFeatured(next);
+    wanted.current = next;
+    toast.success(message);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      void flushFeatured();
+    }, 400);
+    return true;
+  };
+
   // Debounce 150ms — search updates fast enough to feel responsive but
   // avoids re-filtering on every keystroke for larger lists.
   useEffect(() => {
@@ -98,7 +191,7 @@ export function ProductsTable({
       if (filterCat !== 'all' && p.category_id !== filterCat) return false;
       if (status === 'on' && !p.active) return false;
       if (status === 'off' && p.active) return false;
-      if (status === 'featured' && !p.featured) return false;
+      if (status === 'featured' && !featuredSet.has(p.id)) return false;
       return true;
     });
     r = [...r].sort((a, b) => {
@@ -109,11 +202,11 @@ export function ProductsTable({
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return r;
-  }, [initial, debouncedSearch, filterCat, status, sortKey, sortDir]);
+  }, [initial, debouncedSearch, filterCat, status, sortKey, sortDir, featuredSet]);
 
   const countOn = initial.filter((p) => p.active).length;
   const countOff = initial.length - countOn;
-  const countFeatured = initial.filter((p) => p.featured).length;
+  const countFeatured = featured.length;
 
   const performDelete = async () => {
     if (!confirm) return;
@@ -185,39 +278,33 @@ export function ProductsTable({
     });
   };
 
-  const bulkSetFeatured = (featured: boolean) => {
+  const bulkSetFeatured = (on: boolean) => {
     const ids = selectedVisible;
     if (ids.length === 0) return;
-    startTransition(async () => {
-      const res = await setProductsFeatured(ids, featured);
-      if (!res.ok) {
-        toast.error(res.error);
-        return;
-      }
-      toast.success(
-        featured
-          ? `${res.data.count} peça(s) em destaque · ${res.data.total} na vitrine`
-          : `${res.data.count} peça(s) fora dos destaques`,
-      );
-      setSelected(new Set());
-      router.refresh();
-    });
+    const next = on
+      ? [...featured, ...ids.filter((id) => !featuredSet.has(id))]
+      : featured.filter((id) => !ids.includes(id));
+    const diff = Math.abs(next.length - featured.length);
+    if (diff === 0) return;
+    const done = applyFeatured(
+      next,
+      on
+        ? `${diff} peça(s) em destaque · ${next.length} na vitrine`
+        : `${diff} peça(s) fora dos destaques`,
+    );
+    // Recusado por não caber: a seleção fica, pra pessoa poder tirar peças e
+    // tentar de novo sem remarcar tudo.
+    if (done) setSelected(new Set());
   };
 
   const toggleFeatured = (row: ProductListRow) => {
-    startTransition(async () => {
-      const res = await setProductsFeatured([row.id], !row.featured);
-      if (!res.ok) {
-        toast.error(res.error);
-        return;
-      }
-      toast.success(
-        row.featured
-          ? `“${row.name}” saiu dos destaques`
-          : `“${row.name}” entrou nos destaques`,
-      );
-      router.refresh();
-    });
+    const on = featuredSet.has(row.id);
+    applyFeatured(
+      on ? featured.filter((id) => id !== row.id) : [...featured, row.id],
+      on
+        ? `“${row.name}” saiu dos destaques`
+        : `“${row.name}” entrou nos destaques`,
+    );
   };
 
   const toggleSort = (key: SortKey) => {
@@ -334,7 +421,6 @@ export function ProductsTable({
               type="button"
               variant="outline"
               size="sm"
-              disabled={pending}
               onClick={() => bulkSetFeatured(true)}
             >
               <Star className="mr-1 h-4 w-4" /> Destacar
@@ -343,7 +429,6 @@ export function ProductsTable({
               type="button"
               variant="outline"
               size="sm"
-              disabled={pending}
               onClick={() => bulkSetFeatured(false)}
             >
               Tirar destaque
@@ -392,6 +477,13 @@ export function ProductsTable({
               <span className="ml-1 font-mono text-[10px] text-stone">
                 {countFeatured}/{MAX_FEATURED}
               </span>
+              {/* A tela já mudou; isto avisa que o servidor ainda está
+                  recebendo, sem travar nada enquanto isso. */}
+              {savingFeatured && (
+                <span className="ml-1 text-[10px] font-normal text-stone">
+                  salvando…
+                </span>
+              )}
             </TableHead>
             <TableHead>
               <button
@@ -463,25 +555,30 @@ export function ProductsTable({
                   </Badge>
                 </TableCell>
                 <TableCell>
+                  {/* Sem `disabled`: a estrela responde ao clique sempre, e
+                      a gravação corre por fora. Era o `disabled` global que
+                      apagava a tabela inteira a cada clique. */}
                   <button
                     type="button"
-                    disabled={pending}
                     onClick={() => toggleFeatured(row)}
                     title={
-                      row.featured
+                      featuredSet.has(row.id)
                         ? 'Tirar da vitrine de destaques'
                         : 'Pôr na vitrine de destaques'
                     }
-                    aria-pressed={row.featured}
-                    aria-label={`${row.featured ? 'Tirar' : 'Pôr'} “${row.name}” nos destaques`}
-                    className="rounded p-1 transition-colors hover:bg-bone-light disabled:opacity-50"
+                    aria-pressed={featuredSet.has(row.id)}
+                    aria-label={`${featuredSet.has(row.id) ? 'Tirar' : 'Pôr'} “${row.name}” nos destaques`}
+                    className="group rounded p-1 transition-colors hover:bg-bone-light"
                   >
+                    {/* A estrela apagada era `text-whisper` (#E5DECF) sobre
+                        fundo osso: praticamente invisível. Quem não enxerga o
+                        botão não descobre que pode clicar nele. */}
                     <Star
                       className={
-                        'h-4 w-4 ' +
-                        (row.featured
+                        'h-4 w-4 transition-colors ' +
+                        (featuredSet.has(row.id)
                           ? 'fill-leather text-leather'
-                          : 'text-whisper')
+                          : 'text-stone/45 group-hover:text-leather')
                       }
                     />
                   </button>

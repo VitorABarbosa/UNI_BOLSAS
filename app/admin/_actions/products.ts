@@ -4,11 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { ProductSchema, type ProductInput } from '@/lib/validators/product';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { removeStorageObjects } from '@/lib/storage';
-import {
-  MAX_FEATURED,
-  readFeaturedIds,
-  writeFeaturedIds,
-} from '@/lib/catalog/featured-store';
+import { MAX_FEATURED, writeFeaturedIds } from '@/lib/catalog/featured-store';
 
 type ActionResult<T = void> =
   | { ok: true; data: T }
@@ -148,38 +144,37 @@ export async function setProductsActive(
  * regravada inteira: são no máximo doze ids, então não vale a pena inventar
  * escrita incremental.
  */
-export async function setProductsFeatured(
+/**
+ * Grava a vitrine INTEIRA, e não "adicione este id" / "tire aquele id".
+ *
+ * A primeira versão lia a lista, mexia nela e gravava de volta. Parecia
+ * inofensivo com um clique por vez, mas dois cliques seguidos se atropelavam:
+ * a segunda leitura acontecia antes da primeira gravação, então a segunda
+ * gravação apagava a primeira. Na prática a estrela "não pegava" — o clique
+ * ia embora sem deixar rastro, e era preciso clicar de novo.
+ *
+ * Mandando a seleção completa, o painel diz o que quer que a vitrine seja, e
+ * o último clique é sempre o que vale. Não há nada que se perca entre uma
+ * leitura e uma gravação, porque não há leitura.
+ */
+export async function setFeaturedSelection(
   ids: string[],
-  featured: boolean,
-): Promise<ActionResult<{ count: number; total: number }>> {
+): Promise<ActionResult<{ total: number }>> {
   await requireAdmin();
-  if (ids.length === 0) return { ok: true, data: { count: 0, total: 0 } };
+
+  const unique = [...new Set(ids)];
+  if (unique.length > MAX_FEATURED) {
+    return {
+      ok: false,
+      error: `A vitrine cabe ${MAX_FEATURED} peças — tire alguma antes de pôr mais.`,
+    };
+  }
 
   try {
-    const current = new Set(await readFeaturedIds());
-    const before = current.size;
-    for (const id of ids) {
-      if (featured) current.add(id);
-      else current.delete(id);
-    }
-
-    if (featured && current.size > MAX_FEATURED) {
-      return {
-        ok: false,
-        error: `A vitrine cabe ${MAX_FEATURED} peças — tire alguma antes de pôr mais.`,
-      };
-    }
-
-    const next = [...current];
-    await writeFeaturedIds(next);
-
+    await writeFeaturedIds(unique);
     revalidatePath('/');
     revalidatePath('/admin/produtos');
-
-    return {
-      ok: true,
-      data: { count: Math.abs(next.length - before), total: next.length },
-    };
+    return { ok: true, data: { total: unique.length } };
   } catch (err) {
     return {
       ok: false,
