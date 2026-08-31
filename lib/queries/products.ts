@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAnonClient } from '@/lib/supabase/anon';
 import type { CampaignPricing } from '@/lib/product-price';
 import type { Database } from '@/types/db';
+import { readFeaturedIds } from '@/lib/catalog/featured-store';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
@@ -116,16 +117,16 @@ export async function listActiveProducts(): Promise<ProductWithRelations[]> {
 }
 
 /**
- * As peças marcadas como destaque no painel, na ordem do catálogo.
+ * As peças escolhidas como destaque no painel, na ordem do catálogo.
  *
- * Devolve `[]` — e não estoura — quando a coluna `featured` ainda não existe
- * no banco. A vitrine some, o catálogo segue: o `listActiveProducts` nem
- * chega a mencionar a coluna, então nada aqui pode derrubar a home. Foi a
- * lição da vez em que um código novo dependeu de uma migration não aplicada.
+ * A seleção vem do Storage (veja `lib/catalog/featured-store`), não de uma
+ * coluna. Ids que não correspondem mais a um produto ativo simplesmente não
+ * voltam da consulta — a vitrine encolhe, nada quebra.
  */
-export async function listFeaturedProducts(
-  limit = 8,
-): Promise<ProductWithRelations[]> {
+export async function listFeaturedProducts(): Promise<ProductWithRelations[]> {
+  const ids = await readFeaturedIds();
+  if (ids.length === 0) return [];
+
   const supabase = await createClient();
   let data: ProductWithRelations[] | null = null;
   try {
@@ -135,9 +136,8 @@ export async function listFeaturedProducts(
           .from('products')
           .select(select)
           .eq('active', true)
-          .eq('featured', true)
+          .in('id', ids)
           .order('sort_order', { ascending: true })
-          .limit(limit)
           .returns<ProductWithRelations[]>(),
       LIST_SELECT,
       'listFeaturedProducts',
