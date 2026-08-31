@@ -1,4 +1,5 @@
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { readFeaturedIds } from '@/lib/catalog/featured-store';
 import { AdminShell } from '@/components/admin/shell/AdminShell';
 import {
   ProductsTable,
@@ -15,6 +16,7 @@ export default async function ProdutosPage() {
   const [
     { data: rawProducts, error: productsError },
     { data: cats, error: catsError },
+    featuredIds,
   ] = await Promise.all([
     supabase
       .from('products')
@@ -23,9 +25,13 @@ export default async function ProdutosPage() {
       )
       .order('sort_order', { ascending: true }),
     supabase.from('categories').select('id, label').order('sort_order'),
+    // A seleção da vitrine vem do Storage, não de uma coluna.
+    readFeaturedIds(),
   ]);
   if (productsError) throw productsError;
   if (catsError) throw catsError;
+
+  const featuredSet = new Set(featuredIds);
 
   const rows: ProductListRow[] = (rawProducts ?? []).map((p) => {
     const sortedImgs = (p.images ?? [])
@@ -42,6 +48,7 @@ export default async function ProdutosPage() {
         (p.category as unknown as { label: string } | null)?.label ?? '—',
       image_count: sortedImgs.length,
       cover_storage_path: sortedImgs[0]?.storage_path ?? null,
+      featured: featuredSet.has(p.id),
     };
   });
 

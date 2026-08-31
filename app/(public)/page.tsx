@@ -8,7 +8,7 @@ import { FAQSection } from '@/components/public/home/FAQSection';
 import { Location } from '@/components/public/home/Location';
 import { Newsletter } from '@/components/public/home/Newsletter';
 import { HomeContent } from '@/components/public/home/HomeContent';
-import { listActiveProducts } from '@/lib/queries/products';
+import { listActiveProducts, listFeaturedProducts } from '@/lib/queries/products';
 import { listCategories } from '@/lib/queries/categories';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
 
@@ -31,8 +31,9 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [products, categoriesFromDb] = await Promise.all([
+  const [products, featured, categoriesFromDb] = await Promise.all([
     listActiveProducts(),
+    listFeaturedProducts(),
     listCategories(),
   ]);
   const categoriesWithTodos = [
@@ -46,6 +47,7 @@ export default async function HomePage() {
       {/* O catálogo vem logo depois do hero: é o que a pessoa veio ver. */}
       <HomeContent
         products={products}
+        featured={featured}
         categories={categoriesWithTodos}
       />
       <WholesaleVsRetail />

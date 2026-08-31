@@ -4,6 +4,11 @@ import { revalidatePath } from 'next/cache';
 import { ProductSchema, type ProductInput } from '@/lib/validators/product';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { removeStorageObjects } from '@/lib/storage';
+import {
+  MAX_FEATURED,
+  readFeaturedIds,
+  writeFeaturedIds,
+} from '@/lib/catalog/featured-store';
 
 type ActionResult<T = void> =
   | { ok: true; data: T }
@@ -133,6 +138,54 @@ export async function setProductsActive(
   for (const p of data ?? []) revalidatePath(`/produtos/${p.slug}`);
 
   return { ok: true, data: { count: data?.length ?? 0 } };
+}
+
+/**
+ * Põe (ou tira) peças da vitrine "Destaques da casa".
+ *
+ * A seleção mora no Storage, não numa coluna — veja
+ * `lib/catalog/featured-store` para o porquê. Aqui a lista é lida, alterada e
+ * regravada inteira: são no máximo doze ids, então não vale a pena inventar
+ * escrita incremental.
+ */
+export async function setProductsFeatured(
+  ids: string[],
+  featured: boolean,
+): Promise<ActionResult<{ count: number; total: number }>> {
+  await requireAdmin();
+  if (ids.length === 0) return { ok: true, data: { count: 0, total: 0 } };
+
+  try {
+    const current = new Set(await readFeaturedIds());
+    const before = current.size;
+    for (const id of ids) {
+      if (featured) current.add(id);
+      else current.delete(id);
+    }
+
+    if (featured && current.size > MAX_FEATURED) {
+      return {
+        ok: false,
+        error: `A vitrine cabe ${MAX_FEATURED} peças — tire alguma antes de pôr mais.`,
+      };
+    }
+
+    const next = [...current];
+    await writeFeaturedIds(next);
+
+    revalidatePath('/');
+    revalidatePath('/admin/produtos');
+
+    return {
+      ok: true,
+      data: { count: Math.abs(next.length - before), total: next.length },
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 export async function deleteProduct(id: string): Promise<ActionResult> {

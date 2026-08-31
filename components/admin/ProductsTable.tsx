@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpDown, EyeOff, MoreHorizontal, Plus, Undo2, X } from 'lucide-react';
+import { ArrowUpDown, EyeOff, MoreHorizontal, Plus, Star, Undo2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +36,7 @@ import {
   deleteProduct,
   setProductActive,
   setProductsActive,
+  setProductsFeatured,
 } from '@/app/admin/_actions/products';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 
@@ -49,6 +50,7 @@ export type ProductListRow = {
   category_label: string;
   image_count: number;
   cover_storage_path: string | null;
+  featured: boolean;
 };
 
 type SortKey = 'sort_order' | 'name';
@@ -178,6 +180,41 @@ export function ProductsTable({
     });
   };
 
+  const bulkSetFeatured = (featured: boolean) => {
+    const ids = selectedVisible;
+    if (ids.length === 0) return;
+    startTransition(async () => {
+      const res = await setProductsFeatured(ids, featured);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(
+        featured
+          ? `${res.data.count} peça(s) em destaque · ${res.data.total} na vitrine`
+          : `${res.data.count} peça(s) fora dos destaques`,
+      );
+      setSelected(new Set());
+      router.refresh();
+    });
+  };
+
+  const toggleFeatured = (row: ProductListRow) => {
+    startTransition(async () => {
+      const res = await setProductsFeatured([row.id], !row.featured);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(
+        row.featured
+          ? `“${row.name}” saiu dos destaques`
+          : `“${row.name}” entrou nos destaques`,
+      );
+      router.refresh();
+    });
+  };
+
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -277,6 +314,24 @@ export function ProductsTable({
               onClick={() => bulkSetActive(true)}
             >
               <Undo2 className="mr-1 h-4 w-4" /> Voltar pro site
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => bulkSetFeatured(true)}
+            >
+              <Star className="mr-1 h-4 w-4" /> Destacar
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => bulkSetFeatured(false)}
+            >
+              Tirar destaque
             </Button>
             <Button
               type="button"
@@ -382,9 +437,17 @@ export function ProductsTable({
                 </TableCell>
                 <TableCell className="text-sm">{row.category_label}</TableCell>
                 <TableCell>
-                  <Badge variant={row.active ? 'default' : 'secondary'}>
-                    {row.active ? 'No site' : 'Fora do site'}
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant={row.active ? 'default' : 'secondary'}>
+                      {row.active ? 'No site' : 'Fora do site'}
+                    </Badge>
+                    {row.featured && (
+                      <Star
+                        className="h-3.5 w-3.5 fill-leather text-leather"
+                        aria-label="Em destaque"
+                      />
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-sm tabular-nums text-stone">
                   {row.sort_order}
@@ -407,6 +470,12 @@ export function ProductsTable({
                       >
                         Editar
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => toggleFeatured(row)}>
+                        {row.featured ? 'Tirar dos destaques' : 'Pôr em destaque'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => toggleActive(row)}>
+                        {row.active ? 'Remover do site' : 'Voltar pro site'}
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         variant="destructive"
                         onClick={() =>
@@ -417,7 +486,7 @@ export function ProductsTable({
                           })
                         }
                       >
-                        Excluir
+                        Excluir definitivamente
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -431,23 +500,28 @@ export function ProductsTable({
       <ConfirmDialog
         open={!!confirm}
         onOpenChange={(o) => !o && setConfirm(null)}
-        title="Excluir produto"
+        title="Excluir definitivamente"
         description={
           confirm ? (
             <>
-              Excluir <strong>“{confirm.name}”</strong>?
+              Apagar <strong>“{confirm.name}”</strong> sem volta
               {confirm.imageCount > 0 && (
                 <>
-                  {' '}
-                  Vai apagar <strong>{confirm.imageCount} imagem(ns)</strong> junto.
+                  , junto com <strong>{confirm.imageCount} imagem(ns)</strong>
                 </>
               )}
+              .
+              <br />
+              <br />
+              Se este produto ainda estiver na planilha da Shopee, a próxima
+              importação vai <strong>criá-lo de novo</strong>. Para tirá-lo do
+              site de forma permanente, use <strong>Remover do site</strong>.
             </>
           ) : (
             ''
           )
         }
-        confirmLabel="Excluir"
+        confirmLabel="Excluir mesmo assim"
         destructive
         onConfirm={performDelete}
       />

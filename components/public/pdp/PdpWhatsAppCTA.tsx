@@ -9,7 +9,7 @@ type ProductRow = Database['public']['Tables']['products']['Row'];
 type ColorRow = Database['public']['Tables']['product_colors']['Row'];
 
 type PdpWhatsAppCTAProps = {
-  product: Pick<ProductRow, 'name' | 'price_retail'> & { shopee?: ShopeePricing };
+  product: Pick<ProductRow, 'name' | 'slug' | 'price_retail'> & { shopee?: ShopeePricing };
   color: Pick<ColorRow, 'name'> | null;
   size?: string;
 };

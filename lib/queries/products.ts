@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAnonClient } from '@/lib/supabase/anon';
 import type { CampaignPricing } from '@/lib/product-price';
 import type { Database } from '@/types/db';
+import { readFeaturedIds } from '@/lib/catalog/featured-store';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
@@ -112,6 +113,42 @@ export async function listActiveProducts(): Promise<ProductWithRelations[]> {
     LIST_SELECT,
     'listActiveProducts',
   );
+  return (data ?? []).map(sortRelations);
+}
+
+/**
+ * As peças escolhidas como destaque no painel, na ordem do catálogo.
+ *
+ * A seleção vem do Storage (veja `lib/catalog/featured-store`), não de uma
+ * coluna. Ids que não correspondem mais a um produto ativo simplesmente não
+ * voltam da consulta — a vitrine encolhe, nada quebra.
+ */
+export async function listFeaturedProducts(): Promise<ProductWithRelations[]> {
+  const ids = await readFeaturedIds();
+  if (ids.length === 0) return [];
+
+  const supabase = await createClient();
+  let data: ProductWithRelations[] | null = null;
+  try {
+    data = await withShopeeFallback<ProductWithRelations[]>(
+      (select) =>
+        supabase
+          .from('products')
+          .select(select)
+          .eq('active', true)
+          .in('id', ids)
+          .order('sort_order', { ascending: true })
+          .returns<ProductWithRelations[]>(),
+      LIST_SELECT,
+      'listFeaturedProducts',
+    );
+  } catch (err) {
+    console.warn(
+      '[listFeaturedProducts] destaques indisponíveis, seguindo sem a vitrine:',
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
   return (data ?? []).map(sortRelations);
 }
 
