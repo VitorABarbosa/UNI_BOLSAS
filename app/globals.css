@@ -2339,6 +2339,62 @@ html, body {
   scroll-snap-align: start;
 }
 
+/* ---- Aviso de cookies ----
+   Cartão discreto no canto, não uma faixa que engole a tela: o aviso pede uma
+   decisão, não uma rendição. Sobe com a mesma curva das outras entradas do
+   site e sai por fade quando a pessoa escolhe. */
+@keyframes uni-cookie-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.uni-cookie {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 90;
+  max-width: 400px;
+  animation: uni-cookie-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.uni-cookie.is-leaving { opacity: 0; transform: translateY(10px); pointer-events: none; }
+.uni-cookie-inner {
+  background: var(--color-bone-light);
+  border: 1px solid var(--color-whisper);
+  box-shadow: 0 24px 60px -20px rgba(17, 17, 17, 0.25);
+  padding: 22px 24px 20px;
+}
+.uni-cookie-title {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.25;
+  color: var(--color-ink);
+  margin: 0 0 8px;
+}
+.uni-cookie-title em { color: var(--color-leather-dark); }
+.uni-cookie-text {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-charcoal);
+  margin: 0 0 16px;
+}
+.uni-cookie-actions { display: flex; gap: 10px; }
+.uni-cookie-accept,
+.uni-cookie-decline {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 11px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-ink);
+}
+.uni-cookie-accept { background: var(--color-ink); color: var(--color-bone); flex: 1; }
+.uni-cookie-accept:hover { background: var(--color-charcoal); }
+.uni-cookie-decline { background: transparent; color: var(--color-ink); }
+.uni-cookie-decline:hover { background: var(--color-ink); color: var(--color-bone); }
+
 /* ---- Caixa de seleção do painel ----
    O tique e o traço do estado indeterminado são SVG no background-image.
    Aqui em CSS puro, e não como classe utilitária arbitrária: escrito como
@@ -2793,6 +2849,16 @@ input, select, textarea { font-size: 16px; }
   .uni-reels-cta { margin-top: 32px; }
 
   html { --uni-header-h: 60px; }
+  /* O aviso divide o rodapé com o botão do WhatsApp: encosta na esquerda e
+     deixa o canto direito livre pra ele. */
+  .uni-cookie {
+    left: 12px;
+    right: 84px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    max-width: none;
+  }
+  .uni-cookie-inner { padding: 18px 18px 16px; }
+  .uni-cookie-title { font-size: 17px; }
   /* O full-bleed passa pro wrapper: se ficasse só no trilho (margem negativa),
      os cards apareceriam nas frestas laterais ao rolar por baixo do filtro. */
   .uni-cat-sticky { padding: 8px 0 4px; margin: 0 -20px 28px; }

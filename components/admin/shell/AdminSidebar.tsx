@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  BarChart3,
   FileSpreadsheet,
   LayoutDashboard,
   Package,
@@ -20,6 +21,7 @@ const NAV = [
   { href: '/admin/campanhas', label: 'Campanhas', icon: Percent, exact: false },
   { href: '/admin/importar', label: 'Importar', icon: FileSpreadsheet, exact: false },
   { href: '/admin/shopee', label: 'Shopee', icon: ShoppingBag, exact: false },
+  { href: '/admin/dados', label: 'Dados', icon: BarChart3, exact: false },
 ] as const;
 
 export function AdminSidebar({ user }: { user: { email: string } }) {
