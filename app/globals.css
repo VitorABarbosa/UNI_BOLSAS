@@ -2314,6 +2314,31 @@ html, body {
   object-position: center;
 }
 
+/* ---- Destaques ("as mais pedidas") ----
+   Trilho horizontal, não grade: a seção é uma seleção curta e precisa parecer
+   vitrine. Rolando de lado, o corte do próximo card na borda já avisa que tem
+   mais — sem precisar de seta nem de instrução. */
+.uni-featured { background: var(--color-bone); }
+.uni-featured-rail {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* O respiro lateral entra como padding do trilho, não como margem do
+     container: assim o primeiro card alinha com o resto da página e o último
+     ainda tem folga no fim da rolagem. */
+  margin: 0 -24px;
+  padding: 4px 24px 8px;
+}
+.uni-featured-rail::-webkit-scrollbar { display: none; }
+.uni-featured-rail > * {
+  flex: 0 0 300px;
+  scroll-snap-align: start;
+}
+
 /* ---- Caixa de seleção do painel ----
    O tique e o traço do estado indeterminado são SVG no background-image.
    Aqui em CSS puro, e não como classe utilitária arbitrária: escrito como
@@ -2738,6 +2763,13 @@ input, select, textarea { font-size: 16px; }
     padding: 0 20px;
   }
   .uni-color-swatch-big { flex-shrink: 0; }
+
+  .uni-featured-rail {
+    margin: 0 -20px;
+    padding: 4px 20px 8px;
+    gap: 14px;
+  }
+  .uni-featured-rail > * { flex-basis: 74vw; }
 
   /* Reels: trilho horizontal com snap, de ponta a ponta da tela —
      três cards 9:16 empilhados custariam ~3 telas de rolagem. */

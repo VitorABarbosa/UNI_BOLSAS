@@ -203,6 +203,7 @@ export type Database = {
           created_at: string
           description: string | null
           dimensions: string | null
+          featured: boolean
           id: string
           material: string | null
           name: string
@@ -224,6 +225,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           dimensions?: string | null
+          featured?: boolean
           id?: string
           material?: string | null
           name: string
@@ -245,6 +247,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           dimensions?: string | null
+          featured?: boolean
           id?: string
           material?: string | null
           name?: string

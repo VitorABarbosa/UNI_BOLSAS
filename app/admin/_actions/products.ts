@@ -135,6 +135,44 @@ export async function setProductsActive(
   return { ok: true, data: { count: data?.length ?? 0 } };
 }
 
+/**
+ * Marca (ou desmarca) peças como destaque, que é o que alimenta a vitrine
+ * "Destaques da casa" na home.
+ *
+ * `missingColumn` em vez de um erro cru: se a migration dos destaques ainda
+ * não foi aplicada, a tela precisa dizer o que rodar — não repetir a mensagem
+ * do Postgres em inglês.
+ */
+export async function setProductsFeatured(
+  ids: string[],
+  featured: boolean,
+): Promise<ActionResult<{ count: number }> & { missingColumn?: true }> {
+  const { supabase } = await requireAdmin();
+  if (ids.length === 0) return { ok: true, data: { count: 0 } };
+
+  const { data, error } = await supabase
+    .from('products')
+    .update({ featured })
+    .in('id', ids)
+    .select('slug');
+  if (error) {
+    // 42703 = undefined_column; PGRST204 = a coluna não está no cache do schema.
+    if (error.code === '42703' || error.code === 'PGRST204') {
+      return {
+        ok: false,
+        error: 'A coluna de destaques ainda não existe no banco',
+        missingColumn: true,
+      };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath('/');
+  revalidatePath('/admin/produtos');
+
+  return { ok: true, data: { count: data?.length ?? 0 } };
+}
+
 export async function deleteProduct(id: string): Promise<ActionResult> {
   const { supabase } = await requireAdmin();
 

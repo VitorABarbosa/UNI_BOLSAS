@@ -115,6 +115,43 @@ export async function listActiveProducts(): Promise<ProductWithRelations[]> {
   return (data ?? []).map(sortRelations);
 }
 
+/**
+ * As peças marcadas como destaque no painel, na ordem do catálogo.
+ *
+ * Devolve `[]` — e não estoura — quando a coluna `featured` ainda não existe
+ * no banco. A vitrine some, o catálogo segue: o `listActiveProducts` nem
+ * chega a mencionar a coluna, então nada aqui pode derrubar a home. Foi a
+ * lição da vez em que um código novo dependeu de uma migration não aplicada.
+ */
+export async function listFeaturedProducts(
+  limit = 8,
+): Promise<ProductWithRelations[]> {
+  const supabase = await createClient();
+  let data: ProductWithRelations[] | null = null;
+  try {
+    data = await withShopeeFallback<ProductWithRelations[]>(
+      (select) =>
+        supabase
+          .from('products')
+          .select(select)
+          .eq('active', true)
+          .eq('featured', true)
+          .order('sort_order', { ascending: true })
+          .limit(limit)
+          .returns<ProductWithRelations[]>(),
+      LIST_SELECT,
+      'listFeaturedProducts',
+    );
+  } catch (err) {
+    console.warn(
+      '[listFeaturedProducts] destaques indisponíveis, seguindo sem a vitrine:',
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
+  return (data ?? []).map(sortRelations);
+}
+
 export async function getProductBySlug(
   slug: string,
 ): Promise<ProductWithRelations | null> {

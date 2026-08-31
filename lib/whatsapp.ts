@@ -1,4 +1,5 @@
 import { WHATSAPP_NUMBER } from '@/lib/tokens';
+import { SITE_URL } from '@/lib/seo';
 import { productPrice, type ShopeePricing } from '@/lib/product-price';
 import type { Database } from '@/types/db';
 
@@ -10,7 +11,9 @@ export function waLink(message: string): string {
 }
 
 export function waProduct(
-  product: Pick<ProductRow, 'name' | 'price_retail'> & { shopee?: ShopeePricing },
+  product: Pick<ProductRow, 'name' | 'slug' | 'price_retail'> & {
+    shopee?: ShopeePricing;
+  },
   color: Pick<ColorRow, 'name'> | null,
   size?: string,
 ): string {
@@ -23,8 +26,13 @@ export function waProduct(
     product.price_retail != null
       ? ` (${price.currentLabel}${price.isPromo ? ' — promoção' : ''})`
       : '';
+  // O link da peça em linha própria: no atendimento, o nome sozinho vira
+  // adivinhação quando há duas parecidas. Abre a mesma página que a pessoa
+  // estava vendo, com foto, cores e preço.
+  const link = `${SITE_URL}/produtos/${product.slug}`;
   return waLink(
-    `Olá! Tenho interesse na ${product.name}${colorPart}${sizePart}${priceMsg}. Está disponível?`,
+    `Olá! Tenho interesse na ${product.name}${colorPart}${sizePart}${priceMsg}. Está disponível?` +
+      `\n\n${link}`,
   );
 }
 

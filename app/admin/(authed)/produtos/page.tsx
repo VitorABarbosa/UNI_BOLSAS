@@ -12,18 +12,27 @@ export const metadata = {
 export default async function ProdutosPage() {
   const { user, supabase } = await requireAdmin();
 
-  const [
-    { data: rawProducts, error: productsError },
-    { data: cats, error: catsError },
-  ] = await Promise.all([
-    supabase
-      .from('products')
-      .select(
-        'id, slug, name, active, sort_order, category_id, category:categories(id, label), images:product_images(storage_path, sort_order)',
-      )
-      .order('sort_order', { ascending: true }),
-    supabase.from('categories').select('id, label').order('sort_order'),
-  ]);
+  const BASE =
+    'id, slug, name, active, sort_order, category_id, category:categories(id, label), images:product_images(storage_path, sort_order)';
+
+  // `featured` é opcional: a migration dos destaques pode não ter sido
+  // aplicada, e uma coluna inexistente derruba a consulta INTEIRA. Tenta com
+  // ela, cai pra sem — o painel abre dos dois jeitos e a tabela mostra o
+  // aviso quando a coluna falta.
+  const withFeatured = await supabase
+    .from('products')
+    .select(`${BASE}, featured`)
+    .order('sort_order', { ascending: true });
+
+  const featuredAvailable = !withFeatured.error;
+  const { data: rawProducts, error: productsError } = featuredAvailable
+    ? withFeatured
+    : await supabase.from('products').select(BASE).order('sort_order', { ascending: true });
+
+  const { data: cats, error: catsError } = await supabase
+    .from('categories')
+    .select('id, label')
+    .order('sort_order');
   if (productsError) throw productsError;
   if (catsError) throw catsError;
 
@@ -42,12 +51,17 @@ export default async function ProdutosPage() {
         (p.category as unknown as { label: string } | null)?.label ?? '—',
       image_count: sortedImgs.length,
       cover_storage_path: sortedImgs[0]?.storage_path ?? null,
+      featured: 'featured' in p ? Boolean(p.featured) : false,
     };
   });
 
   return (
     <AdminShell user={{ email: user.email ?? '' }} title="Produtos">
-      <ProductsTable initial={rows} categories={cats ?? []} />
+      <ProductsTable
+        initial={rows}
+        categories={cats ?? []}
+        featuredAvailable={featuredAvailable}
+      />
     </AdminShell>
   );
 }
