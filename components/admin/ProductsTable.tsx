@@ -39,6 +39,7 @@ import {
   setProductsFeatured,
 } from '@/app/admin/_actions/products';
 import { publicImageUrl } from '@/lib/supabase/image-url';
+import { MAX_FEATURED } from '@/lib/catalog/featured';
 
 export type ProductListRow = {
   id: string;
@@ -66,7 +67,9 @@ export function ProductsTable({
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterCat, setFilterCat] = useState<string>('all');
-  const [status, setStatus] = useState<'all' | 'on' | 'off'>('all');
+  const [status, setStatus] = useState<'all' | 'on' | 'off' | 'featured'>(
+    'all',
+  );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>('sort_order');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -95,6 +98,7 @@ export function ProductsTable({
       if (filterCat !== 'all' && p.category_id !== filterCat) return false;
       if (status === 'on' && !p.active) return false;
       if (status === 'off' && p.active) return false;
+      if (status === 'featured' && !p.featured) return false;
       return true;
     });
     r = [...r].sort((a, b) => {
@@ -109,6 +113,7 @@ export function ProductsTable({
 
   const countOn = initial.filter((p) => p.active).length;
   const countOff = initial.length - countOn;
+  const countFeatured = initial.filter((p) => p.featured).length;
 
   const performDelete = async () => {
     if (!confirm) return;
@@ -263,6 +268,7 @@ export function ProductsTable({
               ['all', `Todos (${initial.length})`],
               ['on', `No site (${countOn})`],
               ['off', `Fora do site (${countOff})`],
+              ['featured', `Em destaque (${countFeatured})`],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -289,6 +295,15 @@ export function ProductsTable({
           </Link>
         </div>
       </div>
+
+      {/* A estrela sozinha não se explica: quem abre o painel pela primeira
+          vez precisa saber o que ela faz e onde o resultado aparece. */}
+      <p className="flex items-center gap-1.5 text-sm text-stone">
+        <Star className="h-3.5 w-3.5 fill-leather text-leather" />
+        Clique na estrela para pôr a peça na vitrine{' '}
+        <strong className="font-medium text-ink">Destaques da casa</strong>, no
+        topo da home. Cabem {MAX_FEATURED}.
+      </p>
 
       {selectedVisible.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-ink/15 bg-bone-light px-3 py-2">
@@ -372,6 +387,12 @@ export function ProductsTable({
             <TableHead>Slug</TableHead>
             <TableHead>Categoria</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="w-[90px]">
+              Destaque
+              <span className="ml-1 font-mono text-[10px] text-stone">
+                {countFeatured}/{MAX_FEATURED}
+              </span>
+            </TableHead>
             <TableHead>
               <button
                 type="button"
@@ -388,7 +409,7 @@ export function ProductsTable({
         <TableBody>
           {rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="py-10 text-center text-sm text-stone">
+              <TableCell colSpan={10} className="py-10 text-center text-sm text-stone">
                 Nenhum produto encontrado.
               </TableCell>
             </TableRow>
@@ -437,17 +458,33 @@ export function ProductsTable({
                 </TableCell>
                 <TableCell className="text-sm">{row.category_label}</TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-1.5">
-                    <Badge variant={row.active ? 'default' : 'secondary'}>
-                      {row.active ? 'No site' : 'Fora do site'}
-                    </Badge>
-                    {row.featured && (
-                      <Star
-                        className="h-3.5 w-3.5 fill-leather text-leather"
-                        aria-label="Em destaque"
-                      />
-                    )}
-                  </div>
+                  <Badge variant={row.active ? 'default' : 'secondary'}>
+                    {row.active ? 'No site' : 'Fora do site'}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => toggleFeatured(row)}
+                    title={
+                      row.featured
+                        ? 'Tirar da vitrine de destaques'
+                        : 'Pôr na vitrine de destaques'
+                    }
+                    aria-pressed={row.featured}
+                    aria-label={`${row.featured ? 'Tirar' : 'Pôr'} “${row.name}” nos destaques`}
+                    className="rounded p-1 transition-colors hover:bg-bone-light disabled:opacity-50"
+                  >
+                    <Star
+                      className={
+                        'h-4 w-4 ' +
+                        (row.featured
+                          ? 'fill-leather text-leather'
+                          : 'text-whisper')
+                      }
+                    />
+                  </button>
                 </TableCell>
                 <TableCell className="text-sm tabular-nums text-stone">
                   {row.sort_order}
@@ -469,9 +506,6 @@ export function ProductsTable({
                         onClick={() => router.push(`/admin/produtos/${row.id}`)}
                       >
                         Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => toggleFeatured(row)}>
-                        {row.featured ? 'Tirar dos destaques' : 'Pôr em destaque'}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => toggleActive(row)}>
                         {row.active ? 'Remover do site' : 'Voltar pro site'}

@@ -1,5 +1,6 @@
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { MAX_FEATURED } from './featured';
 
 /**
  * Quais peças estão em destaque na home.
@@ -22,7 +23,7 @@ const BUCKET = 'products';
 const PATH = '_config/featured.json';
 
 /** Teto de segurança: a vitrine é uma seleção curta, não um segundo catálogo. */
-export const MAX_FEATURED = 12;
+export { MAX_FEATURED } from './featured';
 
 export async function readFeaturedIds(): Promise<string[]> {
   try {
