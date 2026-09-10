@@ -9,7 +9,7 @@ type ProductRow = Database['public']['Tables']['products']['Row'];
 type ColorRow = Database['public']['Tables']['product_colors']['Row'];
 
 type PdpWhatsAppCTAProps = {
-  product: Pick<ProductRow, 'id' | 'name' | 'price_retail'> & { shopee?: ShopeePricing };
+  product: Pick<ProductRow, 'id' | 'slug' | 'name' | 'price_retail'> & { shopee?: ShopeePricing };
   color: Pick<ColorRow, 'name'> | null;
   size?: string;
 };
@@ -18,7 +18,11 @@ export function PdpWhatsAppCTA({ product, color, size }: PdpWhatsAppCTAProps) {
   return (
     // No mobile este CTA some: quem assume é a `PdpBuyBar` fixa no rodapé.
     <div className="uni-qv-cta uni-pdp-cta-inline">
-      <WhatsAppButton href={waProduct(product, color, size)} full>
+      <WhatsAppButton
+        href={waProduct(product, color, size)}
+        trackPath={`/produtos/${product.slug}`}
+        full
+      >
         Pedir no WhatsApp · {productPrice(product).currentLabel}
       </WhatsAppButton>
       <p className="uni-qv-cta-note">
