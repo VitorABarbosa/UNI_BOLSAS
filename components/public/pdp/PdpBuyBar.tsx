@@ -3,13 +3,14 @@
 import { WhatsAppIcon } from '@/components/public/icons';
 import { productPrice, type ShopeePricing } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
+import { WaLink } from '@/components/public/primitives/WaLink';
 import type { Database } from '@/types/db';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type ColorRow = Database['public']['Tables']['product_colors']['Row'];
 
 type PdpBuyBarProps = {
-  product: Pick<ProductRow, 'id' | 'name' | 'price_retail'> & { shopee?: ShopeePricing };
+  product: Pick<ProductRow, 'id' | 'slug' | 'name' | 'price_retail'> & { shopee?: ShopeePricing };
   color: Pick<ColorRow, 'name'> | null;
   size?: string;
 };
@@ -37,15 +38,14 @@ export function PdpBuyBar({ product, color, size }: PdpBuyBarProps) {
           {price.currentLabel}
         </strong>
       </div>
-      <a
+      <WaLink
         className="uni-pdp-buybar-cta"
         href={waProduct(product, color, size)}
-        target="_blank"
-        rel="noopener noreferrer"
+        trackPath={`/produtos/${product.slug}`}
       >
         <WhatsAppIcon size={16} />
         Pedir no WhatsApp
-      </a>
+      </WaLink>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Logo } from '@/components/public/primitives/Logo';
 import {
   HeartIcon,
@@ -7,6 +8,8 @@ import {
 import { STORE } from '@/lib/content/store';
 import { INSTAGRAM_HANDLE, TOKENS } from '@/lib/tokens';
 import { waGeneral, waLink } from '@/lib/whatsapp';
+import { CookiePrefsButton } from '@/components/public/shell/CookieConsent';
+import { WaLink } from '@/components/public/primitives/WaLink';
 
 export function Footer() {
   return (
@@ -60,14 +63,9 @@ export function Footer() {
           <div>
             <div className="uni-footer-head">Fale com a gente</div>
             <div className="uni-footer-list">
-              <a
-                href={waGeneral}
-                className="uni-footer-link"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <WaLink href={waGeneral} className="uni-footer-link">
                 <WhatsAppIcon size={14} /> WhatsApp
-              </a>
+              </WaLink>
               <a
                 href={`https://instagram.com/${INSTAGRAM_HANDLE}`}
                 className="uni-footer-link"
@@ -93,6 +91,15 @@ export function Footer() {
           <span>
             © 2026 Uni Bolsas
             {STORE.cnpj ? ` · CNPJ ${STORE.cnpj}` : ''}
+          </span>
+          {/* Privacidade e revogação ficam no rodapé de todas as páginas: a
+              LGPD (art. 8º, §5º) pede que desfazer o aceite seja tão fácil
+              quanto foi aceitar. */}
+          <span className="uni-footer-legal">
+            <Link href="/privacidade" className="uni-footer-link">
+              Privacidade
+            </Link>
+            <CookiePrefsButton className="uni-footer-link uni-footer-linkbtn" />
           </span>
           <span>Feito com cuidado em São Paulo · Brás</span>
         </div>

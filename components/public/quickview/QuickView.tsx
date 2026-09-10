@@ -253,7 +253,11 @@ export function QuickView({
             </div>
           )}
           <div className="uni-qv-cta">
-            <WhatsAppButton href={waProduct(product, color, sizeForWa)} full>
+            <WhatsAppButton
+              href={waProduct(product, color, sizeForWa)}
+              trackPath={`/produtos/${product.slug}`}
+              full
+            >
               Pedir no WhatsApp · {price.currentLabel}
             </WhatsAppButton>
             <p className="uni-qv-cta-note">

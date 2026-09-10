@@ -26,6 +26,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 1.0,
     },
+    {
+      // Não é página de venda, mas precisa ser encontrável: é para onde
+      // apontam o aviso de cookies e o rodapé, e é o que um cliente procura
+      // quando quer saber o que guardamos sobre ele.
+      url: `${SITE_URL}/privacidade`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
     ...productEntries,
   ];
 }
