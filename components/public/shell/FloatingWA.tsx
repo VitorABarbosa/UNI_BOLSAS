@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { WhatsAppIcon } from '@/components/public/icons';
 import { waGeneral } from '@/lib/whatsapp';
-import { WaLink } from '@/components/public/primitives/WaLink';
 import { TOKENS } from '@/lib/tokens';
 
 /** Rolagem a partir da qual o botão aparece. */
@@ -87,13 +86,15 @@ export function FloatingWA() {
       >
         Fale com a gente · <strong>respondemos em até 5min</strong>
       </span>
-      <WaLink
+      <a
         href={waGeneral}
+        target="_blank"
+        rel="noopener noreferrer"
         className="uni-float-wa"
-        ariaLabel="Falar pelo WhatsApp"
+        aria-label="Falar pelo WhatsApp"
       >
         <WhatsAppIcon size={26} color={TOKENS.pearl} />
-      </WaLink>
+      </a>
     </div>
   );
 }

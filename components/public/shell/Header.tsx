@@ -5,7 +5,6 @@ import { Logo } from '@/components/public/primitives/Logo';
 import { MenuIcon, WhatsAppIcon } from '@/components/public/icons';
 import { MobileMenu } from '@/components/public/shell/MobileMenu';
 import { waGeneral } from '@/lib/whatsapp';
-import { WaLink } from '@/components/public/primitives/WaLink';
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,15 +26,17 @@ export function Header() {
             </a>
           </nav>
           <div className="uni-header-right">
-            <WaLink
+            <a
               href={waGeneral}
               className="uni-header-cta"
-              ariaLabel="Falar pelo WhatsApp"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Falar pelo WhatsApp"
             >
               <WhatsAppIcon size={14} />
               {/* Em telas ≤380px o rótulo some e sobra só o ícone (44×44). */}
               <span className="uni-header-cta-label">WhatsApp</span>
-            </WaLink>
+            </a>
             <button
               className="uni-header-menu-btn"
               onClick={() => setMenuOpen(true)}
