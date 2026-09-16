@@ -91,12 +91,12 @@ export async function recordHit(hit: Hit): Promise<void> {
     const day = new Date().toISOString().slice(0, 10);
     const rand = Math.random().toString(36).slice(2, 8);
     // Os campos viajam no nome, separados por ponto (base64url não tem
-    // ponto). '~' marca campo vazio.
+    // ponto). '-' marca campo vazio: o Storage do Supabase rejeita '~' no nome.
     const name = [
       Date.now().toString(36) + rand,
       hit.device,
-      hit.vid ?? '~',
-      hit.ref ? b64(hit.ref).slice(0, 64) : '~',
+      hit.vid ?? '-',
+      hit.ref ? b64(hit.ref).slice(0, 64) : '-',
       b64(hit.path).slice(0, 128),
     ].join('.');
 
@@ -126,10 +126,10 @@ function parseRawName(name: string, into: DaySummary): void {
   ];
   into.views += 1;
   into.devices[device] = (into.devices[device] ?? 0) + 1;
-  if (vid === '~') into.anon += 1;
+  if (vid === '-') into.anon += 1;
   else if (!into.vids.includes(vid) && into.vids.length < MAX_VIDS_PER_SUMMARY)
     into.vids.push(vid);
-  if (ref !== '~') {
+  if (ref !== '-') {
     const host = unb64(ref);
     if (host) into.refs[host] = (into.refs[host] ?? 0) + 1;
   }
