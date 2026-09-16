@@ -14,3 +14,8 @@ onlyBuiltDependencies:
   - sharp
   - supabase
   - unrs-resolver
+
+# Layout achatado do node_modules (sem symlinks): o runtime da Hostinger
+# (lsnode) copia node_modules/next desreferenciando o link e perde as deps
+# internas do Next (@swc/helpers) que o pnpm isolado guarda so em .pnpm/.
+nodeLinker: hoisted
