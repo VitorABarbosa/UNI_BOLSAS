@@ -64,43 +64,51 @@ export function Featured({
     <section className="uni-featured uni-section" id="destaques">
       <div className="uni-container">
         <Reveal>
-          <div className="uni-section-head">
-            <div className="uni-eyebrow uni-eyebrow-wide">
-              As mais pedidas
+          <div className="uni-featured-head">
+            <div className="uni-section-head uni-featured-head-text">
+              <div className="uni-eyebrow uni-eyebrow-wide">
+                As mais pedidas
+              </div>
+              <h2 className="uni-h2">
+                Destaques <em>da casa.</em>
+              </h2>
+              <p className="uni-section-lede">
+                As peças que mais saem do nosso stand no Brás — escolhidas a
+                dedo, não por algoritmo.
+              </p>
             </div>
-            <h2 className="uni-h2">
-              Destaques <em>da casa.</em>
-            </h2>
-            <p className="uni-section-lede">
-              As peças que mais saem do nosso stand no Brás — escolhidas a
-              dedo, não por algoritmo.
-            </p>
+            {/* As setas moram no cabeçalho, e não flutuando sobre o trilho:
+                ali elas cobriam a foto da bolsa — o próprio objeto que a
+                seção existe pra mostrar. Aqui também ficam sempre no mesmo
+                lugar, em vez de aparecer e sumir em cima do produto. */}
+            {(nav.prev || nav.next) && (
+              <div className="uni-featured-nav">
+                <button
+                  type="button"
+                  className="uni-featured-arrow"
+                  onClick={() => slide(-1)}
+                  disabled={!nav.prev}
+                  aria-label="Peças anteriores"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                </button>
+                <button
+                  type="button"
+                  className="uni-featured-arrow"
+                  onClick={() => slide(1)}
+                  disabled={!nav.next}
+                  aria-label="Próximas peças"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
+              </div>
+            )}
           </div>
         </Reveal>
         <div className="uni-featured-frame">
-          {nav.prev && (
-            <button
-              type="button"
-              className="uni-featured-arrow is-prev"
-              onClick={() => slide(-1)}
-              aria-label="Peças anteriores"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
-            </button>
-          )}
-          {nav.next && (
-            <button
-              type="button"
-              className="uni-featured-arrow is-next"
-              onClick={() => slide(1)}
-              aria-label="Próximas peças"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
-            </button>
-          )}
           <div className="uni-featured-rail" ref={railRef} onScroll={syncNav}>
           {products.map((p, i) => (
-            <Reveal key={p.id} delay={i * 80}>
+            <Reveal key={p.id} delay={i * 80} className="uni-featured-item">
               <ProductCard
                 product={p}
                 selectedColorIdx={selectedColors[p.id] ?? 0}
