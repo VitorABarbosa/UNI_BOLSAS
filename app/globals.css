@@ -2318,14 +2318,39 @@ html, body {
    Trilho horizontal, não grade: a seção é uma seleção curta e precisa parecer
    vitrine. Rolando de lado, o corte do próximo card na borda já avisa que tem
    mais — sem precisar de seta nem de instrução. */
+/* ---- Destaques da casa ----
+   A vitrine não pode ser o catálogo com outro título. Três diferenças:
+   os cards são maiores (a seção existe pra mostrar a bolsa), as setas moram
+   no cabeçalho, e as alturas são iguais. */
 .uni-featured { background: var(--color-bone); }
-.uni-featured-frame { position: relative; }
+
+/* O cabeçalho divide a linha com as setas: título à esquerda, navegação à
+   direita, ambos apoiados na mesma base. */
+.uni-featured-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+.uni-featured-head-text {
+  text-align: left;
+  margin-bottom: 0;
+}
+.uni-featured-head-text .uni-section-lede { margin-left: 0; }
+.uni-featured-nav {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  padding-bottom: 8px;
+}
+
+/* Antes as setas flutuavam sobre o trilho e cobriam a foto da bolsa — o
+   próprio objeto que a seção existe pra mostrar. Agora ficam paradas no
+   cabeçalho: sempre no mesmo lugar, nunca em cima de nada. */
 .uni-featured-arrow {
-  position: absolute;
-  top: 42%;
-  z-index: 5;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: 1px solid var(--color-whisper);
   background: var(--color-bone-light);
@@ -2333,15 +2358,23 @@ html, body {
   display: grid;
   place-items: center;
   cursor: pointer;
-  box-shadow: 0 10px 28px -10px rgba(17, 17, 17, 0.28);
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 }
-.uni-featured-arrow:hover { background: var(--color-ink); color: var(--color-bone); transform: scale(1.06); }
-.uni-featured-arrow.is-prev { left: -8px; }
-.uni-featured-arrow.is-next { right: -8px; }
+.uni-featured-arrow:not(:disabled):hover {
+  background: var(--color-ink);
+  color: var(--color-bone);
+}
+/* Desabilitada em vez de escondida: um par de setas que aparece e desaparece
+   faz o cabeçalho pular de largura a cada rolagem. */
+.uni-featured-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.uni-featured-frame { position: relative; }
 .uni-featured-rail {
   display: flex;
-  gap: 24px;
+  gap: 28px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
   /* Sem isto o snap alinhava o 1º card na borda EXTERNA (ignorando o padding)
@@ -2354,12 +2387,56 @@ html, body {
      container: assim o primeiro card alinha com o resto da página e o último
      ainda tem folga no fim da rolagem. */
   margin: 0 -24px;
-  padding: 4px 24px 8px;
+  /* Folga em cima e embaixo pro card poder subir no hover sem ser cortado. */
+  padding: 8px 24px 20px;
 }
 .uni-featured-rail::-webkit-scrollbar { display: none; }
 .uni-featured-rail > * {
-  flex: 0 0 300px;
+  /* Maior que os 300px do catálogo: aqui a peça é o assunto, não um item de
+     uma grade. */
+  flex: 0 0 340px;
   scroll-snap-align: start;
+}
+
+/* ALTURAS IGUAIS.
+   O trilho é flex, então os envelopes já se esticavam até a altura do mais
+   alto — mas o card DENTRO do envelope não preenchia. Resultado: uma peça sem
+   cores cadastradas ficava 77px mais baixa que as vizinhas, com os botões
+   flutuando no meio do card em vez de na mesma linha das outras. */
+.uni-featured-item { display: flex; }
+.uni-featured-item > .uni-card { flex: 1; }
+
+/* Com as alturas iguais, a peça sem cores cadastradas ganha um vão vazio
+   entre o texto e os botões — e o traço que separava o bloco de cores ficava
+   numa altura diferente em cada card, porque depende de quantas cores cabem
+   na linha.
+   Aqui o traço muda de lugar: sai do topo do bloco de cores e passa pra cima
+   dos botões, em TODOS os cards. Como os botões estão colados na base e as
+   alturas agora são iguais, os traços caem exatamente na mesma linha — e o
+   vão da peça sem cores vira respiro, não buraco. */
+.uni-featured .uni-card-colors {
+  border-top: 0;
+  padding-top: 0;
+  margin-bottom: 18px;
+}
+.uni-featured .uni-card-cta-row {
+  border-top: 1px solid var(--color-whisper);
+  padding-top: 18px;
+  /* `auto`, e não um valor fixo: é ele que cola os botões na base do card.
+     Um `margin-top: 18px` aqui sobrescreve o `auto` que vem do catálogo e os
+     botões voltam a flutuar no meio — foi o que aconteceu na primeira
+     tentativa. O respiro vem do padding. */
+  margin-top: auto;
+}
+
+/* Sombra permanente e discreta: sobre o fundo osso, um retângulo branco sem
+   apoio nenhum parece papel recortado. */
+.uni-featured .uni-card {
+  box-shadow: 0 2px 10px -4px rgba(17, 17, 17, 0.07);
+}
+.uni-featured .uni-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 44px -16px rgba(17, 17, 17, 0.18);
 }
 
 /* ---- Aviso de cookies ----
@@ -2843,10 +2920,13 @@ input, select, textarea { font-size: 16px; }
   }
   .uni-color-swatch-big { flex-shrink: 0; }
 
-  .uni-featured-arrow { display: none; }
+  .uni-featured-nav { display: none; }
+  .uni-featured-head { display: block; margin-bottom: 32px; }
+  .uni-featured-head-text { text-align: center; }
+  .uni-featured-head-text .uni-section-lede { margin-inline: auto; }
   .uni-featured-rail {
     margin: 0 -20px;
-    padding: 4px 20px 8px;
+    padding: 4px 20px 12px;
     scroll-padding: 0 20px;
     gap: 14px;
   }
