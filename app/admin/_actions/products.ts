@@ -183,6 +183,64 @@ export async function setFeaturedSelection(
   }
 }
 
+/**
+ * Grava a ordem do catálogo.
+ *
+ * Recebe a lista COMPLETA de ids na ordem desejada, e não "mova esta peça
+ * três casas pra cima". O painel sabe como quer o catálogo inteiro; mandar a
+ * intenção pronta evita que dois arrastes seguidos se atropelem — é a mesma
+ * escolha feita na vitrine de destaques, e pela mesma razão.
+ *
+ * Só as peças que realmente mudaram de lugar são gravadas. Arrastar uma peça
+ * do fim para o topo de um catálogo de duzentas move todas as outras uma casa
+ * — mas sem esse filtro seriam duzentas escritas mesmo quando o admin só
+ * trocou duas peças de lugar.
+ */
+export async function reorderProducts(
+  orderedIds: string[],
+): Promise<ActionResult<{ changed: number }>> {
+  const { supabase } = await requireAdmin();
+  if (orderedIds.length === 0) return { ok: true, data: { changed: 0 } };
+
+  const { data: atuais, error: readError } = await supabase
+    .from('products')
+    .select('id, sort_order');
+  if (readError) return { ok: false, error: readError.message };
+
+  const posicaoAtual = new Map(
+    (atuais ?? []).map((p) => [p.id, p.sort_order] as const),
+  );
+
+  const mudaram: { id: string; sort_order: number }[] = [];
+  orderedIds.forEach((id, i) => {
+    // Ids que não existem mais (peça excluída noutra aba) são ignorados em
+    // vez de virarem erro: a ordem que sobrou continua válida.
+    if (posicaoAtual.has(id) && posicaoAtual.get(id) !== i) {
+      mudaram.push({ id, sort_order: i });
+    }
+  });
+  if (mudaram.length === 0) return { ok: true, data: { changed: 0 } };
+
+  // O PostgREST não atualiza linhas diferentes com valores diferentes numa
+  // requisição só, então vão em lotes paralelos — não uma por uma.
+  const LOTE = 25;
+  for (let i = 0; i < mudaram.length; i += LOTE) {
+    const resultados = await Promise.all(
+      mudaram
+        .slice(i, i + LOTE)
+        .map(({ id, sort_order }) =>
+          supabase.from('products').update({ sort_order }).eq('id', id),
+        ),
+    );
+    const falhou = resultados.find((r) => r.error);
+    if (falhou?.error) return { ok: false, error: falhou.error.message };
+  }
+
+  revalidatePath('/');
+  revalidatePath('/admin/produtos');
+  return { ok: true, data: { changed: mudaram.length } };
+}
+
 export async function deleteProduct(id: string): Promise<ActionResult> {
   const { supabase } = await requireAdmin();
 
