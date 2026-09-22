@@ -4,7 +4,21 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowUpDown, EyeOff, MoreHorizontal, Plus, Star, Undo2, X } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Check,
+  ChevronsUp,
+  EyeOff,
+  GripVertical,
+  ListOrdered,
+  MoreHorizontal,
+  Plus,
+  Star,
+  Undo2,
+  X,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +51,7 @@ import {
   setProductActive,
   setProductsActive,
   setFeaturedSelection,
+  reorderProducts,
 } from '@/app/admin/_actions/products';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { MAX_FEATURED } from '@/lib/catalog/featured';
@@ -100,6 +115,39 @@ export function ProductsTable({
   const featuredSet = useMemo(() => new Set(featured), [featured]);
   const [savingFeatured, setSavingFeatured] = useState(false);
 
+  /**
+   * A ORDEM DO CATÁLOGO, também no estado do componente.
+   *
+   * `sort_order` já existia na tabela e o site já ordenava por ele — o que
+   * faltava era um jeito de mexer nele sem abrir produto por produto e
+   * digitar números na mão.
+   *
+   * A lista guarda TODOS os produtos, não só os visíveis. É isso que faz o
+   * filtro de categoria funcionar: arrastar uma bolsa dentro de "Mochilas"
+   * move ela na ordem geral, sem embaralhar o que está escondido pelo filtro.
+   */
+  const serverOrder = useMemo(
+    () =>
+      [...initial]
+        .sort(
+          (a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name),
+        )
+        .map((p) => p.id),
+    [initial],
+  );
+  const [order, setOrder] = useState<string[]>(serverOrder);
+  const orderIndex = useMemo(() => {
+    const m = new Map<string, number>();
+    order.forEach((id, i) => m.set(id, i));
+    return m;
+  }, [order]);
+  const [reordering, setReordering] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  // Estado, e não ref: a linha arrastada muda de aparência, e o que muda a
+  // tela precisa provocar renderização.
+  const [dragging, setDragging] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState<string | null>(null);
+
   // O que queremos que a vitrine seja. Fica em ref porque a gravação em curso
   // precisa enxergar cliques que aconteceram depois que ela começou.
   const wanted = useRef<string[]>(serverFeatured);
@@ -155,6 +203,69 @@ export function ProductsTable({
    * junta a rajada de cliques de quem está montando a seleção numa gravação
    * só — e continua parecendo instantâneo, porque a tela já mudou.
    */
+  // --- Ordem do catálogo: mesmo desenho da vitrine ---------------------
+  const wantedOrder = useRef<string[]>(serverOrder);
+  const savingOrderRef = useRef(false);
+  const againOrder = useRef(false);
+  const orderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const serverOrderKey = serverOrder.join(',');
+  useEffect(() => {
+    if (savingOrderRef.current || orderTimer.current) return;
+    setOrder(serverOrder);
+    wantedOrder.current = serverOrder;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverOrderKey]);
+
+  useEffect(
+    () => () => {
+      if (orderTimer.current) clearTimeout(orderTimer.current);
+    },
+    [],
+  );
+
+  const flushOrder = useCallback(async () => {
+    if (savingOrderRef.current) {
+      againOrder.current = true;
+      return;
+    }
+    savingOrderRef.current = true;
+    setSavingOrder(true);
+    try {
+      do {
+        againOrder.current = false;
+        const res = await reorderProducts(wantedOrder.current);
+        if (!res.ok) {
+          toast.error(res.error);
+          setOrder(serverOrder);
+          wantedOrder.current = serverOrder;
+          againOrder.current = false;
+          return;
+        }
+      } while (againOrder.current);
+      router.refresh();
+    } finally {
+      savingOrderRef.current = false;
+      setSavingOrder(false);
+    }
+  }, [router, serverOrder]);
+
+  /**
+   * Um respiro maior que o da vitrine (800ms): arrastar três peças seguidas é
+   * um gesto só na cabeça de quem arrasta, e cada arraste pode mexer em
+   * dezenas de linhas no banco. Juntar tudo numa gravação vale a espera —
+   * que ninguém sente, porque a tabela já se reorganizou na tela.
+   */
+  const applyOrder = (next: string[]) => {
+    setOrder(next);
+    wantedOrder.current = next;
+    if (orderTimer.current) clearTimeout(orderTimer.current);
+    orderTimer.current = setTimeout(() => {
+      orderTimer.current = null;
+      void flushOrder();
+    }, 800);
+  };
+
   const applyFeatured = (next: string[], message: string): boolean => {
     if (next.length > MAX_FEATURED) {
       toast.error(
@@ -197,12 +308,16 @@ export function ProductsTable({
     r = [...r].sort((a, b) => {
       let cmp = 0;
       if (sortKey === 'sort_order')
-        cmp = a.sort_order - b.sort_order || a.name.localeCompare(b.name);
+        // A posição vem do estado, não da coluna: é ele que muda no instante
+        // do arraste, enquanto a coluna só se atualiza depois da gravação.
+        cmp =
+          (orderIndex.get(a.id) ?? 0) - (orderIndex.get(b.id) ?? 0) ||
+          a.name.localeCompare(b.name);
       else cmp = a.name.localeCompare(b.name);
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return r;
-  }, [initial, debouncedSearch, filterCat, status, sortKey, sortDir, featuredSet]);
+  }, [initial, debouncedSearch, filterCat, status, sortKey, sortDir, featuredSet, orderIndex]);
 
   const countOn = initial.filter((p) => p.active).length;
   const countOff = initial.length - countOn;
@@ -307,6 +422,60 @@ export function ProductsTable({
     );
   };
 
+  /**
+   * Move uma peça para junto de outra na ordem GERAL.
+   *
+   * `depois` decide de que lado ela cai. Trabalhar sobre a lista geral (e não
+   * sobre a filtrada) é o que mantém tudo coerente: com o filtro de categoria
+   * ligado, o que a pessoa vê são buracos numa fila maior, e a peça precisa
+   * aterrissar na fila, não no buraco.
+   */
+  const moveJunto = (id: string, alvoId: string, depois: boolean) => {
+    if (id === alvoId) return;
+    const next = order.filter((x) => x !== id);
+    const at = next.indexOf(alvoId);
+    if (at < 0) return;
+    next.splice(depois ? at + 1 : at, 0, id);
+    applyOrder(next);
+  };
+
+  /** Sobe ou desce uma casa — contando só o que está visível no filtro. */
+  const moveUmaCasa = (id: string, dir: -1 | 1) => {
+    const visiveis = rows.map((r) => r.id);
+    const i = visiveis.indexOf(id);
+    const vizinho = visiveis[i + dir];
+    if (!vizinho) return;
+    moveJunto(id, vizinho, dir === 1);
+  };
+
+  const moveParaOTopo = (id: string) => {
+    if (order[0] === id) return;
+    applyOrder([id, ...order.filter((x) => x !== id)]);
+    toast.success('Peça movida para o começo do catálogo');
+  };
+
+  const soltarSobre = (alvoId: string) => {
+    const id = dragging;
+    setDragging(null);
+    setDragOver(null);
+    if (!id) return;
+    // Arrastar para baixo cai depois do alvo; para cima, antes. É o que o
+    // dedo espera, e sem isso a peça "não sai do lugar" ao descer uma casa.
+    moveJunto(id, alvoId, order.indexOf(id) < order.indexOf(alvoId));
+  };
+
+  /** Entrar no modo de ordenar só faz sentido com a lista na ordem real. */
+  const alternarOrdenacao = () => {
+    setReordering((r) => {
+      if (!r) {
+        setSortKey('sort_order');
+        setSortDir('asc');
+        setSelected(new Set());
+      }
+      return !r;
+    });
+  };
+
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -373,7 +542,23 @@ export function ProductsTable({
             </button>
           ))}
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            type="button"
+            variant={reordering ? 'default' : 'outline'}
+            size="sm"
+            onClick={alternarOrdenacao}
+          >
+            {reordering ? (
+              <>
+                <Check className="mr-1 h-4 w-4" /> Concluir ordenação
+              </>
+            ) : (
+              <>
+                <ListOrdered className="mr-1 h-4 w-4" /> Ordenar catálogo
+              </>
+            )}
+          </Button>
           <Link
             href="/admin/produtos/novo"
             className="inline-flex h-8 items-center gap-1 rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90"
@@ -385,12 +570,23 @@ export function ProductsTable({
 
       {/* A estrela sozinha não se explica: quem abre o painel pela primeira
           vez precisa saber o que ela faz e onde o resultado aparece. */}
-      <p className="flex items-center gap-1.5 text-sm text-stone">
-        <Star className="h-3.5 w-3.5 fill-leather text-leather" />
-        Clique na estrela para pôr a peça na vitrine{' '}
-        <strong className="font-medium text-ink">Destaques da casa</strong>, no
-        topo da home. Cabem {MAX_FEATURED}.
-      </p>
+      {reordering ? (
+        <p className="flex flex-wrap items-center gap-1.5 rounded-lg border border-leather/30 bg-leather/5 px-3 py-2 text-sm text-charcoal">
+          <GripVertical className="h-4 w-4 text-leather" />
+          Arraste as linhas para mudar a ordem — quem fica em cima aparece
+          primeiro no catálogo do site. No celular, use as setas.
+          {savingOrder && (
+            <span className="ml-1 text-xs text-stone">salvando…</span>
+          )}
+        </p>
+      ) : (
+        <p className="flex items-center gap-1.5 text-sm text-stone">
+          <Star className="h-3.5 w-3.5 fill-leather text-leather" />
+          Clique na estrela para pôr a peça na vitrine{' '}
+          <strong className="font-medium text-ink">Destaques da casa</strong>,
+          no topo da home. Cabem {MAX_FEATURED}.
+        </p>
+      )}
 
       {selectedVisible.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-ink/15 bg-bone-light px-3 py-2">
@@ -510,8 +706,29 @@ export function ProductsTable({
               <TableRow
                 key={row.id}
                 data-selected={selected.has(row.id) || undefined}
+                draggable={reordering}
+                onDragStart={() => setDragging(row.id)}
+                onDragEnd={() => {
+                  setDragging(null);
+                  setDragOver(null);
+                }}
+                onDragOver={(e) => {
+                  if (!reordering || !dragging) return;
+                  // Sem o preventDefault o navegador recusa a solta e o
+                  // arraste volta pro lugar com aquela animação de "não pode".
+                  e.preventDefault();
+                  if (dragOver !== row.id) setDragOver(row.id);
+                }}
+                onDrop={(e) => {
+                  if (!reordering) return;
+                  e.preventDefault();
+                  soltarSobre(row.id);
+                }}
                 className={
                   (selected.has(row.id) ? 'bg-bone-light ' : '') +
+                  (reordering ? 'cursor-grab ' : '') +
+                  (dragOver === row.id ? 'outline outline-2 -outline-offset-2 outline-leather ' : '') +
+                  (dragging === row.id ? 'opacity-40 ' : '') +
                   // Fora do site fica mais apagado: dá pra varrer a lista e ver
                   // num relance o que está publicado e o que não está.
                   (row.active ? '' : 'opacity-60')
@@ -584,7 +801,36 @@ export function ProductsTable({
                   </button>
                 </TableCell>
                 <TableCell className="text-sm tabular-nums text-stone">
-                  {row.sort_order}
+                  {reordering ? (
+                    <div className="flex items-center gap-0.5">
+                      <GripVertical className="h-4 w-4 shrink-0 text-stone/50" />
+                      <span className="w-6 text-right">
+                        {(orderIndex.get(row.id) ?? 0) + 1}
+                      </span>
+                      {/* As setas não são enfeite: arrastar não funciona em
+                          tela de toque, e o painel é usado no celular. */}
+                      <button
+                        type="button"
+                        aria-label={`Subir “${row.name}”`}
+                        title="Subir uma posição"
+                        onClick={() => moveUmaCasa(row.id, -1)}
+                        className="rounded p-1 text-stone transition-colors hover:bg-bone-light hover:text-ink"
+                      >
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Descer “${row.name}”`}
+                        title="Descer uma posição"
+                        onClick={() => moveUmaCasa(row.id, 1)}
+                        className="rounded p-1 text-stone transition-colors hover:bg-bone-light hover:text-ink"
+                      >
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    (orderIndex.get(row.id) ?? 0) + 1
+                  )}
                 </TableCell>
                 <TableCell className="text-sm tabular-nums">
                   {row.image_count}
@@ -603,6 +849,12 @@ export function ProductsTable({
                         onClick={() => router.push(`/admin/produtos/${row.id}`)}
                       >
                         Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => moveParaOTopo(row.id)}
+                      >
+                        <ChevronsUp className="mr-2 h-4 w-4" /> Mover para o
+                        começo
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => toggleActive(row)}>
                         {row.active ? 'Remover do site' : 'Voltar pro site'}
