@@ -8,6 +8,7 @@ import { cardCoverImage, galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { productPrice } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
+import { WaLink } from '@/components/public/primitives/WaLink';
 
 type ProductCardProps = {
   product: ProductWithRelations;
@@ -316,15 +317,14 @@ export function ProductCard({
             <span className="uni-card-cta-label">Ver detalhes</span>{' '}
             <ArrowIcon size={12} />
           </button>
-          <a
+          <WaLink
             className="uni-card-cta-wa"
             href={waProduct(product, selected)}
-            target="_blank"
-            rel="noopener noreferrer"
+            trackPath={`/produtos/${product.slug}`}
           >
             <WhatsAppIcon size={12} />
             WhatsApp
-          </a>
+          </WaLink>
         </div>
       </div>
     </article>

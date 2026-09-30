@@ -5,6 +5,7 @@ import { Footer } from '@/components/public/shell/Footer';
 import { FloatingWA } from '@/components/public/shell/FloatingWA';
 import { SiteAnalytics } from '@/components/public/shell/SiteAnalytics';
 import { CookieConsent } from '@/components/public/shell/CookieConsent';
+import { GoogleAnalytics } from '@/components/public/shell/GoogleAnalytics';
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -16,6 +17,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <FloatingWA />
       <SiteAnalytics />
       <CookieConsent />
+      <GoogleAnalytics />
     </>
   );
 }
