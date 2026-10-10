@@ -1,3 +1,4 @@
+import { redirectToSite } from '@/lib/public-redirect';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { shopeeAuthorizeUrl } from '@/lib/shopee/tokens';
@@ -16,8 +17,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(shopeeAuthorizeUrl());
   } catch (err) {
     console.error('[shopee] authorize falhou:', err);
-    return NextResponse.redirect(
-      new URL('/admin/shopee?error=config', request.url),
-    );
+    return redirectToSite('/admin/shopee?error=config');
   }
 }
