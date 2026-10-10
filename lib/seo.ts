@@ -45,7 +45,10 @@ function normalizeSiteUrl(raw: string): string {
     ? trimmed
     : `https://${trimmed}`;
 
-  if (process.env.NODE_ENV === 'production' && ENDERECO_LOCAL.test(comEsquema)) {
+  // A condição é "não é desenvolvimento", e não "é produção": se NODE_ENV
+  // vier vazio — e num painel de hospedagem isso acontece — o certo é
+  // proteger, não deixar passar.
+  if (process.env.NODE_ENV !== 'development' && ENDERECO_LOCAL.test(comEsquema)) {
     console.warn(
       `[seo] NEXT_PUBLIC_SITE_URL aponta pra um endereço local (${comEsquema}); usando ${DOMINIO}. Corrija a variável na hospedagem.`,
     );
