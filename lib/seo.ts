@@ -3,7 +3,14 @@ const DOMINIO = 'https://unibolsas.store';
 
 /** Endereços que existem só dentro do servidor e nunca pra quem visita. */
 const ENDERECO_LOCAL =
-  /^https?:\/\/(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|\[?::1\]?)(:|\/|$)/i;
+  /^https?:\/\/(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|\[?::1?\]?)(:|\/|$)/i;
+
+/**
+ * O subconjunto que nenhum navegador consegue abrir, nem na sua própria
+ * máquina: `0.0.0.0` e `[::]` querem dizer "escute em todas as interfaces".
+ * São endereço de escuta, não endereço de visita — `localhost` é o de visita.
+ */
+const ENDERECO_NAO_NAVEGAVEL = /^https?:\/\/(0\.0\.0\.0|\[::\])(:|\/|$)/i;
 
 /* As duas constantes acima vêm ANTES de SITE_URL de propósito: `const` não é
    içado como `function`, e lê-las durante a inicialização do módulo derruba
@@ -44,6 +51,19 @@ function normalizeSiteUrl(raw: string): string {
   const comEsquema = /^https?:\/\//.test(trimmed)
     ? trimmed
     : `https://${trimmed}`;
+
+  // Antes de qualquer coisa: `0.0.0.0` não é endereço de visita em lugar
+  // nenhum, nem em desenvolvimento. Trocar pelo `localhost` da mesma porta
+  // devolve o endereço que a pessoa de fato consegue abrir, e tira este caso
+  // da frente antes de a regra de ambiente abaixo poder deixá-lo passar.
+  if (ENDERECO_NAO_NAVEGAVEL.test(comEsquema)) {
+    const navegavel = comEsquema.replace(/^(https?:\/\/)(0\.0\.0\.0|\[::\])/i, '$1localhost');
+    if (process.env.NODE_ENV === 'development') return navegavel;
+    console.warn(
+      `[seo] NEXT_PUBLIC_SITE_URL é um endereço de escuta (${comEsquema}), que navegador nenhum abre; usando ${DOMINIO}. Corrija a variável na hospedagem.`,
+    );
+    return DOMINIO;
+  }
 
   // A condição é "não é desenvolvimento", e não "é produção": se NODE_ENV
   // vier vazio — e num painel de hospedagem isso acontece — o certo é
