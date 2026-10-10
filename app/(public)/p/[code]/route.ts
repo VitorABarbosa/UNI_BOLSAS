@@ -1,5 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { createAnonClient } from '@/lib/supabase/anon';
+import { redirectToSite } from '@/lib/public-redirect';
 
 /**
  * Link curto da peça: /p/<8 primeiros caracteres do id> → página do produto.
@@ -17,13 +18,12 @@ import { createAnonClient } from '@/lib/supabase/anon';
  * fazer com um 404.
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ code: string }> },
 ) {
   const { code } = await params;
-  const home = new URL('/', request.url);
 
-  if (!/^[0-9a-f]{8}$/.test(code)) return NextResponse.redirect(home);
+  if (!/^[0-9a-f]{8}$/.test(code)) return redirectToSite('/');
 
   try {
     const supabase = createAnonClient();
@@ -33,13 +33,9 @@ export async function GET(
       .eq('active', true);
 
     const match = (data ?? []).find((p) => p.id.startsWith(code));
-    if (match) {
-      return NextResponse.redirect(
-        new URL(`/produtos/${match.slug}`, request.url),
-      );
-    }
+    if (match) return redirectToSite(`/produtos/${match.slug}`);
   } catch {
     /* banco fora do ar não pode transformar um link de cliente em erro */
   }
-  return NextResponse.redirect(home);
+  return redirectToSite('/');
 }

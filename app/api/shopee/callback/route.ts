@@ -1,3 +1,4 @@
+import { redirectToSite } from '@/lib/public-redirect';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { exchangeAuthCode } from '@/lib/shopee/tokens';
@@ -18,24 +19,15 @@ export async function GET(request: NextRequest) {
   const shopId = Number(request.nextUrl.searchParams.get('shop_id'));
 
   if (!code || !Number.isInteger(shopId) || shopId <= 0) {
-    return NextResponse.redirect(
-      new URL('/admin/shopee?error=callback_params', request.url),
-    );
+    return redirectToSite('/admin/shopee?error=callback_params');
   }
 
   try {
     const shop = await exchangeAuthCode(code, shopId);
-    return NextResponse.redirect(
-      new URL(`/admin/shopee?connected=${shop.shop_id}`, request.url),
-    );
+    return redirectToSite(`/admin/shopee?connected=${shop.shop_id}`);
   } catch (err) {
     console.error('[shopee] troca do code falhou:', err);
     const message = err instanceof Error ? err.message : 'erro desconhecido';
-    return NextResponse.redirect(
-      new URL(
-        `/admin/shopee?error=${encodeURIComponent(message)}`,
-        request.url,
-      ),
-    );
+    return redirectToSite(`/admin/shopee?error=${encodeURIComponent(message)}`);
   }
 }
