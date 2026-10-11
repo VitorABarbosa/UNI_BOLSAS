@@ -37,7 +37,7 @@ Next.js 16 (App Router) · TypeScript estrito · Tailwind v4 · shadcn/ui · Sup
 | Comando | O que faz |
 |---|---|
 | `pnpm dev` | Servidor de desenvolvimento Next.js |
-| `pnpm build` | Build de produção |
+| `pnpm build` | Build de produção (webpack — veja abaixo) |
 | `pnpm start` | Serve o build de produção |
 | `pnpm typecheck` | `tsc --noEmit` (TS estrito) |
 | `pnpm lint` | ESLint flat config |
@@ -45,6 +45,30 @@ Next.js 16 (App Router) · TypeScript estrito · Tailwind v4 · shadcn/ui · Sup
 | `pnpm seed` | Limpa e re-popula DB + Storage com os 5 produtos da referência |
 | `pnpm smoke` | Fetch ponta-a-ponta via anon key (verifica RLS pública + nested relations) |
 | `pnpm images:optimize` | Rede de segurança: reencoda imagens de `public/hero` acima de 3840px ou 8MB. Não precisa rodar a cada troca de foto |
+
+### Por que o build usa webpack, e não Turbopack
+
+`pnpm build` passa `--webpack` de propósito. O Next 16 compila com Turbopack
+por padrão, e na hospedagem (Hostinger, Node 22) isso quebra:
+
+```
+Error [TurbopackInternalError]: [project]/app/globals.css [app-client] (css)
+Caused by:
+- creating new process
+- node process exited before we could connect to it with exit status: 0
+```
+
+Pra rodar o PostCSS do Tailwind, o Turbopack abre um processo Node separado e
+conversa com ele. No contêiner da Hostinger esse processo morre antes de
+conectar, e o build inteiro cai. Não é erro de CSS: o mesmo `globals.css`
+compila sem reclamar numa máquina que deixa abrir o processo — foi por isso
+que a quebra passou despercebida de 29/09 a 10/10, com seis deploys seguidos
+falhando enquanto o site servia uma versão de três semanas atrás.
+
+Com webpack o PostCSS roda dentro do mesmo processo, e o problema some.
+
+`pnpm build:turbopack` continua existindo pra desenvolvimento local, onde o
+Turbopack é mais rápido. Só não use pra publicar.
 
 ## Imagens e mobile
 
