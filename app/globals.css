@@ -2034,7 +2034,14 @@ html, body {
   gap: 10px;
   min-height: 44px;
 }
-.uni-logo-mark { height: auto; width: auto; flex-shrink: 0; }
+.uni-logo-mark {
+  /* A variável vem do componente (ver Logo.tsx). O fallback cobre o caso
+     de a marca ser usada sem ela. Nunca `auto`: com `auto` o tamanho
+     passa a ser o do arquivo original, e o PNG tem 763px. */
+  height: var(--uni-logo-mark-size, 40px);
+  width: var(--uni-logo-mark-size, 40px);
+  flex-shrink: 0;
+}
 .uni-logo-text { display: inline-flex; align-items: baseline; gap: 8px; min-width: 0; }
 .uni-logo-name {
   font-family: var(--font-serif);
@@ -3026,7 +3033,7 @@ input, select, textarea { font-size: 16px; }
   .uni-logo { gap: 8px; }
   .uni-logo-name { font-size: 19px; }
   .uni-logo-city { display: none; }
-  .uni-logo-mark { height: 32px; width: auto; }
+  .uni-logo-mark { height: 32px; width: 32px; }
   .uni-header-cta { padding: 0 14px; height: 42px; font-size: 11px; letter-spacing: 0.1em; }
   .uni-header-menu-btn {
     width: 44px;
