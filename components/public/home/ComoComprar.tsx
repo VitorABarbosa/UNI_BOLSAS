@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Reveal } from '@/components/public/primitives/Reveal';
 import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
 import { PEDIDO_MINIMO } from '@/lib/content/atacado';
@@ -58,9 +59,14 @@ export function ComoComprar() {
                 </div>
               ))}
             </dl>
-            <WhatsAppButton href={waWholesale} variant="dark">
-              Receber tabela de atacado
-            </WhatsAppButton>
+            <div className="uni-how-ctas">
+              <WhatsAppButton href={waWholesale} variant="dark">
+                Receber tabela de atacado
+              </WhatsAppButton>
+              <Link href="/catalogo" className="uni-how-link">
+                Catálogo pra compartilhar ou salvar em PDF
+              </Link>
+            </div>
           </Reveal>
           <ol className="uni-how-steps">
             {PASSOS.map((p, i) => (

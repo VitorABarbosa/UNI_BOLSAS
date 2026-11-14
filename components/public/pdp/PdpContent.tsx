@@ -6,7 +6,7 @@ import type { ProductWithRelations } from '@/lib/queries/products';
 import { Gallery } from './Gallery';
 import { ProductInfo } from './ProductInfo';
 import { PdpBuyBar } from './PdpBuyBar';
-import { galleryImages } from '@/lib/product-images';
+import { cardCoverImage, galleryImages } from '@/lib/product-images';
 
 type PdpContentProps = {
   product: ProductWithRelations;
@@ -51,7 +51,12 @@ export function PdpContent({ product }: PdpContentProps) {
           />
         </div>
       </div>
-      <PdpBuyBar product={product} color={color} size={sizeForWa} />
+      <PdpBuyBar
+        product={product}
+        color={color}
+        size={sizeForWa}
+        image={cardCoverImage(product, color)?.storage_path ?? null}
+      />
     </section>
   );
 }

@@ -10,6 +10,8 @@ type HomeContentProps = {
   products: ProductWithRelations[];
   featured: ProductWithRelations[];
   categories: CategoryOption[];
+  /** Peças cadastradas há pouco — selo "Novidade" e filtro próprio. */
+  newIds: string[];
 };
 
 type QuickViewState = {
@@ -21,6 +23,7 @@ export function HomeContent({
   products,
   featured,
   categories,
+  newIds,
 }: HomeContentProps) {
   const [quickView, setQuickView] = useState<QuickViewState>(null);
 
@@ -30,6 +33,7 @@ export function HomeContent({
           bater o olho nela antes de encarar a grade inteira. */}
       <Featured
         products={featured}
+        newIds={newIds}
         onOpenQuickView={(product, colorIdx) =>
           setQuickView({ product, colorIdx })
         }
@@ -37,6 +41,7 @@ export function HomeContent({
       <Catalog
         products={products}
         categories={categories}
+        newIds={newIds}
         onOpenQuickView={(product, colorIdx) =>
           setQuickView({ product, colorIdx })
         }

@@ -41,6 +41,9 @@ export function Footer() {
               <Link href="/#catalogo" className="uni-footer-link">
                 Kits
               </Link>
+              <Link href="/catalogo" className="uni-footer-link">
+                Catálogo em PDF
+              </Link>
             </div>
           </div>
           <div>

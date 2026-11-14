@@ -1,18 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowIcon, WhatsAppIcon } from '@/components/public/icons';
+import { ArrowIcon, BagIcon } from '@/components/public/icons';
 import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { cardCoverImage, galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { productPrice } from '@/lib/product-price';
-import { waProduct } from '@/lib/whatsapp';
-import { WaLink } from '@/components/public/primitives/WaLink';
+import { usePedido } from '@/hooks/usePedido';
+import { adicionarAoPedido } from '@/lib/pedido';
+import { itemDaPeca } from '@/components/public/pedido/AdicionarAoPedido';
 import { PEDIDO_MINIMO_CURTO } from '@/lib/content/atacado';
 
 type ProductCardProps = {
   product: ProductWithRelations;
+  /** Cadastrada há pouco: ganha o selo "Novidade" quando não há outro. */
+  isNew?: boolean;
   selectedColorIdx: number;
   previewColorIdx: number | null;
   onSelectColor: (productId: string, idx: number) => void;
@@ -37,6 +40,7 @@ const CARD_SIZES =
 
 export function ProductCard({
   product,
+  isNew = false,
   selectedColorIdx,
   previewColorIdx,
   onSelectColor,
@@ -103,6 +107,11 @@ export function ProductCard({
   };
 
   const price = productPrice(product);
+  const needsSize = (product.sizes?.length ?? 0) > 1;
+  // Quantas desta peça (em qualquer cor) já estão no pedido.
+  const naLista = usePedido()
+    .filter((i) => i.productId === product.id)
+    .reduce((n, i) => n + i.qty, 0);
   const selectedImages = galleryImages(product, selected);
   const showArrows = product.colors.length > 1 && !previewing;
   const categorySlug = product.category?.slug ?? 'todos';
@@ -137,12 +146,12 @@ export function ProductCard({
             muda a decisão de quem está passando o olho pelo grid. */}
         {price.isPromo ? (
           <div className="uni-card-badge is-promo">-{price.discountPct}%</div>
+        ) : product.badge ? (
+          <div className={`uni-card-badge cat-${categorySlug}`}>
+            {product.badge}
+          </div>
         ) : (
-          product.badge && (
-            <div className={`uni-card-badge cat-${categorySlug}`}>
-              {product.badge}
-            </div>
-          )
+          isNew && <div className="uni-card-badge is-new">Novidade</div>
         )}
         {hasAnyImage &&
           layers.map(({ key, img }, i) =>
@@ -318,14 +327,31 @@ export function ProductCard({
             <span className="uni-card-cta-label">Ver detalhes</span>{' '}
             <ArrowIcon size={12} />
           </button>
-          <WaLink
+          {/* Peça com tamanho precisa da escolha antes: o botão abre os
+              detalhes em vez de adivinhar o tamanho. */}
+          <button
+            type="button"
             className="uni-card-cta-wa"
-            href={waProduct(product, selected)}
-            trackPath={`/produtos/${product.slug}`}
+            onClick={() => {
+              if (needsSize) {
+                onOpenQuickView(product, selectedColorIdx);
+                return;
+              }
+              adicionarAoPedido(
+                itemDaPeca(
+                  product,
+                  selected,
+                  undefined,
+                  cardCoverImage(product, selected)?.storage_path ?? null,
+                ),
+              );
+            }}
+            aria-label={`Adicionar ${product.name} ao pedido`}
           >
-            <WhatsAppIcon size={12} />
-            WhatsApp
-          </WaLink>
+            <BagIcon size={13} />
+            {needsSize ? 'Escolher' : 'Adicionar'}
+            {naLista > 0 && <span className="uni-card-cta-n">{naLista}</span>}
+          </button>
         </div>
       </div>
     </article>

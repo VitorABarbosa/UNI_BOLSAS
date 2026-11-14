@@ -10,6 +10,13 @@ import { HomeContent } from '@/components/public/home/HomeContent';
 import { listActiveProducts, listFeaturedProducts } from '@/lib/queries/products';
 import { listCategories } from '@/lib/queries/categories';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
+import { novidadesIds } from '@/lib/novidades';
+import { JsonLd } from '@/components/public/primitives/JsonLd';
+import {
+  dadosLoja,
+  dadosPerguntas,
+  dadosSite,
+} from '@/lib/dados-estruturados';
 
 export const revalidate = 60;
 
@@ -42,12 +49,14 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={[dadosLoja(), dadosSite(), dadosPerguntas()]} />
       <Hero />
       {/* O catálogo vem logo depois do hero: é o que a pessoa veio ver. */}
       <HomeContent
         products={products}
         featured={featured}
         categories={categoriesWithTodos}
+        newIds={novidadesIds(products)}
       />
       <ComoComprar />
       <CredibilityStrip />

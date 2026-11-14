@@ -9,6 +9,9 @@ import { PdpContent } from '@/components/public/pdp/PdpContent';
 import { RelatedProducts } from '@/components/public/pdp/RelatedProducts';
 import { truncate } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
+import { PEDIDO_MINIMO } from '@/lib/content/atacado';
+import { JsonLd } from '@/components/public/primitives/JsonLd';
+import { dadosCaminho, dadosPeca } from '@/lib/dados-estruturados';
 
 export const revalidate = 60;
 
@@ -39,10 +42,16 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return {};
-  const title = product.seo_title ?? `${product.name} — ${SITE_NAME}`;
+  // "no atacado" no título: é a palavra que a lojista digita no Google.
+  const title = product.seo_title ?? `${product.name} no atacado — ${SITE_NAME}`;
   const description =
     product.seo_description ??
-    truncate(product.description ?? product.tagline ?? '', 160);
+    truncate(
+      product.description?.trim() ||
+        product.tagline?.trim() ||
+        `${product.name} no atacado, a partir de ${PEDIDO_MINIMO} peças, direto do Brás.`,
+      160,
+    );
   const url = `${SITE_URL}/produtos/${slug}`;
   return {
     title,
@@ -81,6 +90,7 @@ export default async function ProductPage({
   );
   return (
     <>
+      <JsonLd data={[dadosPeca(product), dadosCaminho(product)]} />
       <PdpContent product={product} />
       <RelatedProducts products={related} />
     </>

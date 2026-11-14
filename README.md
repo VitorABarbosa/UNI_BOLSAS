@@ -146,6 +146,33 @@ desmarcada. Produto em que nenhuma regra casa fica onde está.
 Categoria usada por uma regra mas ainda inexistente aparece com um botão para
 criá-la ali mesmo.
 
+## Venda no atacado: pedido, novidades e catálogo em PDF
+
+O site vende só no atacado, com pedido mínimo de **3 peças** somando todos os
+modelos. O número mora em `lib/content/atacado.ts`; trocar lá muda o site
+inteiro (faixa do topo, cards, página da peça, FAQ, mensagem do WhatsApp).
+
+- **Pedido montado no site** (`lib/pedido.ts`, `components/public/pedido/`).
+  A lojista adiciona peças com cor, tamanho e quantidade; a lista fica no
+  próprio aparelho (`localStorage`), sem conta e sem tabela no banco. O envio
+  abre o WhatsApp com uma mensagem só: uma linha por peça, com quantidade,
+  preço e o link curto. Abaixo do mínimo, o botão de enviar fica bloqueado e
+  diz quantas peças faltam.
+- **Novidades** (`lib/novidades.ts`). Peça cadastrada nos últimos 14 dias
+  ganha o selo "Novidade" e entra no filtro "Novidades" do catálogo, sem
+  marcar nada no painel. Se mais da metade do catálogo for "nova" (uma
+  importação grande, por exemplo), o selo e o filtro não aparecem.
+- **Catálogo para compartilhar** (`/catalogo`). Todas as peças por categoria,
+  pra mandar por link ou salvar em PDF pela impressão do navegador.
+  `?categoria=<slug>` recorta uma categoria. `?precos=nao` é a versão da
+  lojista para as clientes dela: sem preços, sem links, sem nosso contato, sem
+  o menu do site e fora do Google.
+- **Dados para o Google** (`lib/dados-estruturados.ts`). A home descreve a
+  loja (`WholesaleStore`: endereço, horário, telefone, Instagram) e as
+  perguntas frequentes; cada peça descreve nome, fotos, preço e o caminho.
+  Os horários estruturados ficam em `STORE.openingHours`, ao lado dos
+  horários escritos: mudou um, muda o outro.
+
 ## Cadastrar um admin
 
 ```powershell
