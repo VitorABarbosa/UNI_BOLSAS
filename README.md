@@ -163,7 +163,10 @@ inteiro (faixa do topo, cards, página da peça, FAQ, mensagem do WhatsApp).
   marcar nada no painel. Se mais da metade do catálogo for "nova" (uma
   importação grande, por exemplo), o selo e o filtro não aparecem.
 - **Catálogo para compartilhar** (`/catalogo`). Todas as peças por categoria,
-  pra mandar por link ou salvar em PDF pela impressão do navegador.
+  pra mandar por link ou baixar em PDF. O PDF é montado no próprio aparelho
+  (`lib/catalogo-pdf.ts`, com jsPDF carregado no clique): a impressão do
+  navegador não funcionava no celular. No celular, "Enviar o PDF" manda o
+  arquivo direto pro WhatsApp.
   `?categoria=<slug>` recorta uma categoria. `?precos=nao` é a versão da
   lojista para as clientes dela: sem preços, sem links, sem nosso contato, sem
   o menu do site e fora do Google.
