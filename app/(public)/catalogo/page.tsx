@@ -12,6 +12,7 @@ import { STORE } from '@/lib/content/store';
 import { WHATSAPP_NUMBER } from '@/lib/tokens';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
 import { CatalogoAcoes } from '@/components/public/catalogo/CatalogoAcoes';
+import type { CatalogoPdf } from '@/lib/catalogo-pdf';
 
 type Busca = { precos?: string; categoria?: string };
 
@@ -87,6 +88,47 @@ export default async function CatalogoPage({
     timeZone: 'America/Sao_Paulo',
   }).format(new Date());
 
+  const titulo = `${recorte ? recorte.label : 'Catálogo'}${comPrecos ? ' de atacado' : ''}`;
+  const subtitulo = `${totalPecas} ${totalPecas === 1 ? 'modelo' : 'modelos'} · atualizado em ${hoje}`;
+  const dominio = SITE_URL.replace(/^https?:\/\//, '');
+  const rodape = `Venda só no atacado, a partir de ${PEDIDO_MINIMO} peças. Pedidos pelo WhatsApp ${telefoneLegivel(WHATSAPP_NUMBER)} ou em ${dominio}. Preços sujeitos a alteração; disponibilidade confirmada no pedido.`;
+
+  /*
+   * O mesmo conteúdo da página, no formato do PDF gerado no aparelho. Sai
+   * daqui, já filtrado pelo modo: no "sem preços" os campos de preço, código
+   * e link nem chegam ao navegador.
+   */
+  const pdf: CatalogoPdf = {
+    titulo,
+    subtitulo,
+    dados: comPrecos
+      ? [
+          ['Pedido mínimo', `${PEDIDO_MINIMO} peças`],
+          ['WhatsApp', telefoneLegivel(WHATSAPP_NUMBER)],
+          ['Loja', `${STORE.name} · ${STORE.street}, ${STORE.district}`],
+        ]
+      : null,
+    rodape: comPrecos ? rodape : null,
+    grupos: grupos.map(({ categoria, pecas }) => ({
+      categoria: categoria.label,
+      pecas: pecas.map((p) => {
+        const capa = cardCoverImage(p, p.colors[0] ?? null);
+        const preco = productPrice(p);
+        return {
+          nome: p.name,
+          preco: comPrecos ? preco.currentLabel : null,
+          precoDe: comPrecos ? preco.originalLabel : null,
+          cores: p.colors.map((c) => c.name).join(', '),
+          tamanhos:
+            p.sizes && p.sizes.length > 1 ? `Tamanhos ${p.sizes.join(', ')}` : '',
+          codigo: comPrecos ? codigoPeca(p.id) : null,
+          link: comPrecos ? `${dominio}/p/${codigoPeca(p.id)}` : null,
+          foto: capa ? publicImageUrl(capa.storage_path) : null,
+        };
+      }),
+    })),
+  };
+
   return (
     <div className={'uni-cat-doc' + (comPrecos ? '' : ' is-revenda')}>
       <div className="uni-container">
@@ -105,10 +147,7 @@ export default async function CatalogoPage({
             {recorte ? recorte.label : 'Catálogo'}
             {comPrecos && <span> de atacado</span>}
           </h1>
-          <p className="uni-cat-doc-sub">
-            {totalPecas} {totalPecas === 1 ? 'modelo' : 'modelos'} · atualizado
-            em {hoje}
-          </p>
+          <p className="uni-cat-doc-sub">{subtitulo}</p>
           {comPrecos && (
             <dl className="uni-cat-doc-dados">
               <div>
@@ -130,9 +169,13 @@ export default async function CatalogoPage({
         </header>
 
         <CatalogoAcoes
+          // Outro modo ou categoria = outro PDF: o aviso de "PDF pronto" não
+          // pode sobrar do anterior.
+          key={`${comPrecos}-${recorte?.slug ?? ''}`}
           comPrecos={comPrecos}
           categoria={recorte?.slug ?? ''}
           categorias={categorias.map((c) => ({ slug: c.slug, label: c.label }))}
+          pdf={pdf}
         />
 
         {grupos.map(({ categoria, pecas }) => (
@@ -202,12 +245,7 @@ export default async function CatalogoPage({
         ))}
 
         {comPrecos && (
-          <footer className="uni-cat-doc-rodape">
-            Venda só no atacado, a partir de {PEDIDO_MINIMO} peças. Pedidos pelo
-            WhatsApp {telefoneLegivel(WHATSAPP_NUMBER)} ou em{' '}
-            {SITE_URL.replace(/^https?:\/\//, '')}. Preços sujeitos a
-            alteração; disponibilidade confirmada no pedido.
-          </footer>
+          <footer className="uni-cat-doc-rodape">{rodape}</footer>
         )}
       </div>
     </div>

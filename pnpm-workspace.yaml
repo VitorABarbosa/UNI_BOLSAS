@@ -2,6 +2,9 @@ packages:
   - .
 
 allowBuilds:
+  # core-js (opcional do jspdf): o script de instalação só imprime um pedido
+  # de doação. Sem esta linha o pnpm 11 recusa a instalação.
+  core-js: false
   esbuild: true
   msw: true
   sharp: true

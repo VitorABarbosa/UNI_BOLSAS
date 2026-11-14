@@ -4072,7 +4072,7 @@ input, select, textarea { font-size: 16px; }
 }
 .uni-cat-doc-btn.is-dark { background: var(--color-ink); color: var(--color-bone); }
 .uni-cat-doc-btn:disabled { opacity: 0.6; cursor: progress; }
-.uni-cat-doc-nota { flex-basis: 100%; margin: 0; font-family: var(--font-sans); font-size: 13px; color: var(--color-stone); word-break: break-all; }
+.uni-cat-doc-nota { flex-basis: 100%; margin: 0; font-family: var(--font-sans); font-size: 13px; color: var(--color-stone); overflow-wrap: anywhere; }
 
 .uni-cat-doc-grupo { padding-top: 40px; }
 .uni-cat-doc-grupo h2 {
@@ -4201,3 +4201,29 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
    com ele, o botão quebrava em quatro linhas. */
 .uni-qv-modal .uni-add-btn-preco { display: none; }
 .uni-add-btn { white-space: nowrap; }
+
+/* ---- Catálogo: PDF pronto ---- */
+.uni-cat-doc-pronto {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--color-bone);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+.uni-cat-doc-pronto-acoes { display: flex; gap: 10px; }
+.uni-cat-doc-pronto a.uni-cat-doc-btn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+@media (max-width: 600px) {
+  .uni-cat-doc-pronto-acoes { width: 100%; }
+  .uni-cat-doc-pronto-acoes > * { flex: 1; justify-content: center; }
+}
