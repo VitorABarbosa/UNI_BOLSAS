@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
 import { CloseIcon } from '@/components/public/icons';
 import { AdicionarAoPedido } from '@/components/public/pedido/AdicionarAoPedido';
+import { FichaPeca, type Ficha } from '@/components/public/pdp/FichaPeca';
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { cardCoverImage, galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
@@ -27,6 +28,15 @@ export function QuickView({
   const [colorIdx, setColorIdx] = useState(initialColorIdx ?? 0);
   const [imgIdx, setImgIdx] = useState(0);
   const [sizeIdx, setSizeIdx] = useState(0);
+  // A ficha (descrição, medidas…) vem de /api/produto/<id> ao abrir.
+  // Guardada junto do id pra uma resposta atrasada não aparecer na peça
+  // errada se a janela trocar de peça no meio do caminho.
+  const [fichaCarregada, setFichaCarregada] = useState<{
+    id: string;
+    ficha: Ficha;
+  } | null>(null);
+  const ficha =
+    fichaCarregada?.id === product.id ? fichaCarregada.ficha : null;
   const stageRef = useRef<HTMLDivElement | null>(null);
   /** Evita que o scroll programático (clique na miniatura) vire "swipe". */
   const syncingRef = useRef(false);
@@ -34,6 +44,18 @@ export function QuickView({
   const color = product.colors[colorIdx] ?? product.colors[0] ?? null;
   const images = galleryImages(product, color);
   const price = productPrice(product);
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetch(`/api/produto/${product.id}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? (r.json() as Promise<Ficha>) : null))
+      .then((f) => {
+        if (f) setFichaCarregada({ id: product.id, ficha: f });
+      })
+      // Sem rede ou peça fora do ar: a janela segue com a frase curta.
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [product.id]);
 
   useEffect(() => {
     setImgIdx(0);
@@ -187,50 +209,48 @@ export function QuickView({
               {product.price_wholesale ?? `pedido mínimo de ${PEDIDO_MINIMO} peças`}
             </span>
           </div>
-          {product.description && (
-            <p className="uni-qv-desc">{product.description}</p>
-          )}
-          <div className="uni-qv-spec-grid">
-            <div>
-              <div className="uni-qv-spec-label">Dimensões</div>
-              <div className="uni-qv-spec-val">{product.dimensions ?? '—'}</div>
-            </div>
-            <div>
-              <div className="uni-qv-spec-label">Peso</div>
-              <div className="uni-qv-spec-val">{product.weight ?? '—'}</div>
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <div className="uni-qv-spec-label">Material</div>
-              <div className="uni-qv-spec-val is-text">
-                {product.material ?? '—'}
+          {/* A ficha chega logo depois de abrir (ela não vem com o
+              catálogo); até lá fica a frase curta da peça, se houver. */}
+          <FichaPeca
+            ficha={
+              ficha ?? {
+                description: null,
+                tagline: product.tagline,
+                dimensions: null,
+                weight: null,
+                material: null,
+              }
+            }
+            resumida
+          />
+          {/* Peça sem cor cadastrada (comum nas importadas) não mostra "Cor: —". */}
+          {product.colors.length > 0 && (
+            <div className="uni-qv-color-section">
+              <div className="uni-qv-section-label">
+                Cor: <strong>{color?.name ?? '—'}</strong>
+              </div>
+              <div className="uni-qv-swatch-row">
+                {product.colors.map((c, i) => (
+                  <button
+                    key={c.id}
+                    className={
+                      'uni-swatch ' + (colorIdx === i ? 'is-selected' : '')
+                    }
+                    style={{
+                      width: 26,
+                      height: 26,
+                      background: c.accent_hex
+                        ? `linear-gradient(135deg, ${c.hex} 0% 60%, ${c.accent_hex} 60% 100%)`
+                        : c.hex,
+                    }}
+                    onClick={() => setColorIdx(i)}
+                    aria-label={`Cor ${c.name}`}
+                    title={c.name}
+                  />
+                ))}
               </div>
             </div>
-          </div>
-          <div className="uni-qv-color-section">
-            <div className="uni-qv-section-label">
-              Cor: <strong>{color?.name ?? '—'}</strong>
-            </div>
-            <div className="uni-qv-swatch-row">
-              {product.colors.map((c, i) => (
-                <button
-                  key={c.id}
-                  className={
-                    'uni-swatch ' + (colorIdx === i ? 'is-selected' : '')
-                  }
-                  style={{
-                    width: 26,
-                    height: 26,
-                    background: c.accent_hex
-                      ? `linear-gradient(135deg, ${c.hex} 0% 60%, ${c.accent_hex} 60% 100%)`
-                      : c.hex,
-                  }}
-                  onClick={() => setColorIdx(i)}
-                  aria-label={`Cor ${c.name}`}
-                  title={c.name}
-                />
-              ))}
-            </div>
-          </div>
+          )}
           {product.sizes && product.sizes.length > 1 && (
             <div className="uni-qv-size-section">
               <div className="uni-qv-section-label">

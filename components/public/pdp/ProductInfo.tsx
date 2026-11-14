@@ -3,6 +3,7 @@
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { ColorSwatches } from './ColorSwatches';
 import { SizePicker } from './SizePicker';
+import { FichaPeca } from './FichaPeca';
 import { AdicionarAoPedido } from '@/components/public/pedido/AdicionarAoPedido';
 import { cardCoverImage } from '@/lib/product-images';
 import { productPrice } from '@/lib/product-price';
@@ -30,11 +31,6 @@ export function ProductInfo({
       ? product.sizes[sizeIdx]
       : undefined;
 
-  const descriptionParagraphs = (product.description ?? '')
-    .split(/\n\n+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
   return (
     <div className="uni-qv-info">
       <div className="uni-qv-eyebrow">
@@ -58,41 +54,20 @@ export function ProductInfo({
           {product.price_wholesale ?? `pedido mínimo de ${PEDIDO_MINIMO} peças`}
         </span>
       </div>
-      {descriptionParagraphs.length > 0 ? (
-        descriptionParagraphs.map((p, i) => (
-          <p key={i} className="uni-qv-desc">
-            {p}
-          </p>
-        ))
-      ) : (
-        <p className="uni-qv-desc">{product.tagline ?? ''}</p>
-      )}
-      <div className="uni-qv-spec-grid">
-        <div>
-          <div className="uni-qv-spec-label">Dimensões</div>
-          <div className="uni-qv-spec-val">{product.dimensions ?? '—'}</div>
-        </div>
-        <div>
-          <div className="uni-qv-spec-label">Peso</div>
-          <div className="uni-qv-spec-val">{product.weight ?? '—'}</div>
-        </div>
-        <div style={{ gridColumn: '1 / -1' }}>
-          <div className="uni-qv-spec-label">Material</div>
-          <div className="uni-qv-spec-val is-text">
-            {product.material ?? '—'}
+      <FichaPeca ficha={product} />
+      {/* Peça sem cor cadastrada (comum nas importadas) não mostra "Cor: —". */}
+      {product.colors.length > 0 && (
+        <div className="uni-qv-color-section">
+          <div className="uni-qv-section-label">
+            Cor: <strong>{color?.name ?? '—'}</strong>
           </div>
+          <ColorSwatches
+            colors={product.colors}
+            activeIdx={colorIdx}
+            onChange={onColorChange}
+          />
         </div>
-      </div>
-      <div className="uni-qv-color-section">
-        <div className="uni-qv-section-label">
-          Cor: <strong>{color?.name ?? '—'}</strong>
-        </div>
-        <ColorSwatches
-          colors={product.colors}
-          activeIdx={colorIdx}
-          onChange={onColorChange}
-        />
-      </div>
+      )}
       {product.sizes && product.sizes.length > 1 && (
         <div className="uni-qv-size-section">
           <div className="uni-qv-section-label">
