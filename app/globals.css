@@ -4180,3 +4180,24 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
   .uni-how-ctas { flex-direction: column; align-items: stretch; }
   .uni-how-link { text-align: center; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 }
+
+/* ---- Ficha da peça (descrição e medidas) ---- */
+/* Quebras de linha simples continuam: as descrições da Shopee são listas. */
+.uni-ficha-desc .uni-qv-desc { white-space: pre-line; margin-bottom: 14px; }
+.uni-ficha-desc { margin-bottom: 26px; }
+.uni-ficha-mais {
+  border: none;
+  background: none;
+  padding: 0;
+  min-height: 36px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+/* Na janela de detalhes a coluna é estreita e o preço já está logo acima:
+   com ele, o botão quebrava em quatro linhas. */
+.uni-qv-modal .uni-add-btn-preco { display: none; }
+.uni-add-btn { white-space: nowrap; }
