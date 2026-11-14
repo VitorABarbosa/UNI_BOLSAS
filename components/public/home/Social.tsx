@@ -11,11 +11,15 @@ export function Social() {
               Quem compra com a gente
             </div>
             <h2 className="uni-h2">
-              Na <em>voz</em> de quem usa.
+              Na <em>voz</em> de quem revende.
             </h2>
           </div>
         </Reveal>
-        <div className="uni-test-grid">
+        <div
+          className={
+            'uni-test-grid' + (TESTIMONIALS.length === 1 ? ' is-single' : '')
+          }
+        >
           {TESTIMONIALS.map((t, i) => (
             <Reveal key={t.name} delay={i * 100}>
               <figure className="uni-test-card">

@@ -4,19 +4,12 @@ import { useState, type FormEvent } from 'react';
 import { ArrowIcon } from '@/components/public/icons';
 import { waNewsletter } from '@/lib/whatsapp';
 
-type NewsletterType = 'wholesale' | 'retail';
-
 export function Newsletter() {
-  const [type, setType] = useState<NewsletterType>('retail');
   const [phone, setPhone] = useState('');
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    window.open(
-      waNewsletter(type, phone),
-      '_blank',
-      'noopener,noreferrer',
-    );
+    window.open(waNewsletter(phone), '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -28,42 +21,11 @@ export function Newsletter() {
               Receba <em>lançamentos</em> antes.
             </h2>
             <p className="uni-news-sub">
-              Avisamos pelo WhatsApp quando o mix vira — sem flood, sem
-              corrente, sem lista de transmissão. Escolha o seu canal e a gente
-              segmenta.
+              Avisamos pelo WhatsApp quando o mix do atacado vira — sem flood,
+              sem corrente, sem lista de transmissão.
             </p>
           </div>
           <form className="uni-news-form" onSubmit={handleSubmit}>
-            <div
-              className="uni-news-toggle"
-              role="tablist"
-              aria-label="Tipo de cadastro"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={type === 'wholesale'}
-                className={
-                  'uni-news-toggle-btn ' +
-                  (type === 'wholesale' ? 'is-active' : '')
-                }
-                onClick={() => setType('wholesale')}
-              >
-                Sou lojista
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={type === 'retail'}
-                className={
-                  'uni-news-toggle-btn ' +
-                  (type === 'retail' ? 'is-active' : '')
-                }
-                onClick={() => setType('retail')}
-              >
-                Cliente final
-              </button>
-            </div>
             <div className="uni-news-input-row">
               <input
                 type="tel"

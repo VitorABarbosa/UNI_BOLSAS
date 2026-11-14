@@ -5,6 +5,7 @@ import { ColorSwatches } from './ColorSwatches';
 import { SizePicker } from './SizePicker';
 import { PdpWhatsAppCTA } from './PdpWhatsAppCTA';
 import { productPrice } from '@/lib/product-price';
+import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 
 type ProductInfoProps = {
   product: ProductWithRelations;
@@ -51,11 +52,10 @@ export function ProductInfo({
         {price.campaignName && (
           <span className="uni-qv-price-campaign">{price.campaignName}</span>
         )}
-        {product.price_wholesale && (
-          <span className="uni-qv-price-w">
-            Atacado · {product.price_wholesale}
-          </span>
-        )}
+        <span className="uni-qv-price-w">
+          Atacado ·{' '}
+          {product.price_wholesale ?? `pedido mínimo de ${PEDIDO_MINIMO} peças`}
+        </span>
       </div>
       {descriptionParagraphs.length > 0 ? (
         descriptionParagraphs.map((p, i) => (

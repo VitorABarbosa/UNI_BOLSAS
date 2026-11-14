@@ -3,6 +3,7 @@
 import { WhatsAppIcon } from '@/components/public/icons';
 import { productPrice, type ShopeePricing } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
+import { PEDIDO_MINIMO_CURTO } from '@/lib/content/atacado';
 import { WaLink } from '@/components/public/primitives/WaLink';
 import type { Database } from '@/types/db';
 
@@ -32,7 +33,7 @@ export function PdpBuyBar({ product, color, size }: PdpBuyBarProps) {
             ? `${price.originalLabel} · -${price.discountPct}%`
             : color?.name
               ? `Cor ${color.name}`
-              : 'A partir de'}
+              : PEDIDO_MINIMO_CURTO}
         </span>
         <strong className={price.isPromo ? 'is-promo' : undefined}>
           {price.currentLabel}

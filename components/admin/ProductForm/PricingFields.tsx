@@ -20,7 +20,7 @@ export function PricingFields({ form }: { form: UseFormReturn<ProductInput> }) {
         name="price_retail"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Preço varejo (R$)</FormLabel>
+            <FormLabel>Preço (R$)</FormLabel>
             <FormControl>
               <Input
                 type="number"

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import { TOKENS } from '@/lib/tokens';
@@ -11,8 +12,8 @@ type LogoProps = {
 export function Logo({ size = 22, color, italic = true }: LogoProps) {
   const mark = Math.round(size * 1.8);
   return (
-    <a
-      href="#top"
+    <Link
+      href="/#top"
       className="uni-logo"
       aria-label="Uni Bolsas — início"
       style={{ color: color ?? TOKENS.ink }}
@@ -48,6 +49,6 @@ export function Logo({ size = 22, color, italic = true }: LogoProps) {
           · Brás
         </span>
       </span>
-    </a>
+    </Link>
   );
 }

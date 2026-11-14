@@ -9,6 +9,7 @@ import { publicImageUrl } from '@/lib/supabase/image-url';
 import { productPrice } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
 import { WaLink } from '@/components/public/primitives/WaLink';
+import { PEDIDO_MINIMO_CURTO } from '@/lib/content/atacado';
 
 type ProductCardProps = {
   product: ProductWithRelations;
@@ -258,11 +259,11 @@ export function ProductCard({
               <s className="uni-card-price-was">{price.originalLabel}</s>
             )}
           </div>
-          {product.price_wholesale && (
-            <div className="uni-card-price-wholesale">
-              Atacado · {product.price_wholesale}
-            </div>
-          )}
+          {/* Toda peça diz a regra: quem não leu o topo da página lê aqui,
+              antes de abrir o WhatsApp atrás de uma bolsa só. */}
+          <div className="uni-card-price-wholesale">
+            Atacado · {product.price_wholesale ?? PEDIDO_MINIMO_CURTO.toLowerCase()}
+          </div>
         </div>
         {product.tagline && (
           <p className="uni-card-tagline">{product.tagline}</p>

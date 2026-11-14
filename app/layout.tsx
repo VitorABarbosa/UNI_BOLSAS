@@ -37,9 +37,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'Uni Bolsas — Atacado e Varejo · Brás SP',
+  title: 'Uni Bolsas — Bolsas no atacado · Brás SP',
   description:
-    'Fabricante de bolsas no Brás · São Paulo. Atendimento atacado e varejo via WhatsApp.',
+    'Fabricante de bolsas no Brás · São Paulo. Venda no atacado, a partir de 3 peças, pelo WhatsApp.',
 };
 
 /**

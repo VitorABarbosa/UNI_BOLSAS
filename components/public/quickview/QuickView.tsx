@@ -10,6 +10,7 @@ import { galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { productPrice } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
+import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 
 type QuickViewProps = {
   product: ProductWithRelations;
@@ -182,11 +183,10 @@ export function QuickView({
                 <span className="uni-qv-price-off">-{price.discountPct}%</span>
               </>
             )}
-            {product.price_wholesale && (
-              <span className="uni-qv-price-w">
-                Atacado · {product.price_wholesale}
-              </span>
-            )}
+            <span className="uni-qv-price-w">
+              Atacado ·{' '}
+              {product.price_wholesale ?? `pedido mínimo de ${PEDIDO_MINIMO} peças`}
+            </span>
           </div>
           {product.description && (
             <p className="uni-qv-desc">{product.description}</p>
@@ -261,7 +261,8 @@ export function QuickView({
               Pedir no WhatsApp · {price.currentLabel}
             </WhatsAppButton>
             <p className="uni-qv-cta-note">
-              Atendimento humano · respondemos em até 5min
+              Pedido mínimo de {PEDIDO_MINIMO} peças · atendimento humano,
+              respondemos em até 5min
             </p>
           </div>
         </div>
