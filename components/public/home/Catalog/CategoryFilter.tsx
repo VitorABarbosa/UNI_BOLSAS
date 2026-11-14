@@ -25,6 +25,7 @@ export function CategoryFilter({
         <button
           key={c.id}
           role="tab"
+          data-cat={c.id}
           aria-selected={activeCat === c.id}
           className={'uni-cat-btn ' + (activeCat === c.id ? 'is-active' : '')}
           onClick={() => onChange(c.id)}

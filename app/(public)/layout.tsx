@@ -6,6 +6,7 @@ import { FloatingWA } from '@/components/public/shell/FloatingWA';
 import { SiteAnalytics } from '@/components/public/shell/SiteAnalytics';
 import { CookieConsent } from '@/components/public/shell/CookieConsent';
 import { GoogleAnalytics } from '@/components/public/shell/GoogleAnalytics';
+import { PedidoDrawer } from '@/components/public/pedido/PedidoDrawer';
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -15,6 +16,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <main id="top">{children}</main>
       <Footer />
       <FloatingWA />
+      <PedidoDrawer />
       <SiteAnalytics />
       <CookieConsent />
       <GoogleAnalytics />

@@ -6,6 +6,12 @@ export const STORE = {
   cep: '03009-100',
   hours: ['Seg-Ter · 4h às 12h', 'Qua-Sex · 5h às 11h'],
   hoursShort: ['Seg-Ter · 4h-12h', 'Qua-Sex · 5h-11h'],
+  /* Os mesmos horários, no formato que o Google lê (dados estruturados da
+     loja). Mudou o horário acima, muda aqui também. */
+  openingHours: [
+    { days: ['Monday', 'Tuesday'], opens: '04:00', closes: '12:00' },
+    { days: ['Wednesday', 'Thursday', 'Friday'], opens: '05:00', closes: '11:00' },
+  ],
   /* Vazio = a linha do CNPJ não aparece no rodapé. Preencher com o CNPJ real
      (formato 00.000.000/0001-00) pra ele voltar a ser exibido. */
   cnpj: '',

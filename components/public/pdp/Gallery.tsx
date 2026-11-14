@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
 import type { GalleryImage } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
+import { ZoomIcon } from '@/components/public/icons';
+import { GalleryLightbox } from './GalleryLightbox';
 
 type GalleryProps = {
   images: GalleryImage[];
@@ -24,6 +26,7 @@ const PDP_SIZES = '(max-width: 768px) 100vw, 640px';
  */
 export function Gallery({ images, productName }: GalleryProps) {
   const [imgIdx, setImgIdx] = useState(0);
+  const [ampliada, setAmpliada] = useState<number | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const syncingRef = useRef(false);
 
@@ -88,24 +91,48 @@ export function Gallery({ images, productName }: GalleryProps) {
           </button>
         ))}
       </div>
-      <div
-        className="uni-pdp-stage"
-        ref={stageRef}
-        onScroll={onStageScroll}
-        role="list"
-        aria-label="Fotos do produto"
-      >
-        {images.map((img, i) => (
-          <div className="uni-pdp-slide" key={i} role="listitem">
-            <ProductPhoto
-              src={publicImageUrl(img.storage_path)}
-              alt={img.alt}
-              sizes={PDP_SIZES}
-              priority={i === 0}
-            />
-          </div>
-        ))}
+      {/* O botão de ampliar fica no invólucro, não no palco: o palco rola
+          de lado no celular, e o botão rolaria junto com as fotos. */}
+      <div className="uni-pdp-stage-wrap">
+        <div
+          className="uni-pdp-stage"
+          ref={stageRef}
+          onScroll={onStageScroll}
+          role="list"
+          aria-label="Fotos do produto"
+        >
+          {images.map((img, i) => (
+            <div
+              className="uni-pdp-slide is-zoomable"
+              key={i}
+              role="listitem"
+              onClick={() => setAmpliada(i)}
+            >
+              <ProductPhoto
+                src={publicImageUrl(img.storage_path)}
+                alt={img.alt}
+                sizes={PDP_SIZES}
+                priority={i === 0}
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="uni-pdp-zoom"
+          onClick={() => setAmpliada(safeIdx)}
+        >
+          <ZoomIcon size={16} />
+          Ampliar foto
+        </button>
       </div>
+      {ampliada !== null && (
+        <GalleryLightbox
+          images={images}
+          startIdx={ampliada}
+          onClose={() => setAmpliada(null)}
+        />
+      )}
       {images.length > 1 && (
         <div className="uni-pdp-dots" role="tablist" aria-label="Foto">
           {images.map((_, i) => (

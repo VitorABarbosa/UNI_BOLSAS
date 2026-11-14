@@ -49,6 +49,7 @@ const SELECT_TIERS = [
 
 const LIST_SELECT = `
   id, slug, name, tagline, badge, price_retail, price_wholesale, sizes, sort_order, active, category_id,
+  created_at,
   category:categories(slug, label),
   colors:product_colors(id, name, hex, accent_hex, sort_order, product_id),
   images:product_images(id, color_id, storage_path, alt, sort_order, product_id)

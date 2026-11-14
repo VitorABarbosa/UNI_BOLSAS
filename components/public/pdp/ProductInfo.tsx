@@ -3,7 +3,8 @@
 import type { ProductWithRelations } from '@/lib/queries/products';
 import { ColorSwatches } from './ColorSwatches';
 import { SizePicker } from './SizePicker';
-import { PdpWhatsAppCTA } from './PdpWhatsAppCTA';
+import { AdicionarAoPedido } from '@/components/public/pedido/AdicionarAoPedido';
+import { cardCoverImage } from '@/lib/product-images';
 import { productPrice } from '@/lib/product-price';
 import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 
@@ -104,7 +105,12 @@ export function ProductInfo({
           />
         </div>
       )}
-      <PdpWhatsAppCTA product={product} color={color} size={sizeForWa} />
+      <AdicionarAoPedido
+        product={product}
+        color={color}
+        size={sizeForWa}
+        image={cardCoverImage(product, color)?.storage_path ?? null}
+      />
     </div>
   );
 }

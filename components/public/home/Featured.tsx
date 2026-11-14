@@ -22,9 +22,11 @@ import type { ProductWithRelations } from '@/lib/queries/products';
  */
 export function Featured({
   products,
+  newIds,
   onOpenQuickView,
 }: {
   products: ProductWithRelations[];
+  newIds: string[];
   onOpenQuickView: (product: ProductWithRelations, colorIdx: number) => void;
 }) {
   const [selectedColors, setSelectedColors] = useState<Record<string, number>>(
@@ -111,6 +113,7 @@ export function Featured({
             <Reveal key={p.id} delay={i * 80} className="uni-featured-item">
               <ProductCard
                 product={p}
+                isNew={newIds.includes(p.id)}
                 selectedColorIdx={selectedColors[p.id] ?? 0}
                 previewColorIdx={previewColors[p.id] ?? null}
                 onSelectColor={(id, idx) =>

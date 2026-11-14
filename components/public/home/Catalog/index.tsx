@@ -55,18 +55,23 @@ function CatalogSearch({
   );
 }
 
+/** Id do filtro de novidades — não é categoria do banco, é por data. */
+const NOVIDADES = 'novidades';
+
 /** Quantos produtos entram por lote no grid. */
 const PAGE_SIZE = 12;
 
 type CatalogProps = {
   products: ProductWithRelations[];
   categories: CategoryOption[];
+  newIds: string[];
   onOpenQuickView: (product: ProductWithRelations, colorIdx: number) => void;
 };
 
 export function Catalog({
   products,
   categories,
+  newIds,
   onOpenQuickView,
 }: CatalogProps) {
   const [activeCat, setActiveCat] = useState('todos');
@@ -111,11 +116,15 @@ export function Catalog({
     // Todas as palavras precisam aparecer, em qualquer ordem.
     const terms = normalize(query).split(/\s+/).filter(Boolean);
     return products.filter((p) => {
-      if (activeCat !== 'todos' && p.category?.slug !== activeCat) return false;
+      if (activeCat === NOVIDADES) {
+        if (!newIds.includes(p.id)) return false;
+      } else if (activeCat !== 'todos' && p.category?.slug !== activeCat) {
+        return false;
+      }
       const hay = haystacks.get(p.id) ?? '';
       return terms.every((t) => hay.includes(t));
     });
-  }, [products, activeCat, query, haystacks]);
+  }, [products, activeCat, query, haystacks, newIds]);
 
   /**
    * Quem filtra lá do meio da grade volta pro começo dela. Sem isso a lista
@@ -185,13 +194,29 @@ export function Catalog({
     setPreviewColors((s) => ({ ...s, [id]: idx }));
 
   const counts = useMemo(() => {
-    const m: Record<string, number> = { todos: products.length };
+    const m: Record<string, number> = {
+      todos: products.length,
+      [NOVIDADES]: newIds.length,
+    };
     categories.forEach((c) => {
       if (c.id !== 'todos')
         m[c.id] = products.filter((p) => p.category?.slug === c.id).length;
     });
     return m;
-  }, [products, categories]);
+  }, [products, categories, newIds]);
+
+  // "Novidades" entra logo depois de "Todos", e só quando há alguma.
+  const categoriesWithNew = useMemo(
+    () =>
+      newIds.length > 0
+        ? [
+            ...categories.slice(0, 1),
+            { id: NOVIDADES, label: 'Novidades' },
+            ...categories.slice(1),
+          ]
+        : categories,
+    [categories, newIds.length],
+  );
 
   const onClearFilters = () => {
     setActiveCat('todos');
@@ -229,7 +254,7 @@ export function Catalog({
         <div className="uni-cat-sticky">
           <div className="uni-cat-bar">
             <CategoryFilter
-              categories={categories}
+              categories={categoriesWithNew}
               activeCat={activeCat}
               counts={counts}
               onChange={changeCat}
@@ -251,6 +276,7 @@ export function Catalog({
         )}
         <ProductGrid
           displayed={displayed}
+          newIds={newIds}
           selectedColors={selectedColors}
           previewColors={previewColors}
           leavingIds={leavingIds}

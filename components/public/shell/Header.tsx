@@ -8,6 +8,7 @@ import { MenuIcon, WhatsAppIcon } from '@/components/public/icons';
 import { MobileMenu } from '@/components/public/shell/MobileMenu';
 import { waGeneral } from '@/lib/whatsapp';
 import { WaLink } from '@/components/public/primitives/WaLink';
+import { PedidoBotao } from '@/components/public/pedido/PedidoDrawer';
 
 /**
  * As seções do menu. Os endereços começam em `/` de propósito: `#catalogo`
@@ -92,6 +93,7 @@ export function Header() {
             ))}
           </nav>
           <div className="uni-header-right">
+            <PedidoBotao />
             <WaLink
               href={waGeneral}
               className="uni-header-cta"

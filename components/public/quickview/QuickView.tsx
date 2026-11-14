@@ -4,12 +4,11 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
 import { CloseIcon } from '@/components/public/icons';
-import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
+import { AdicionarAoPedido } from '@/components/public/pedido/AdicionarAoPedido';
 import type { ProductWithRelations } from '@/lib/queries/products';
-import { galleryImages } from '@/lib/product-images';
+import { cardCoverImage, galleryImages } from '@/lib/product-images';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { productPrice } from '@/lib/product-price';
-import { waProduct } from '@/lib/whatsapp';
 import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 
 type QuickViewProps = {
@@ -252,19 +251,13 @@ export function QuickView({
               </div>
             </div>
           )}
-          <div className="uni-qv-cta">
-            <WhatsAppButton
-              href={waProduct(product, color, sizeForWa)}
-              trackPath={`/produtos/${product.slug}`}
-              full
-            >
-              Pedir no WhatsApp · {price.currentLabel}
-            </WhatsAppButton>
-            <p className="uni-qv-cta-note">
-              Pedido mínimo de {PEDIDO_MINIMO} peças · atendimento humano,
-              respondemos em até 5min
-            </p>
-          </div>
+          <AdicionarAoPedido
+            product={product}
+            color={color}
+            size={sizeForWa}
+            image={cardCoverImage(product, color)?.storage_path ?? null}
+            className="uni-qv-cta"
+          />
         </div>
       </div>
     </div>

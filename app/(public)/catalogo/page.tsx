@@ -1,0 +1,215 @@
+import type { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
+import { listActiveProducts } from '@/lib/queries/products';
+import { listCategories } from '@/lib/queries/categories';
+import { cardCoverImage } from '@/lib/product-images';
+import { productPrice } from '@/lib/product-price';
+import { publicImageUrl } from '@/lib/supabase/image-url';
+import { codigoPeca } from '@/lib/pedido';
+import { PEDIDO_MINIMO } from '@/lib/content/atacado';
+import { STORE } from '@/lib/content/store';
+import { WHATSAPP_NUMBER } from '@/lib/tokens';
+import { SITE_NAME, SITE_URL } from '@/lib/seo';
+import { CatalogoAcoes } from '@/components/public/catalogo/CatalogoAcoes';
+
+type Busca = { precos?: string; categoria?: string };
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Busca>;
+}): Promise<Metadata> {
+  const { precos } = await searchParams;
+  return {
+    title: `Catálogo de atacado — ${SITE_NAME}`,
+    description: `Todas as peças da ${SITE_NAME} numa página só, pra compartilhar ou salvar em PDF. Venda no atacado, a partir de ${PEDIDO_MINIMO} peças.`,
+    alternates: { canonical: `${SITE_URL}/catalogo` },
+    // A versão sem preços é da lojista pras clientes dela: não é página pra
+    // aparecer no Google.
+    robots: precos === 'nao' ? { index: false, follow: false } : undefined,
+  };
+}
+
+/** "5511988063432" -> "(11) 98806-3432" */
+function telefoneLegivel(n: string): string {
+  const local = n.replace(/^55/, '');
+  return `(${local.slice(0, 2)}) ${local.slice(2, local.length - 4)}-${local.slice(-4)}`;
+}
+
+
+/**
+ * O catálogo pra compartilhar.
+ *
+ * Uma página limpa, com todas as peças agrupadas por categoria, que a lojista
+ * manda por link ou salva em PDF (a impressão do navegador usa o CSS de
+ * impressão daqui). Dois modos, pela URL:
+ *
+ * - normal: com preços, código e link de cada peça — pra quem compra da gente;
+ * - `?precos=nao`: sem preços, sem links e sem nosso contato — pra lojista
+ *   mandar às clientes DELA sem expor o preço de atacado nem o fornecedor.
+ *   Nesse modo a página também esconde o menu e o rodapé do site, e não
+ *   oferece o botão de voltar aos preços: a cliente da lojista abre o link e
+ *   não tem um clique entre ela e o preço de atacado.
+ *
+ * `?categoria=<slug>` recorta uma categoria só.
+ *
+ * Os modos vêm da URL lida no servidor, e não de um botão que esconde preço
+ * depois de carregar: assim quem abre o link "sem preços" nunca vê o preço,
+ * nem por um instante.
+ */
+export default async function CatalogoPage({
+  searchParams,
+}: {
+  searchParams: Promise<Busca>;
+}) {
+  const busca = await searchParams;
+  const comPrecos = busca.precos !== 'nao';
+  const [products, categorias] = await Promise.all([
+    listActiveProducts(),
+    listCategories(),
+  ]);
+  const recorte = categorias.find((c) => c.slug === busca.categoria) ?? null;
+
+  const grupos = categorias
+    .filter((c) => !recorte || c.id === recorte.id)
+    .map((c) => ({
+      categoria: c,
+      pecas: products.filter((p) => p.category_id === c.id),
+    }))
+    .filter((g) => g.pecas.length > 0);
+
+  const totalPecas = grupos.reduce((n, g) => n + g.pecas.length, 0);
+  const hoje = new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'America/Sao_Paulo',
+  }).format(new Date());
+
+  return (
+    <div className={'uni-cat-doc' + (comPrecos ? '' : ' is-revenda')}>
+      <div className="uni-container">
+        <header className="uni-cat-doc-capa">
+          <div className="uni-cat-doc-marca">
+            <Image
+              src="/LOGO_UNI_BOLSAS_PNG.png"
+              alt=""
+              width={44}
+              height={44}
+              className="uni-cat-doc-logo"
+            />
+            <span>{SITE_NAME}</span>
+          </div>
+          <h1 className="uni-cat-doc-titulo">
+            {recorte ? recorte.label : 'Catálogo'}
+            {comPrecos && <span> de atacado</span>}
+          </h1>
+          <p className="uni-cat-doc-sub">
+            {totalPecas} {totalPecas === 1 ? 'modelo' : 'modelos'} · atualizado
+            em {hoje}
+          </p>
+          {comPrecos && (
+            <dl className="uni-cat-doc-dados">
+              <div>
+                <dt>Pedido mínimo</dt>
+                <dd>{PEDIDO_MINIMO} peças</dd>
+              </div>
+              <div>
+                <dt>WhatsApp</dt>
+                <dd>{telefoneLegivel(WHATSAPP_NUMBER)}</dd>
+              </div>
+              <div>
+                <dt>Loja</dt>
+                <dd>
+                  {STORE.name} · {STORE.street}, {STORE.district}
+                </dd>
+              </div>
+            </dl>
+          )}
+        </header>
+
+        <CatalogoAcoes
+          comPrecos={comPrecos}
+          categoria={recorte?.slug ?? ''}
+          categorias={categorias.map((c) => ({ slug: c.slug, label: c.label }))}
+        />
+
+        {grupos.map(({ categoria, pecas }) => (
+          <section key={categoria.id} className="uni-cat-doc-grupo">
+            <h2>
+              {categoria.label}
+              <span>{pecas.length}</span>
+            </h2>
+            <ul className="uni-cat-doc-grade">
+              {pecas.map((p) => {
+                const capa = cardCoverImage(p, p.colors[0] ?? null);
+                const preco = productPrice(p);
+                const conteudo = (
+                  <>
+                    <div className="uni-cat-doc-foto">
+                      {capa && (
+                        <Image
+                          src={publicImageUrl(capa.storage_path)}
+                          alt={capa.alt}
+                          fill
+                          sizes="(max-width: 600px) 46vw, (max-width: 1080px) 30vw, 300px"
+                        />
+                      )}
+                    </div>
+                    <div className="uni-cat-doc-info">
+                      <h3>{p.name}</h3>
+                      {comPrecos && (
+                        <p className="uni-cat-doc-preco">
+                          {preco.currentLabel}
+                          {preco.originalLabel && <s>{preco.originalLabel}</s>}
+                        </p>
+                      )}
+                      {p.colors.length > 0 && (
+                        <p className="uni-cat-doc-cores">
+                          {p.colors.map((c) => c.name).join(', ')}
+                        </p>
+                      )}
+                      {p.sizes && p.sizes.length > 1 && (
+                        <p className="uni-cat-doc-cores">
+                          Tamanhos {p.sizes.join(', ')}
+                        </p>
+                      )}
+                      {comPrecos && (
+                        <p className="uni-cat-doc-cod">
+                          Cód. {codigoPeca(p.id)}
+                          <span className="uni-cat-doc-link">
+                            {' '}
+                            · {SITE_URL.replace(/^https?:\/\//, '')}/p/{codigoPeca(p.id)}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  </>
+                );
+                return (
+                  <li key={p.id} className="uni-cat-doc-peca">
+                    {comPrecos ? (
+                      <Link href={`/produtos/${p.slug}`}>{conteudo}</Link>
+                    ) : (
+                      conteudo
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))}
+
+        {comPrecos && (
+          <footer className="uni-cat-doc-rodape">
+            Venda só no atacado, a partir de {PEDIDO_MINIMO} peças. Pedidos pelo
+            WhatsApp {telefoneLegivel(WHATSAPP_NUMBER)} ou em{' '}
+            {SITE_URL.replace(/^https?:\/\//, '')}. Preços sujeitos a
+            alteração; disponibilidade confirmada no pedido.
+          </footer>
+        )}
+      </div>
+    </div>
+  );
+}

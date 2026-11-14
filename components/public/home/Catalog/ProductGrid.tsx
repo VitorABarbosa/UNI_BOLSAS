@@ -6,6 +6,7 @@ import { TOKENS } from '@/lib/tokens';
 
 type ProductGridProps = {
   displayed: ProductWithRelations[];
+  newIds: string[];
   selectedColors: Record<string, number>;
   previewColors: Record<string, number | null>;
   leavingIds: string[];
@@ -18,6 +19,7 @@ type ProductGridProps = {
 
 export function ProductGrid({
   displayed,
+  newIds,
   selectedColors,
   previewColors,
   leavingIds,
@@ -53,6 +55,7 @@ export function ProductGrid({
           <ProductCard
             key={p.id}
             product={p}
+            isNew={newIds.includes(p.id)}
             selectedColorIdx={selectedColors[p.id] ?? 0}
             previewColorIdx={previewColors[p.id] ?? null}
             onSelectColor={onSelectColor}
