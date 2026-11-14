@@ -3,7 +3,6 @@ import { Hero } from '@/components/public/home/Hero';
 import { CredibilityStrip } from '@/components/public/home/CredibilityStrip';
 import { ComoComprar } from '@/components/public/home/ComoComprar';
 import { Reels } from '@/components/public/home/Reels';
-import { Social } from '@/components/public/home/Social';
 import { FAQSection } from '@/components/public/home/FAQSection';
 import { Location } from '@/components/public/home/Location';
 import { Newsletter } from '@/components/public/home/Newsletter';
@@ -53,7 +52,6 @@ export default async function HomePage() {
       <ComoComprar />
       <CredibilityStrip />
       <Reels />
-      <Social />
       <FAQSection />
       <Location />
       <Newsletter />
