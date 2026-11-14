@@ -3,6 +3,7 @@
 import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
 import { productPrice, type ShopeePricing } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
+import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 import type { Database } from '@/types/db';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -26,7 +27,8 @@ export function PdpWhatsAppCTA({ product, color, size }: PdpWhatsAppCTAProps) {
         Pedir no WhatsApp · {productPrice(product).currentLabel}
       </WhatsAppButton>
       <p className="uni-qv-cta-note">
-        Atendimento humano · respondemos em até 5min
+        Pedido mínimo de {PEDIDO_MINIMO} peças · atendimento humano, respondemos
+        em até 5min
       </p>
     </div>
   );

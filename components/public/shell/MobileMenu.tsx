@@ -1,10 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect } from 'react';
 import { Logo } from '@/components/public/primitives/Logo';
 import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
 import { CloseIcon } from '@/components/public/icons';
-import { waGeneral } from '@/lib/whatsapp';
+import { waWholesale } from '@/lib/whatsapp';
+import { PEDIDO_MINIMO_FRASE } from '@/lib/content/atacado';
 
 type MobileMenuProps = {
   onClose: () => void;
@@ -39,22 +41,25 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
         </button>
       </div>
       <div className="uni-mobile-menu-links">
-        <a href="#catalogo" onClick={close} className="uni-mobile-menu-link">
+        <Link href="/#catalogo" onClick={close} className="uni-mobile-menu-link">
           Cat<em>á</em>logo
-        </a>
-        <a href="#atacado" onClick={close} className="uni-mobile-menu-link">
-          At<em>a</em>cado
-        </a>
-        <a href="#visite" onClick={close} className="uni-mobile-menu-link">
+        </Link>
+        <Link href="/#atacado" onClick={close} className="uni-mobile-menu-link">
+          Como c<em>o</em>mprar
+        </Link>
+        <Link href="/#faq" onClick={close} className="uni-mobile-menu-link">
+          D<em>ú</em>vidas
+        </Link>
+        <Link href="/#visite" onClick={close} className="uni-mobile-menu-link">
           V<em>i</em>site a loja
-        </a>
-        <a href="#faq" onClick={close} className="uni-mobile-menu-link">
-          F<em>A</em>Q
-        </a>
+        </Link>
       </div>
       <div className="uni-mobile-menu-foot">
-        <WhatsAppButton href={waGeneral} variant="dark" full>
-          Falar pelo WhatsApp
+        <p className="uni-mobile-menu-note">
+          Venda só no atacado, {PEDIDO_MINIMO_FRASE}.
+        </p>
+        <WhatsAppButton href={waWholesale} variant="dark" full>
+          Pedir no atacado
         </WhatsAppButton>
       </div>
     </div>

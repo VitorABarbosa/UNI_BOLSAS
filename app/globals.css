@@ -266,7 +266,7 @@ html, body {
     margin: 0 auto;
     padding: 0 24px;
   }
-  .uni-section { padding: 130px 0; }
+  .uni-section { padding: 108px 0; }
 
   /* Type scale */
   .uni-eyebrow {
@@ -365,14 +365,14 @@ html, body {
     font-size: 14px;
     color: var(--color-caramel);
   }
-  .uni-promo-strip-cup {
-    font-family: var(--font-mono);
-    background: var(--color-bone);
-    color: var(--color-ink);
-    padding: 3px 9px;
-    letter-spacing: 0.15em;
-    font-size: 11px;
+  .uni-promo-strip-link {
+    color: var(--color-bone);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: rgba(244, 239, 230, 0.4);
+    transition: text-decoration-color 0.2s ease;
   }
+  .uni-promo-strip-link:hover { text-decoration-color: var(--color-bone); }
   .uni-promo-strip-close {
     position: absolute;
     right: 18px;
@@ -434,7 +434,9 @@ html, body {
     transform-origin: left;
     transition: transform 0.3s ease;
   }
-  .uni-header-link:hover::after { transform: scaleX(1); }
+  .uni-header-link:hover::after,
+  .uni-header-link.is-active::after { transform: scaleX(1); }
+  .uni-header-link.is-active { color: var(--color-ink); }
   .uni-header-right { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
   .uni-header-cta {
     display: inline-flex;
@@ -509,6 +511,8 @@ html, body {
       radial-gradient(ellipse 50% 35% at 90% 75%, rgba(92, 26, 43, 0.07), transparent 60%);
     pointer-events: none;
   }
+  /* Base = celular e tablet: uma coluna centrada, com o filme abrindo a
+     página (`order: -1`). O desktop vira grade lá no bloco responsivo. */
   .uni-hero-inner {
     position: relative;
     z-index: 1;
@@ -520,24 +524,22 @@ html, body {
     text-align: center;
   }
   .uni-hero-image-frame {
+    order: -1;
     position: relative;
     width: 90vw;
     margin-left: calc(50% - 45vw);
     margin-right: calc(50% - 45vw);
-    margin-bottom: 56px;
+    margin-bottom: 40px;
     opacity: 0;
-    animation: uni-frame-rise 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both;
+    animation: uni-frame-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s both;
   }
   .uni-hero-eyebrow {
-    margin: 0 0 28px;
+    display: block;
+    margin: 0 0 22px;
     opacity: 0;
-    animation: uni-letter-spread 1.2s ease 0.55s both;
+    animation: uni-fade-up 0.7s ease 0.1s both;
   }
-  .uni-hero-h1 {
-    margin: 0 0 32px;
-    /* Largura suficiente pra "Bolsas que carregam" caber numa linha só. */
-    max-width: 1120px;
-  }
+  .uni-hero-h1 { margin: 0 0 28px; }
   /* Cada linha é a máscara por onde as palavras sobem. O padding devolve o
      espaço dos descendentes (o "g" de carregam), que o overflow cortaria. */
   .uni-hero-line {
@@ -549,33 +551,66 @@ html, body {
   .uni-hero-h1 .uni-word {
     display: inline-block;
     opacity: 0;
-    animation: uni-word-rise 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: uni-word-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
-  .uni-hero-divider {
-    width: 0;
-    height: 1px;
-    background: var(--color-leather-dark);
-    opacity: 0;
-    margin: 0 auto 32px;
-    animation: uni-divider-grow 0.9s cubic-bezier(0.65, 0.05, 0.36, 1) 1.55s both;
+  .uni-hero-aside {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
   }
+  /* Os atrasos são curtos de propósito: na versão anterior os botões só
+     apareciam quase dois segundos depois da página — tempo em que não havia
+     onde clicar. */
   .uni-hero-lede {
     font-family: var(--font-sans);
     font-size: 17px;
-    line-height: 1.65;
+    line-height: 1.6;
     color: var(--color-charcoal);
-    max-width: 580px;
-    margin: 0 auto 40px;
+    max-width: 520px;
+    margin: 0 0 28px;
     opacity: 0;
-    animation: uni-fade-up 0.9s ease 1.75s both;
+    animation: uni-fade-up 0.7s ease 0.45s both;
   }
+  .uni-hero-lede strong { font-weight: 500; color: var(--color-ink); }
   .uni-hero-ctas {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
     opacity: 0;
-    animation: uni-fade-up 0.9s ease 1.95s both;
+    animation: uni-fade-up 0.7s ease 0.55s both;
+  }
+  /* Três fatos que respondem as três primeiras perguntas de quem compra no
+     atacado: quanto é o mínimo, se entrega, e se dá pra confiar. */
+  .uni-hero-facts {
+    list-style: none;
+    padding: 0;
+    margin: 32px 0 0;
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 0;
+    opacity: 0;
+    animation: uni-fade-up 0.7s ease 0.65s both;
+  }
+  .uni-hero-facts li {
+    padding: 2px 22px;
+    border-left: 1px solid var(--color-whisper);
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: var(--color-stone);
+    text-align: left;
+  }
+  .uni-hero-facts li:first-child { padding-left: 0; border-left: none; }
+  .uni-hero-facts strong {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 19px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+    white-space: nowrap;
   }
 
   /* ---- Hero Carousel ---- */
@@ -865,84 +900,77 @@ html, body {
     line-height: 1.5;
   }
 
-  /* ---- Wholesale vs retail ---- */
-  .uni-wsr { background: var(--color-bone); }
-  .uni-wsr-grid {
+  /* ---- Como comprar (atacado) ---- */
+  .uni-how { background: var(--color-bone); }
+  .uni-how-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 28px;
-    margin-top: 56px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 96px;
+    align-items: start;
   }
-  .uni-wsr-card {
+  .uni-how-intro .uni-h2 { margin-bottom: 22px; font-size: clamp(34px, 4.1vw, 56px); }
+  .uni-how-lede {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--color-charcoal);
+    max-width: 460px;
+    margin: 0 0 36px;
+  }
+  .uni-how-terms {
+    margin: 0 0 36px;
+    border-top: 1px solid var(--color-whisper);
+  }
+  .uni-how-term {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-whisper);
+    font-family: var(--font-sans);
+    font-size: 14.5px;
+  }
+  .uni-how-term dt { color: var(--color-stone); }
+  .uni-how-term dd { margin: 0; color: var(--color-ink); font-weight: 500; text-align: right; }
+  .uni-how-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     background: var(--color-bone-light);
     border: 1px solid var(--color-whisper);
-    padding: 56px 48px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    transition: transform 0.45s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.45s ease;
   }
-  .uni-wsr-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 24px 60px -20px rgba(17,17,17,0.14);
+  .uni-how-step {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 8px;
+    padding: 36px 40px 36px 32px;
+    border-bottom: 1px solid var(--color-whisper);
   }
-  /* Os dois cards têm a mesma altura e o CTA cravado na base: com listas de
-     tamanhos diferentes, os botões ficavam em linhas distintas e parecia
-     desalinhamento acidental. */
-  .uni-wsr-grid > * { display: flex; }
-  .uni-wsr-grid .uni-wsr-card { flex: 1; }
-  .uni-wsr-card .uni-wa-btn { margin-top: auto; }
-  .uni-wsr-card-icon {
-    width: 56px;
-    height: 56px;
-    margin-bottom: 32px;
+  .uni-how-step:last-child { border-bottom: none; }
+  .uni-how-step-n {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 56px;
+    line-height: 0.9;
     color: var(--color-leather-dark);
   }
-  .uni-wsr-card-eyebrow {
-    font-family: var(--font-sans);
-    font-size: 10px;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: var(--color-stone);
-    margin-bottom: 14px;
-  }
-  .uni-wsr-card-h {
+  .uni-how-step-h {
     font-family: var(--font-serif);
-    font-size: clamp(32px, 3.5vw, 44px);
-    line-height: 1.0;
-    letter-spacing: -0.025em;
+    font-size: 26px;
     font-weight: 400;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
     color: var(--color-ink);
-    margin: 0 0 28px;
+    margin: 0 0 8px;
   }
-  .uni-wsr-card-h em { font-style: italic; color: var(--color-leather-dark); }
-  .uni-wsr-card-bullets {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 36px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .uni-wsr-card-bullets li {
+  .uni-how-step-p {
     font-family: var(--font-sans);
     font-size: 15px;
-    line-height: 1.5;
+    line-height: 1.6;
     color: var(--color-charcoal);
-    padding-left: 22px;
-    position: relative;
-  }
-  .uni-wsr-card-bullets li::before {
-    content: "—";
-    position: absolute;
-    left: 0;
-    color: var(--color-leather-dark);
-  }
-  .uni-wsr-card-bullets li strong {
-    font-family: var(--font-mono);
-    font-weight: 500;
-    color: var(--color-ink);
-    font-size: 14px;
+    margin: 0;
+    max-width: 440px;
   }
 
   /* ---- Catalog ---- */
@@ -1496,47 +1524,6 @@ html, body {
     margin: 0;
   }
 
-  /* ---- Social ---- */
-  .uni-social { background: var(--color-bone); }
-  .uni-test-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-  }
-  .uni-test-card {
-    border-top: 1px solid var(--color-whisper);
-    padding: 28px 0 0;
-  }
-  .uni-test-quote {
-    font-family: var(--font-serif);
-    font-size: 19px;
-    line-height: 1.4;
-    color: var(--color-ink);
-    margin: 0 0 20px;
-    text-wrap: pretty;
-  }
-  .uni-test-quote::before {
-    content: "“";
-    font-size: 36px;
-    color: var(--color-leather-dark);
-    line-height: 0.6;
-    margin-right: 4px;
-    font-style: italic;
-  }
-  .uni-test-name {
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-ink);
-  }
-  .uni-test-role {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--color-stone);
-    letter-spacing: 0.05em;
-    margin-top: 2px;
-  }
-
   /* ---- FAQ ---- */
   .uni-faq { background: var(--color-bone-light); }
   .uni-faq-list {
@@ -1752,25 +1739,6 @@ html, body {
     max-width: 380px;
   }
   .uni-news-form { display: flex; flex-direction: column; gap: 14px; }
-  .uni-news-toggle {
-    display: inline-flex;
-    background: rgba(244,239,230,0.08);
-    padding: 4px;
-    align-self: flex-start;
-  }
-  .uni-news-toggle-btn {
-    font-family: var(--font-sans);
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    background: transparent;
-    border: none;
-    color: var(--color-whisper);
-    padding: 9px 20px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-  }
-  .uni-news-toggle-btn.is-active { background: var(--color-bone); color: var(--color-ink); }
   .uni-news-input-row {
     display: flex;
     gap: 0;
@@ -1929,9 +1897,9 @@ html, body {
       animation: none !important;
     }
     .uni-hero-eyebrow,
-    .uni-hero-divider,
     .uni-hero-lede,
     .uni-hero-ctas,
+    .uni-hero-facts,
     .uni-hero-h1 .uni-word,
     .uni-hero-image-frame {
       animation-duration: 0.4s !important;
@@ -1940,7 +1908,7 @@ html, body {
   }
 
   /* ---- PDP layout (page-mode product detail) ---- */
-  .uni-pdp { padding: 90px 0 60px; }
+  .uni-pdp { padding: 36px 0 60px; }
   .uni-pdp-grid {
     display: grid;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
@@ -2075,6 +2043,12 @@ html, body {
   margin-right: -10px;
 }
 .uni-mobile-menu-foot { margin-top: auto; }
+.uni-mobile-menu-note {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--color-stone);
+  margin: 0 0 14px;
+}
 
 /* ---- Palco de galeria (quick view e PDP) ----
    Um só bloco de fotos serve desktop e mobile: no desktop as miniaturas rolam
@@ -2211,6 +2185,69 @@ html, body {
   margin-bottom: 40px;
 }
 .uni-cat-sticky .uni-cat-filter { margin-bottom: 0; }
+/* O salto de "voltar pro começo da grade" para aqui, com a folga do cabeçalho. */
+.uni-cat-anchor { scroll-margin-top: var(--uni-header-h, 80px); }
+/* Categorias à esquerda, busca à direita — uma linha só no desktop. */
+.uni-cat-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.uni-cat-bar .uni-cat-filter { justify-content: flex-start; }
+.uni-cat-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--color-whisper);
+  background: var(--color-pearl);
+  color: var(--color-stone);
+  transition: border-color 0.2s ease;
+  cursor: text;
+}
+.uni-cat-search:focus-within { border-color: var(--color-ink); color: var(--color-ink); }
+.uni-cat-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  /* 16px: abaixo disso o iPhone dá zoom na página ao focar o campo. */
+  font-size: 16px;
+  color: var(--color-ink);
+  appearance: none;
+}
+.uni-cat-search input::placeholder { color: var(--color-stone); }
+.uni-cat-search input::-webkit-search-cancel-button { display: none; }
+.uni-cat-search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: -6px;
+  border: none;
+  background: transparent;
+  color: var(--color-stone);
+  cursor: pointer;
+}
+.uni-cat-search-clear:hover { color: var(--color-ink); }
+.uni-cat-search.is-inline { flex: 0 0 280px; }
+.uni-cat-search.is-standalone { display: none; }
+.uni-cat-result {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--color-stone);
+  margin: -20px 0 24px;
+}
+@media (max-width: 860px) {
+  .uni-cat-search.is-inline { display: none; }
+  .uni-cat-search.is-standalone { display: flex; margin-bottom: 8px; }
+  .uni-cat-bar { display: block; }
+}
 
 /* ---- "Carregar mais" do catálogo ---- */
 .uni-load-more-wrap {
@@ -2974,8 +3011,7 @@ input, select, textarea { font-size: 16px; }
 /* ---- Tablet ---- */
 
 @media (max-width: 1080px) {
-  .uni-section { padding: 96px 0; }
-  .uni-hero-image-frame { margin-bottom: 40px; }
+  .uni-section { padding: 84px 0; }
   .uni-h1 { font-size: clamp(48px, 9vw, 90px); }
   .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
   .uni-reels-grid { gap: 18px; max-width: none; }
@@ -2986,9 +3022,7 @@ input, select, textarea { font-size: 16px; }
   .uni-cred-cell:nth-child(1),
   .uni-cred-cell:nth-child(2) { padding-bottom: 32px; border-bottom: 1px solid var(--color-charcoal); }
   .uni-cred-cell:nth-child(3) { padding-top: 32px; grid-column: 1 / -1; }
-  .uni-wsr-grid { grid-template-columns: 1fr; gap: 16px; }
-  .uni-test-grid { grid-template-columns: 1fr; gap: 0; }
-  .uni-test-card { padding: 28px 0; }
+  .uni-how-grid { grid-template-columns: 1fr; gap: 48px; }
   .uni-news-inner { grid-template-columns: 1fr; gap: 24px; }
   .uni-qv-modal { grid-template-columns: 1fr; max-height: 96dvh; overflow-y: auto; }
   .uni-qv-gallery { grid-template-columns: 1fr; min-height: 0; padding: 16px; }
@@ -3064,10 +3098,13 @@ input, select, textarea { font-size: 16px; }
   .uni-carousel-dot::after { content: ""; position: absolute; inset: -12px -2px; }
   .uni-carousel-dots { padding: 12px; gap: 10px; }
   .uni-footer-link { min-height: 40px; align-items: center; }
-  .uni-hero-eyebrow { margin-bottom: 14px; }
+  .uni-hero-eyebrow { margin-bottom: 12px; font-size: 10px; letter-spacing: 0.3em; }
   .uni-hero-h1 { margin-bottom: 16px; }
-  .uni-hero-divider { margin-bottom: 20px; }
-  .uni-hero-lede { font-size: 15px; margin-bottom: 22px; }
+  .uni-hero-lede { font-size: 15.5px; margin-bottom: 20px; }
+  .uni-hero-facts { margin-top: 24px; width: 100%; grid-template-columns: repeat(3, 1fr); }
+  .uni-hero-facts li { padding: 2px 10px; font-size: 11.5px; text-align: center; }
+  .uni-hero-facts li:first-child { padding-left: 10px; }
+  .uni-hero-facts strong { font-size: 16px; }
   /* CTA de largura total: alvo grande e hierarquia clara no polegar. */
   .uni-hero-ctas { flex-direction: column; width: 100%; gap: 10px; }
   .uni-hero-ctas > * { width: 100%; justify-content: center; min-height: 52px; }
@@ -3220,8 +3257,12 @@ input, select, textarea { font-size: 16px; }
   .uni-qv-spec-grid { gap: 14px; }
   .uni-qv-size-chip { min-height: 44px; }
 
-  /* Atacado x varejo */
-  .uni-wsr-card { padding: 36px 24px; }
+  /* Como comprar */
+  .uni-how-step { grid-template-columns: 52px 1fr; padding: 26px 20px; }
+  .uni-how-step-n { font-size: 44px; }
+  .uni-how-step-h { font-size: 22px; }
+  .uni-how-term { font-size: 14px; gap: 16px; }
+  .uni-how-intro .uni-wa-btn { width: 100%; justify-content: center; }
 
   /* FAQ */
   .uni-faq-q { padding: 22px 12px 22px 0; gap: 16px; font-size: 17px; min-height: 56px; }
@@ -3239,7 +3280,6 @@ input, select, textarea { font-size: 16px; }
     min-height: 50px;
   }
   .uni-news-submit { justify-content: center; min-height: 50px; }
-  .uni-news-toggle-btn { min-height: 44px; }
 
   /* Rodapé: respiro extra pro botão flutuante do WhatsApp não cobrir links. */
   .uni-footer { padding: 56px 0 calc(80px + env(safe-area-inset-bottom)); }
@@ -3276,7 +3316,8 @@ input, select, textarea { font-size: 16px; }
 /* ---- Página de produto (PDP) ---- */
 
 @media (max-width: 768px) {
-  .uni-pdp { padding: 64px 0 40px; }
+  .uni-pdp { padding: 16px 0 40px; }
+  .uni-pdp-crumb { margin-bottom: 16px; }
   .uni-pdp-grid { grid-template-columns: 1fr; gap: 28px; }
   .uni-pdp-gallery { grid-template-columns: 1fr; gap: 12px; }
   /* No mobile o palco vira carrossel com swipe e as miniaturas viram pontinhos. */
@@ -3291,4 +3332,64 @@ input, select, textarea { font-size: 16px; }
   .uni-pdp-buybar { display: flex; }
   .uni-pdp-cta-inline { display: none; }
   body:has(.uni-pdp-buybar) .uni-footer { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+}
+
+
+/* ---- Hero no desktop: texto primeiro, filme embaixo ----
+   Título à esquerda, regra de venda e botões à direita, alinhados pela base;
+   o filme ocupa a largura toda logo abaixo. Numa tela de 900px de altura cabe
+   tudo o que decide a visita — o que vendemos, o mínimo, os dois botões — e
+   ainda sobra a metade de cima do filme. */
+@media (min-width: 1081px) {
+  .uni-hero { padding: 56px 0 96px; }
+  .uni-hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    column-gap: 72px;
+    align-items: end;
+    text-align: left;
+  }
+  .uni-hero-h1 {
+    margin: 0;
+    font-size: clamp(56px, 5.9vw, 92px);
+    line-height: 0.98;
+  }
+  .uni-hero-aside { align-items: flex-start; padding-bottom: 6px; }
+  .uni-hero-lede { margin-bottom: 24px; }
+  .uni-hero-ctas { justify-content: flex-start; }
+  .uni-hero-image-frame {
+    order: 0;
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 56px 0 0;
+  }
+}
+
+/* ---- Página da peça: caminho de volta ---- */
+.uni-pdp-crumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--color-stone);
+}
+.uni-pdp-crumb a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.uni-pdp-crumb a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.uni-pdp-crumb span::before { content: "/"; margin-right: 12px; color: var(--color-whisper); }
+/* `.uni-section` responsivo (sem layer) venceria `.uni-pdp`; as duas classes
+   juntas resolvem sem !important. O topo é curto porque o caminho de volta já
+   dá o respiro. */
+.uni-pdp.uni-section { padding-top: 28px; }
+@media (max-width: 768px) {
+  .uni-pdp.uni-section { padding-top: 8px; }
+  .uni-pdp-crumb { margin-bottom: 12px; }
 }

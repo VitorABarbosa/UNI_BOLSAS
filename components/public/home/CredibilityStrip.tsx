@@ -2,6 +2,7 @@
 
 import { Reveal } from '@/components/public/primitives/Reveal';
 import { CountUp } from '@/components/public/primitives/CountUp';
+import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 
 export function CredibilityStrip() {
   return (
@@ -22,10 +23,11 @@ export function CredibilityStrip() {
             <div className="uni-cred-label">Lojistas atendidas</div>
           </Reveal>
           <Reveal className="uni-cred-cell" delay={240}>
-            <div className="uni-cred-num">3</div>
-            <div className="uni-cred-label">
-              Jeitos de comprar: atacado, varejo e loja física
+            <div className="uni-cred-num">
+              {PEDIDO_MINIMO}
+              <span className="mono-suffix">peças</span>
             </div>
+            <div className="uni-cred-label">Pedido mínimo no atacado</div>
           </Reveal>
         </div>
       </div>

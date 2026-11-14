@@ -19,8 +19,8 @@ export function Footer() {
           <div>
             <Logo size={28} color={TOKENS.bone} />
             <p className="uni-footer-blurb">
-              Bolsas, mochilas e malas. Atacado e varejo direto do nosso stand
-              no Shopping 900, Brás · SP.{' '}
+              Bolsas, mochilas e malas no atacado, a partir de 3 peças, direto
+              do nosso stand no Shopping 900, Brás · SP.{' '}
               <span style={{ color: TOKENS.caramel }}>
                 Há mais de 25 anos no Brás.
               </span>
@@ -29,18 +29,18 @@ export function Footer() {
           <div>
             <div className="uni-footer-head">Catálogo</div>
             <div className="uni-footer-list">
-              <a href="#catalogo" className="uni-footer-link">
+              <Link href="/#catalogo" className="uni-footer-link">
                 Bolsas
-              </a>
-              <a href="#catalogo" className="uni-footer-link">
+              </Link>
+              <Link href="/#catalogo" className="uni-footer-link">
                 Mochilas
-              </a>
-              <a href="#catalogo" className="uni-footer-link">
+              </Link>
+              <Link href="/#catalogo" className="uni-footer-link">
                 Esportivas
-              </a>
-              <a href="#catalogo" className="uni-footer-link">
+              </Link>
+              <Link href="/#catalogo" className="uni-footer-link">
                 Kits
-              </a>
+              </Link>
             </div>
           </div>
           <div>

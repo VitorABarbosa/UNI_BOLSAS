@@ -6,6 +6,55 @@ import { CategoryFilter, type CategoryOption } from './CategoryFilter';
 import { ProductGrid } from './ProductGrid';
 import type { ProductWithRelations } from '@/lib/queries/products';
 
+/** Sem acento e em minúsculas: "matelasse" acha "Matelassê". */
+const normalize = (text: string) =>
+  text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+/**
+ * Campo de busca do catálogo.
+ *
+ * Com centenas de peças, categoria sozinha não basta: quem sabe o que quer
+ * ("transversal", "croco", "vermelho") não deveria rolar a grade inteira
+ * atrás disso. A busca olha nome, descrição curta, categoria e cores.
+ */
+function CatalogSearch({
+  value,
+  onChange,
+  className,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  className: string;
+}) {
+  return (
+    <label className={'uni-cat-search ' + className}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" /></svg>
+      <input
+        type="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Buscar peça"
+        aria-label="Buscar no catálogo"
+        enterKeyHint="search"
+        autoComplete="off"
+      />
+      {value && (
+        <button
+          type="button"
+          className="uni-cat-search-clear"
+          onClick={() => onChange('')}
+          aria-label="Limpar busca"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" /></svg>
+        </button>
+      )}
+    </label>
+  );
+}
+
 /** Quantos produtos entram por lote no grid. */
 const PAGE_SIZE = 12;
 
@@ -21,6 +70,8 @@ export function Catalog({
   onOpenQuickView,
 }: CatalogProps) {
   const [activeCat, setActiveCat] = useState('todos');
+  const [query, setQuery] = useState('');
+  const gridTopRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedColors, setSelectedColors] = useState<Record<string, number>>(
     () => Object.fromEntries(products.map((p) => [p.id, 0])),
@@ -37,11 +88,56 @@ export function Catalog({
   const enterTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevFilteredRef = useRef<string[]>(products.map((p) => p.id));
 
+  // O texto pesquisável de cada peça, montado uma vez — não a cada tecla.
+  const haystacks = useMemo(
+    () =>
+      new Map(
+        products.map((p) => [
+          p.id,
+          normalize(
+            [
+              p.name,
+              p.tagline ?? '',
+              p.category?.label ?? '',
+              ...p.colors.map((c) => c.name),
+            ].join(' '),
+          ),
+        ]),
+      ),
+    [products],
+  );
+
   const filtered = useMemo(() => {
+    // Todas as palavras precisam aparecer, em qualquer ordem.
+    const terms = normalize(query).split(/\s+/).filter(Boolean);
     return products.filter((p) => {
-      return activeCat === 'todos' || p.category?.slug === activeCat;
+      if (activeCat !== 'todos' && p.category?.slug !== activeCat) return false;
+      const hay = haystacks.get(p.id) ?? '';
+      return terms.every((t) => hay.includes(t));
     });
-  }, [products, activeCat]);
+  }, [products, activeCat, query, haystacks]);
+
+  /**
+   * Quem filtra lá do meio da grade volta pro começo dela. Sem isso a lista
+   * encolhia debaixo do dedo e a pessoa ficava olhando pro rodapé, ou pra
+   * uma tela vazia, sem saber se o filtro tinha funcionado.
+   */
+  const backToGridTop = () => {
+    requestAnimationFrame(() => {
+      const el = gridTopRef.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top;
+      if (top < 0) window.scrollTo({ top: window.scrollY + top });
+    });
+  };
+  const changeCat = (id: string) => {
+    setActiveCat(id);
+    backToGridTop();
+  };
+  const changeQuery = (value: string) => {
+    setQuery(value);
+    backToGridTop();
+  };
 
   useEffect(() => {
     const prev = prevFilteredRef.current;
@@ -70,7 +166,7 @@ export function Catalog({
   // Volta pro topo da paginação sempre que o filtro muda.
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [activeCat]);
+  }, [activeCat, query]);
 
   const displayedIds = leavingIds.length
     ? prevFilteredRef.current
@@ -99,6 +195,7 @@ export function Catalog({
 
   const onClearFilters = () => {
     setActiveCat('todos');
+    setQuery('');
   };
 
   return (
@@ -111,24 +208,47 @@ export function Catalog({
               Bolsas <em>em foco.</em>
             </h2>
             <p className="uni-section-lede">
-              Filtre por categoria, abra cada peça pra ver dimensões,
-              material e galeria, e peça direto pelo WhatsApp.
+              Busque pelo nome ou filtre por categoria, abra cada peça pra
+              ver medidas e fotos, e monte o pedido pelo WhatsApp.
             </p>
           </div>
         </Reveal>
         {/* O wrapper (e não o filtro) é sticky: dentro de um Reveal o filtro
             não teria espaço pra grudar, porque sticky só desliza dentro do
             pai direto — e o pai seria o próprio Reveal, do tamanho dele. */}
+        {/* Âncora de "voltar pro começo da grade" — fica acima da barra pra
+            ela não cobrir a primeira fileira depois do salto. */}
+        <div ref={gridTopRef} className="uni-cat-anchor" />
+        {/* No celular a busca fica solta, acima da barra que gruda: os dois
+            juntos tomariam um quinto da tela durante a rolagem inteira. */}
+        <CatalogSearch
+          value={query}
+          onChange={changeQuery}
+          className="is-standalone"
+        />
         <div className="uni-cat-sticky">
-          <Reveal>
+          <div className="uni-cat-bar">
             <CategoryFilter
               categories={categories}
               activeCat={activeCat}
               counts={counts}
-              onChange={setActiveCat}
+              onChange={changeCat}
             />
-          </Reveal>
+            <CatalogSearch
+              value={query}
+              onChange={changeQuery}
+              className="is-inline"
+            />
+          </div>
         </div>
+        {query.trim() !== '' && (
+          <p className="uni-cat-result" role="status">
+            {filtered.length === 0
+              ? 'Nenhuma peça encontrada'
+              : `${filtered.length} ${filtered.length === 1 ? 'peça' : 'peças'}`}{' '}
+            para “{query.trim()}”
+          </p>
+        )}
         <ProductGrid
           displayed={displayed}
           selectedColors={selectedColors}

@@ -31,7 +31,7 @@ export function ProductGrid({
     <div className="uni-product-grid">
       {displayed.length === 0 ? (
         <div className="uni-product-grid-empty">
-          Nenhuma peça nessa combinação.{' '}
+          Nenhuma peça com esse filtro.{' '}
           <button
             onClick={onClearFilters}
             style={{
@@ -45,7 +45,7 @@ export function ProductGrid({
               textDecoration: 'underline',
             }}
           >
-            Limpar filtros.
+            Ver o catálogo todo.
           </button>
         </div>
       ) : (

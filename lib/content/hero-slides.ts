@@ -53,9 +53,9 @@ export const HERO_SLIDES: ReadonlyArray<HeroSlide> = [
     tag: 'Coleção · 2026',
   },
   {
-    key: 'atacado-varejo',
+    key: 'atacado',
     image: '/hero/slide-2.jpg',
-    alt: 'Uni Bolsas — Atacado e varejo no Brás',
-    tag: 'Atacado · Varejo',
+    alt: 'Uni Bolsas — Atacado no Brás',
+    tag: 'Atacado · Brás',
   },
 ] as const;

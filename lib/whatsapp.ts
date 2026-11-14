@@ -38,27 +38,22 @@ export function waProduct(
   const link = `${SITE_URL}/p/${product.id.replace(/-/g, '').slice(0, 8)}`;
   // *asteriscos* viram negrito no WhatsApp — o nome da peça salta da mensagem.
   return waLink(
-    `Olá! Tenho interesse na *${product.name}*${colorPart}${sizePart}${priceMsg}. Está disponível?` +
+    `Olá! Quero pedir no atacado. Tenho interesse na *${product.name}*${colorPart}${sizePart}${priceMsg}. Está disponível?` +
       `\n\n${link}`,
   );
 }
 
 export const waGeneral = waLink(
-  'Olá! Vim pelo catálogo Uni Bolsas e gostaria de mais informações.',
+  'Olá! Vim pelo catálogo Uni Bolsas e quero comprar no atacado.',
 );
 
 export const waWholesale = waLink(
-  'Olá! Sou lojista e gostaria de receber a tabela de atacado da Uni Bolsas.',
+  'Olá! Quero comprar no atacado e gostaria de receber a tabela da Uni Bolsas.',
 );
 
-export const waRetail = waLink(
-  'Olá! Quero comprar uma bolsa. Pode me ajudar com sugestões?',
-);
-
-export function waNewsletter(type: 'wholesale' | 'retail', phone: string): string {
-  const role = type === 'wholesale' ? 'lojista (atacado)' : 'cliente final';
+export function waNewsletter(phone: string): string {
   const phonePart = phone ? ` Meu WhatsApp é ${phone}.` : '';
   return waLink(
-    `Olá! Quero receber lançamentos e novidades como ${role}.${phonePart}`,
+    `Olá! Quero receber os lançamentos do atacado da Uni Bolsas.${phonePart}`,
   );
 }
