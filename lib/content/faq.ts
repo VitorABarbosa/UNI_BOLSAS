@@ -19,7 +19,7 @@ export const FAQ = [
   },
   {
     q: 'Posso retirar pessoalmente no Brás?',
-    a: 'Pode sim. Estamos no Shopping 900, Rua Monsenhor de Andrade, 900 — segunda e terça das 4h às 12h, quarta a sexta das 5h às 11h. Confirma antes pelo WhatsApp pra gente separar o pedido.',
+    a: 'Pode sim. Estamos no Shopping 900, loja 312, no corredor C (Rua Monsenhor de Andrade, 900) — segunda e terça das 4h às 12h, quarta a sexta das 5h às 11h. Confirma antes pelo WhatsApp pra gente separar o pedido.',
   },
   {
     q: 'Tem política de troca?',

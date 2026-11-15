@@ -47,6 +47,7 @@ export function Location() {
                 <PinIcon size={14} color={TOKENS.leatherDark} /> Endereço
               </div>
               <h3 className="uni-store-name">{STORE.name}</h3>
+              <p className="uni-store-unit">{STORE.unit}</p>
               <div className="uni-store-addr">
                 {STORE.street}
                 <br />
@@ -91,7 +92,7 @@ export function Location() {
                 </a>
                 <WhatsAppButton
                   href={waLink(
-                    'Olá! Quero confirmar atendimento na loja física do Shopping 900 hoje.',
+                    `Olá! Quero confirmar atendimento hoje na loja física (${STORE.name}, ${STORE.unitText}).`,
                   )}
                   variant="outline"
                   full

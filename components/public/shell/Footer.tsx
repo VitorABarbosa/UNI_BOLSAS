@@ -49,6 +49,8 @@ export function Footer() {
           <div>
             <div className="uni-footer-head">Loja física</div>
             <div className="uni-footer-store">
+              {STORE.name} · {STORE.unit}
+              <br />
               {STORE.street}
               <br />
               {STORE.district} · {STORE.city}

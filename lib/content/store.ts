@@ -1,5 +1,10 @@
 export const STORE = {
   name: 'Shopping 900',
+  /* Onde fica a loja DENTRO do shopping. É o que a pessoa procura quando
+     já está lá: sem isto, chegava no Shopping 900 e tinha que perguntar. */
+  unit: 'Loja 312 · Corredor C',
+  /** A mesma coisa, pra entrar no meio de uma frase. */
+  unitText: 'loja 312, no corredor C',
   street: 'Rua Monsenhor de Andrade, 900',
   district: 'Brás',
   city: 'São Paulo — SP',

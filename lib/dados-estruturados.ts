@@ -36,7 +36,7 @@ export function dadosLoja() {
     telephone: `+${WHATSAPP_NUMBER}`,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: `${STORE.street} — ${STORE.name}`,
+      streetAddress: `${STORE.street} — ${STORE.name}, ${STORE.unit.replace(' · ', ', ')}`,
       addressLocality: 'São Paulo',
       addressRegion: 'SP',
       postalCode: STORE.cep,

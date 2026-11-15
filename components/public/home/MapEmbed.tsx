@@ -42,6 +42,7 @@ export function MapEmbed() {
     <div className="uni-map-ask">
       <div className="uni-map-ask-inner">
         <p className="uni-map-ask-title">{STORE.name}</p>
+        <p className="uni-map-ask-addr uni-map-ask-unit">{STORE.unit}</p>
         <p className="uni-map-ask-addr">
           {STORE.street}
           <br />

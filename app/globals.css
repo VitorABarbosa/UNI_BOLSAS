@@ -4227,3 +4227,14 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
   .uni-cat-doc-pronto-acoes { width: 100%; }
   .uni-cat-doc-pronto-acoes > * { flex: 1; justify-content: center; }
 }
+
+/* Loja e corredor dentro do shopping: é o que a pessoa procura quando já
+   está no Shopping 900, então vem logo abaixo do nome, em destaque. */
+.uni-store-unit {
+  margin: -4px 0 14px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--color-leather-dark);
+}
+.uni-map-ask-unit { margin-top: -2px; margin-bottom: 6px; color: var(--color-leather-dark); font-weight: 500; }

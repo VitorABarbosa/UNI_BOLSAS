@@ -105,7 +105,7 @@ export default async function CatalogoPage({
       ? [
           ['Pedido mínimo', `${PEDIDO_MINIMO} peças`],
           ['WhatsApp', telefoneLegivel(WHATSAPP_NUMBER)],
-          ['Loja', `${STORE.name} · ${STORE.street}, ${STORE.district}`],
+          ['Loja', `${STORE.name}, ${STORE.unitText} · ${STORE.street}, ${STORE.district}`],
         ]
       : null,
     rodape: comPrecos ? rodape : null,
@@ -161,7 +161,8 @@ export default async function CatalogoPage({
               <div>
                 <dt>Loja</dt>
                 <dd>
-                  {STORE.name} · {STORE.street}, {STORE.district}
+                  {STORE.name}, {STORE.unitText} · {STORE.street},{' '}
+                  {STORE.district}
                 </dd>
               </div>
             </dl>
