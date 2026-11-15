@@ -56,7 +56,8 @@ export default function PrivacidadePage() {
             <p>
               <strong>Uni Bolsas</strong>
               {STORE.cnpj ? <> · CNPJ {STORE.cnpj}</> : null}, com stand no{' '}
-              {STORE.name}, {STORE.street}, {STORE.district}, {STORE.city},
+              {STORE.name} ({STORE.unitText}), {STORE.street},{' '}
+              {STORE.district}, {STORE.city},
               CEP {STORE.cep}. Somos o <em>controlador</em> dos dados na
               definição da Lei 13.709/2018 (LGPD).
             </p>
