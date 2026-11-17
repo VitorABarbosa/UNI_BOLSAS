@@ -4238,3 +4238,20 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
   color: var(--color-leather-dark);
 }
 .uni-map-ask-unit { margin-top: -2px; margin-bottom: 6px; color: var(--color-leather-dark); font-weight: 500; }
+
+/* ---- Janela de detalhes no computador: a coluna da peça rola ----
+   A janela tem altura máxima (92vh) e corta o que passa dela, mas a linha
+   da grade crescia junto com o conteúdo: com a descrição aberta, a coluna
+   ficava com 1.700px dentro de uma janela de 700px, sem rolagem própria, e
+   o botão de adicionar sumia embaixo. Limitando a altura das duas colunas à
+   da janela, cada uma rola por dentro — e uma peça de pouco texto continua
+   com a janela do tamanho dela (fixar a altura da linha deixava toda janela
+   alta, com espaço vazio). */
+@media (min-width: 769px) {
+  .uni-qv-info,
+  .uni-qv-gallery {
+    max-height: 92vh;
+    min-height: 0;
+    overscroll-behavior: contain;
+  }
+}
