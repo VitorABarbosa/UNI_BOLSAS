@@ -16,6 +16,26 @@ import type { CatalogoPdf } from '@/lib/catalogo-pdf';
 
 type Busca = { precos?: string; categoria?: string };
 
+/**
+ * Categorias que abrem o PDF baixado, nesta ordem — as que a loja quer em
+ * destaque no material que a lojista guarda e repassa. Só o PDF muda: o site
+ * e a página /catalogo seguem a ordem das categorias do painel.
+ *
+ * Reconhece pelo identificador ou pelo nome, sem acento e sem diferenciar
+ * maiúsculas: renomear "Esportivas" pra "Bolsas esportivas" no painel não
+ * tira a categoria da frente.
+ */
+const PRIMEIRO_NO_PDF = ['esportiv'];
+
+const semAcento = (t: string) =>
+  t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+/** Posição da categoria no começo do PDF, ou -1 se ela segue a ordem normal. */
+function prioridadeNoPdf(c: { slug: string; label: string }): number {
+  const texto = `${semAcento(c.slug)} ${semAcento(c.label)}`;
+  return PRIMEIRO_NO_PDF.findIndex((termo) => texto.includes(termo));
+}
+
 export async function generateMetadata({
   searchParams,
 }: {
@@ -113,27 +133,38 @@ export default async function CatalogoPage({
       ? `Atacado a partir de ${PEDIDO_MINIMO} peças · WhatsApp ${telefoneLegivel(WHATSAPP_NUMBER)} · ${dominio}`
       : null,
     capa: '/hero/slide-1.jpg',
-    grupos: grupos.map(({ categoria, pecas }) => ({
-      categoria: categoria.label,
-      pecas: pecas.map((p) => {
-        const capa = cardCoverImage(p, p.colors[0] ?? null);
-        const preco = productPrice(p);
-        return {
-          nome: p.name,
-          preco: comPrecos ? preco.currentLabel : null,
-          precoDe: comPrecos ? preco.originalLabel : null,
-          cores: p.colors.map((c) => ({
-            nome: c.name,
-            hex: c.hex,
-            destaque: c.accent_hex,
-          })),
-          tamanhos: p.sizes && p.sizes.length > 1 ? p.sizes : [],
-          codigo: comPrecos ? codigoPeca(p.id) : null,
-          link: comPrecos ? `${dominio}/p/${codigoPeca(p.id)}` : null,
-          foto: capa ? publicImageUrl(capa.storage_path) : null,
-        };
-      }),
-    })),
+    grupos: [...grupos]
+      .sort((a, b) => {
+        // As de destaque na frente; o resto na ordem do painel (o sort é
+        // estável, então empate mantém a ordem original).
+        const pa = prioridadeNoPdf(a.categoria);
+        const pb = prioridadeNoPdf(b.categoria);
+        if (pa === pb) return 0;
+        if (pa === -1) return 1;
+        if (pb === -1) return -1;
+        return pa - pb;
+      })
+      .map(({ categoria, pecas }) => ({
+        categoria: categoria.label,
+        pecas: pecas.map((p) => {
+          const capa = cardCoverImage(p, p.colors[0] ?? null);
+          const preco = productPrice(p);
+          return {
+            nome: p.name,
+            preco: comPrecos ? preco.currentLabel : null,
+            precoDe: comPrecos ? preco.originalLabel : null,
+            cores: p.colors.map((c) => ({
+              nome: c.name,
+              hex: c.hex,
+              destaque: c.accent_hex,
+            })),
+            tamanhos: p.sizes && p.sizes.length > 1 ? p.sizes : [],
+            codigo: comPrecos ? codigoPeca(p.id) : null,
+            link: comPrecos ? `${dominio}/p/${codigoPeca(p.id)}` : null,
+            foto: capa ? publicImageUrl(capa.storage_path) : null,
+          };
+        }),
+      })),
   };
 
   return (
