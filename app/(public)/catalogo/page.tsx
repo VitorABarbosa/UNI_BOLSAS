@@ -109,6 +109,10 @@ export default async function CatalogoPage({
         ]
       : null,
     rodape: comPrecos ? rodape : null,
+    contato: comPrecos
+      ? `Atacado a partir de ${PEDIDO_MINIMO} peças · WhatsApp ${telefoneLegivel(WHATSAPP_NUMBER)} · ${dominio}`
+      : null,
+    capa: '/hero/slide-1.jpg',
     grupos: grupos.map(({ categoria, pecas }) => ({
       categoria: categoria.label,
       pecas: pecas.map((p) => {
@@ -118,9 +122,12 @@ export default async function CatalogoPage({
           nome: p.name,
           preco: comPrecos ? preco.currentLabel : null,
           precoDe: comPrecos ? preco.originalLabel : null,
-          cores: p.colors.map((c) => c.name).join(', '),
-          tamanhos:
-            p.sizes && p.sizes.length > 1 ? `Tamanhos ${p.sizes.join(', ')}` : '',
+          cores: p.colors.map((c) => ({
+            nome: c.name,
+            hex: c.hex,
+            destaque: c.accent_hex,
+          })),
+          tamanhos: p.sizes && p.sizes.length > 1 ? p.sizes : [],
           codigo: comPrecos ? codigoPeca(p.id) : null,
           link: comPrecos ? `${dominio}/p/${codigoPeca(p.id)}` : null,
           foto: capa ? publicImageUrl(capa.storage_path) : null,
