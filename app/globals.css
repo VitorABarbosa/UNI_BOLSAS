@@ -4434,3 +4434,50 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
 }
 .uni-checkout-link { padding: 0; border: 0; background: none; font: inherit; color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .uni-checkout-perfil { margin-top: 12px; }
+.uni-sacola-pendente {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding: 14px 16px;
+  background: var(--color-pearl);
+  border: 1px solid var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  color: var(--color-charcoal);
+}
+.uni-sacola-pendente .uni-conta-btn { width: auto; min-height: 44px; margin: 0; }
+.uni-meus-pedidos { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.uni-meus-pedidos a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--color-whisper);
+  background: var(--color-pearl);
+  text-decoration: none;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  transition: border-color 0.15s ease;
+}
+.uni-meus-pedidos a:hover { border-color: var(--color-ink); }
+.uni-meus-pedidos-ref { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.uni-meus-pedidos-ref strong { font-family: var(--font-mono, monospace); font-size: 14px; font-weight: 500; letter-spacing: 0.02em; }
+.uni-meus-pedidos-ref small { font-size: 12.5px; color: var(--color-stone); }
+.uni-meus-pedidos-valor { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; white-space: nowrap; }
+.uni-meus-pedidos-valor b { font-size: 14.5px; }
+.uni-meus-pedidos-valor em { font-style: normal; font-size: 11.5px; font-weight: 600; padding: 2px 8px; background: var(--color-bone); color: var(--color-charcoal); }
+.uni-meus-pedidos-valor em.is-approved { background: #E7F1E4; color: #2F6B3E; }
+.uni-meus-pedidos-valor em.is-pending,
+.uni-meus-pedidos-valor em.is-in_process { background: #F6ECD9; color: #8A5A12; }
+.uni-meus-pedidos-valor em.is-rejected { background: #F8E9E7; color: #7E1A17; }
+.uni-conta-pequeno a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+.uni-etapas { list-style: none; display: flex; gap: 6px; margin: 6px 0 26px; padding: 0; counter-reset: etapa; font-family: var(--font-sans); }
+.uni-etapas li { flex: 1; counter-increment: etapa; font-size: 12px; letter-spacing: 0.04em; color: var(--color-stone); padding-top: 9px; border-top: 3px solid var(--color-whisper); }
+.uni-etapas li::before { content: counter(etapa) '. '; }
+.uni-etapas li.is-feita { border-color: var(--color-leather, #6B4326); }
+.uni-etapas li.is-atual { border-color: var(--color-leather, #6B4326); color: var(--color-ink); font-weight: 600; }
+.uni-etapas li.is-feita::before { content: '✓ '; }

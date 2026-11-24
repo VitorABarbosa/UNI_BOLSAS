@@ -8,6 +8,7 @@ import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 import { SITE_URL } from '@/lib/seo';
 import { cotarPedido } from '@/lib/checkout/cotacao';
 import { criarPreferencia, mercadoPagoConfigurado } from '@/lib/checkout/mercadopago';
+import { registrarPedido } from '@/lib/checkout/meus-pedidos';
 import {
   enderecoEmLinha,
   enderecoSchema,
@@ -124,6 +125,7 @@ export async function iniciarPagamento(entrada: {
     if (!teste && (destino.protocol !== 'https:' || !/(^|\.)mercadopago\.com(\.br)?$/.test(destino.hostname))) {
       throw new Error(`link de pagamento inesperado: ${destino.hostname}`);
     }
+    await registrarPedido(cliente.id, ref);
     return { ok: true, url: destino.toString() };
   } catch (e) {
     console.error('[checkout] criar preferência falhou:', e instanceof Error ? e.message : e);

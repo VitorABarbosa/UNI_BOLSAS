@@ -11,8 +11,17 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
   const { next } = await searchParams;
   const destino = destinoSeguro(next);
   if (await clienteAtual()) redirect(destino);
+  const comprando = destino.startsWith('/finalizar');
   return (
-    <Caixa rotulo="Sua conta" titulo={<>Entrar</>} sub="Acesse com o e-mail e a senha da sua conta de atacado.">
+    <Caixa
+      rotulo={comprando ? 'Finalizar compra' : 'Sua conta'}
+      titulo={<>Entrar</>}
+      sub={
+        comprando
+          ? 'Para pagar pelo site, entre na sua conta de atacado. Primeira vez? Crie a conta em 1 minuto: suas peças continuam na sacola.'
+          : 'Acesse com o e-mail e a senha da sua conta de atacado.'
+      }
+    >
       <FormEntrar next={destino} />
     </Caixa>
   );
