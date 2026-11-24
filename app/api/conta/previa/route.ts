@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { chavePreviaConfere, COOKIE_PREVIA, COOKIE_PREVIA_VISIVEL, hashPrevia } from '@/lib/contas/acesso';
 import { dentroDoLimite, MINUTO } from '@/lib/contas/limite';
+import { redirectToSite } from '@/lib/public-redirect';
 
 /**
  * Liga (ou desliga, com `?sair=1`) a prévia das contas NESTE navegador.
@@ -11,7 +12,7 @@ import { dentroDoLimite, MINUTO } from '@/lib/contas/limite';
 export async function GET(req: NextRequest) {
   const url = req.nextUrl;
   if (url.searchParams.get('sair') === '1') {
-    const r = NextResponse.redirect(new URL('/', url));
+    const r = redirectToSite('/');
     r.cookies.delete(COOKIE_PREVIA);
     r.cookies.delete(COOKIE_PREVIA_VISIVEL);
     return r;
@@ -21,7 +22,9 @@ export async function GET(req: NextRequest) {
   if (!dentroDoLimite(`previa:${ip}`, 10, 15 * MINUTO) || !chavePreviaConfere(chave)) {
     return new NextResponse('Not found', { status: 404 });
   }
-  const r = NextResponse.redirect(new URL('/conta/entrar', url));
+  // Endereço público, nunca o da requisição: atrás da Hostinger ele é o
+  // interno (0.0.0.0:3000). Ver lib/public-redirect.ts.
+  const r = redirectToSite('/conta/entrar');
   const comum = { sameSite: 'lax' as const, path: '/', maxAge: 30 * 24 * 60 * 60, secure: process.env.NODE_ENV === 'production' };
   r.cookies.set(COOKIE_PREVIA, hashPrevia(chave!), { ...comum, httpOnly: true });
   r.cookies.set(COOKIE_PREVIA_VISIVEL, '1', comum);
