@@ -28,24 +28,35 @@ export async function cotarPedido(itens: ItemEnviado[]): Promise<Cotacao> {
       removidas.push('Uma peça do pedido não está mais disponível');
       continue;
     }
+    // Cor: só barra se a cor escolhida deixou de existir. Sem cor escolhida
+    // (peça adicionada sem seletor de cor), segue sem cor.
     const cores = p.colors.map((c) => c.name);
-    const cor = item.colorName && cores.includes(item.colorName) ? item.colorName : null;
-    if (cores.length > 0 && !cor) {
-      removidas.push(`${p.name}${item.colorName ? ` · ${item.colorName}` : ''} (cor indisponível)`);
+    if (item.colorName && !cores.includes(item.colorName)) {
+      removidas.push(`${p.name} · ${item.colorName} (essa cor acabou)`);
       continue;
     }
+    const cor = item.colorName;
+    // Tamanho: a MESMA regra do site (card, visualização rápida e página da
+    // peça): só existe escolha quando há mais de um tamanho. Com um tamanho
+    // só, ele é o tamanho da peça.
     const tamanhos = p.sizes ?? [];
-    const tamanho = item.size && tamanhos.includes(item.size) ? item.size : null;
-    if (tamanhos.length > 0 && !tamanho) {
-      removidas.push(`${p.name} (escolha o tamanho de novo)`);
-      continue;
+    let tamanho: string | null = null;
+    if (tamanhos.length > 1) {
+      if (!item.size || !tamanhos.includes(item.size)) {
+        removidas.push(`${p.name} (escolha o tamanho de novo)`);
+        continue;
+      }
+      tamanho = item.size;
+    } else if (tamanhos.length === 1) {
+      tamanho = tamanhos[0]!;
     }
     const unitPrice = productPrice(p).current;
     if (!(unitPrice > 0)) {
       removidas.push(`${p.name} (sem preço)`);
       continue;
     }
-    const key = itemKey(p.id, cor, tamanho);
+    // A chave usa o que veio do navegador, pra casar com a linha da sacola.
+    const key = itemKey(p.id, item.colorName, item.size);
     const atual = linhas.get(key);
     const qty = Math.min(999, (atual?.qty ?? 0) + item.qty);
     linhas.set(key, {
