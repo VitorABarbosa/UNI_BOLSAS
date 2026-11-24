@@ -70,14 +70,16 @@ export type ItemPreferencia = {
 export async function criarPreferencia(p: {
   ref: string;
   itens: ItemPreferencia[];
-  pagador: { nome: string; email: string };
   metadata: MetadataPedido;
   urlRetorno: string;
   urlAviso: string;
 }): Promise<{ id: string; url: string }> {
   const corpo = {
     items: p.itens.map((i) => ({ ...i, currency_id: 'BRL' })),
-    payer: { name: p.pagador.nome, email: p.pagador.email },
+    // Sem `payer` de propósito. No ambiente de teste do Mercado Pago, um
+    // e-mail real como pagador derruba o pagamento ("uma das partes é de
+    // teste"); em produção ele só pré-preencheria o campo. A cliente informa
+    // os dados na tela do Mercado Pago, e o e-mail dela já vai em `metadata`.
     external_reference: p.ref,
     metadata: p.metadata,
     back_urls: { success: p.urlRetorno, pending: p.urlRetorno, failure: p.urlRetorno },
