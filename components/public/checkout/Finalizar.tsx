@@ -11,6 +11,7 @@ import { waGeneral } from '@/lib/whatsapp';
 import { cotar, iniciarPagamento } from '@/app/(public)/finalizar/_acoes';
 import type { Cotacao, EntregaTipo } from '@/lib/checkout/tipos';
 import type { Perfil } from '@/lib/contas/regras';
+import { FormPerfil } from '@/components/public/conta/Formularios';
 
 type EnderecoForm = { cep: string; rua: string; numero: string; complemento: string; bairro: string; cidade: string; uf: string };
 const ENDERECO_VAZIO: EnderecoForm = { cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '' };
@@ -35,6 +36,7 @@ export function Finalizar({ perfil, email }: { perfil: Partial<Perfil>; email: s
   const [erro, setErro] = useState<{ msg: string; campos?: Record<string, string> } | null>(null);
   const [pagando, startPagar] = useTransition();
   const [indo, setIndo] = useState(false);
+  const [editandoDados, setEditandoDados] = useState(false);
 
   useEffect(() => {
     if (enviados.length === 0) return;
@@ -153,18 +155,25 @@ export function Finalizar({ perfil, email }: { perfil: Partial<Perfil>; email: s
 
       <section className="uni-conta-bloco">
         <h2>Seus dados</h2>
-        {dadosOk ? (
+        {dadosOk && !editandoDados ? (
           <p className="uni-checkout-dados">
             <strong>{perfil.empresa}</strong> · CNPJ {perfil.cnpj}
             <br />
             {perfil.nome} · {perfil.telefone} · {email}
             <br />
-            <Link href="/conta">Alterar dados</Link>
+            <button type="button" className="uni-checkout-link" onClick={() => setEditandoDados(true)}>
+              Alterar dados
+            </button>
           </p>
         ) : (
-          <p className="uni-conta-aviso is-erro">
-            Complete os dados da sua loja em <Link href="/conta">Minha conta</Link> antes de pagar.
-          </p>
+          <div className="uni-checkout-perfil">
+            {!dadosOk && (
+              <p className="uni-conta-pequeno">
+                Preencha uma vez: os dados ficam salvos na sua conta e vão no pedido e na nota fiscal.
+              </p>
+            )}
+            <FormPerfil perfil={perfil} aoSalvar={() => setEditandoDados(false)} />
+          </div>
         )}
       </section>
 

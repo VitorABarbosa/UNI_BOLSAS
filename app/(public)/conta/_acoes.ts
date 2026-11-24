@@ -259,6 +259,8 @@ export async function salvarPerfil(_: Resultado | null, fd: FormData): Promise<R
     return { ok: false, erro: 'Não foi possível salvar agora. Tente de novo.' };
   }
   revalidatePath('/conta');
+  // O checkout mostra os mesmos dados: atualiza lá também.
+  revalidatePath('/finalizar');
   return { ok: true, mensagem: 'Dados salvos.' };
 }
 

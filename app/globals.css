@@ -4432,3 +4432,5 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
 @media (max-width: 560px) {
   .uni-conta-grade.is-cidade { grid-template-columns: 1fr 80px; }
 }
+.uni-checkout-link { padding: 0; border: 0; background: none; font: inherit; color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.uni-checkout-perfil { margin-top: 12px; }

@@ -213,8 +213,12 @@ export function FormNovaSenha() {
   );
 }
 
-export function FormPerfil({ perfil }: { perfil: Partial<Perfil> }) {
-  const [r, acao, pendente] = useActionState(salvarPerfil, null);
+export function FormPerfil({ perfil, aoSalvar }: { perfil: Partial<Perfil>; aoSalvar?: () => void }) {
+  const [r, acao, pendente] = useActionState(async (prev: Resultado | null, fd: FormData) => {
+    const res = await salvarPerfil(prev, fd);
+    if (res.ok) aoSalvar?.();
+    return res;
+  }, null);
   return (
     <form action={acao} className="uni-conta-form" noValidate>
       <Aviso r={r} />
