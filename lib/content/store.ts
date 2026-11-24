@@ -17,9 +17,12 @@ export const STORE = {
     { days: ['Monday', 'Tuesday'], opens: '04:00', closes: '12:00' },
     { days: ['Wednesday', 'Thursday', 'Friday'], opens: '05:00', closes: '11:00' },
   ],
-  /* Vazio = a linha do CNPJ não aparece no rodapé. Preencher com o CNPJ real
-     (formato 00.000.000/0001-00) pra ele voltar a ser exibido. */
-  cnpj: '',
+  /* Quem vende, como a lei pede numa loja virtual (Decreto 7.962/2013):
+     razão social e CNPJ ficam no rodapé, nos Termos e na Privacidade. */
+  razaoSocial: 'UNI BOLSAS CONFECCOES LTDA',
+  cnpj: '04.639.428/0001-30',
+  /* De onde os pedidos enviados saem (ponto de coleta da transportadora). */
+  coleta: { rua: 'Rua Epiacaba, 229', cidade: 'São Paulo — SP', cep: '04257-145' },
   transport: [
     { mode: 'Metrô Brás', time: '8 min' },
     { mode: 'CPTM Brás', time: '5 min' },

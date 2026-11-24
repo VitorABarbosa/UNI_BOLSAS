@@ -142,8 +142,9 @@ export function FormCadastro() {
       <label className={'uni-conta-aceite' + (r && !r.ok && r.campos?.aceite ? ' has-erro' : '')}>
         <input type="checkbox" name="aceite" required checked={aceite} onChange={(e) => setAceite(e.target.checked)} />
         <span>
-          Li e aceito a <Link href="/privacidade" target="_blank">Política de Privacidade</Link>. Usamos seus dados só para
-          atender seus pedidos.
+          Li e aceito os <Link href="/termos" target="_blank">Termos de compra</Link> e a{' '}
+          <Link href="/privacidade" target="_blank">Política de Privacidade</Link>. Usamos seus dados só para atender
+          seus pedidos.
         </span>
       </label>
       {r && !r.ok && r.campos?.aceite && <small className="uni-conta-erro-solto">{r.campos.aceite}</small>}

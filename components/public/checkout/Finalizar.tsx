@@ -255,6 +255,9 @@ export function Finalizar({ perfil, email }: { perfil: Partial<Perfil>; email: s
         <p className="uni-conta-pequeno uni-checkout-nota">
           Pix, cartão ou boleto na tela segura do Mercado Pago. Os dados do cartão não passam pelo nosso site.
           <br />
+          Ao pagar, você concorda com os <Link href="/termos" target="_blank">Termos de compra</Link> e a{' '}
+          <Link href="/trocas" target="_blank">Política de trocas</Link>.
+          <br />
           Dúvidas? <a href={waGeneral} target="_blank" rel="noopener noreferrer">Fale com a gente no WhatsApp</a>
         </p>
       </section>

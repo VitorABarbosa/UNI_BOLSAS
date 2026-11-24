@@ -94,13 +94,18 @@ export function Footer() {
         </div>
         <div className="uni-footer-bottom">
           <span>
-            © 2026 Uni Bolsas
-            {STORE.cnpj ? ` · CNPJ ${STORE.cnpj}` : ''}
+            © 2026 {STORE.razaoSocial} · CNPJ {STORE.cnpj}
           </span>
           {/* Privacidade e revogação ficam no rodapé de todas as páginas: a
               LGPD (art. 8º, §5º) pede que desfazer o aceite seja tão fácil
               quanto foi aceitar. */}
           <span className="uni-footer-legal">
+            <Link href="/termos" className="uni-footer-link">
+              Termos de compra
+            </Link>
+            <Link href="/trocas" className="uni-footer-link">
+              Trocas
+            </Link>
             <Link href="/privacidade" className="uni-footer-link">
               Privacidade
             </Link>

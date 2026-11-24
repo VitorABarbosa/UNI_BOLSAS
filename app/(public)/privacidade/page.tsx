@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 /** Atualize junto com qualquer mudança no que é coletado. */
-const ATUALIZADO_EM = '30 de setembro de 2026';
+const ATUALIZADO_EM = '24 de novembro de 2026';
 
 const CONTATO = waLink(
   'Olá! É sobre privacidade / meus dados no site da Uni Bolsas.',
@@ -42,10 +42,11 @@ export default function PrivacidadePage() {
             Política de <em>Privacidade.</em>
           </h1>
           <p className="uni-legal-lede">
-            Somos uma loja de bolsas no Brás, não uma empresa de dados. Este
-            site mede o mínimo pra saber quanta gente entra e quais peças
-            despertam interesse — e nada além disso. Abaixo está exatamente o
-            quê, por quê e por quanto tempo.
+            Somos uma loja de bolsas no Brás, não uma empresa de dados. Quem só
+            navega é medido no mínimo, sem ser identificado. Quem cria conta e
+            compra pelo site nos passa os dados da loja, que usamos para
+            atender o pedido — e nada além disso. Abaixo está exatamente o quê,
+            por quê e por quanto tempo.
           </p>
           <p className="uni-legal-date">Atualizada em {ATUALIZADO_EM}</p>
         </div>
@@ -54,8 +55,7 @@ export default function PrivacidadePage() {
           <section>
             <h2>1. Quem trata seus dados</h2>
             <p>
-              <strong>Uni Bolsas</strong>
-              {STORE.cnpj ? <> · CNPJ {STORE.cnpj}</> : null}, com stand no{' '}
+              <strong>Uni Bolsas</strong> ({STORE.razaoSocial}, CNPJ {STORE.cnpj}), com stand no{' '}
               {STORE.name} ({STORE.unitText}), {STORE.street},{' '}
               {STORE.district}, {STORE.city},
               CEP {STORE.cep}. Somos o <em>controlador</em> dos dados na
@@ -88,6 +88,15 @@ export default function PrivacidadePage() {
               <li>o clique no botão do WhatsApp e em qual peça ele estava.</li>
             </ul>
             <p>
+              <strong>De quem cria conta e compra pelo site</strong>: nome, nome
+              da loja ou razão social, CNPJ, WhatsApp, e-mail e senha; e, em
+              cada pedido, as peças, os valores, a forma de entrega e, se for
+              envio, o endereço. A senha é guardada embaralhada (criptografia
+              de mão única): nem nós conseguimos lê-la. Os dados do cartão são
+              digitados direto na tela do Mercado Pago e{' '}
+              <strong>não passam pelo nosso site</strong>.
+            </p>
+            <p>
               <strong>De quem aceita os cookies</strong>, além do acima: um
               código sorteado, guardado num cookie chamado{' '}
               <code>uni_vid</code>. Ele não sabe seu nome nem nada sobre você —
@@ -99,7 +108,8 @@ export default function PrivacidadePage() {
           <section>
             <h2>3. O que o site NÃO coleta</h2>
             <p>
-              Nome, e-mail, telefone, CPF, endereço, dados de pagamento,
+              De quem só navega, sem criar conta: nome, e-mail, telefone, CPF,
+              endereço, dados de pagamento,
               localização, sua lista de páginas visitadas em outros sites, nem
               qualquer “impressão digital” do seu navegador. Também{' '}
               <strong>não guardamos seu IP</strong>: ele chega ao nosso
@@ -133,6 +143,12 @@ export default function PrivacidadePage() {
               <li>
                 saber de onde as pessoas chegam, pra entender o que funciona.
               </li>
+              <li>
+                com os dados da conta e do pedido: confirmar o pagamento,
+                separar as peças, avisar quando estiver pronto, combinar o
+                frete, emitir a nota fiscal e atender trocas — e mandar os
+                e-mails da conta (confirmação, nova senha, pedido).
+              </li>
             </ul>
             <p>
               Não usamos esses dados para publicidade dirigida, não montamos
@@ -154,6 +170,16 @@ export default function PrivacidadePage() {
                 contagem agregada e anônima de visitas, que não identifica
                 ninguém e é o mínimo pra saber se o site está de pé e sendo
                 usado.
+              </li>
+              <li>
+                <strong>Execução de contrato</strong> (art. 7º, V) para a conta
+                e os pedidos: sem esses dados não dá para vender, entregar nem
+                trocar.
+              </li>
+              <li>
+                <strong>Obrigação legal</strong> (art. 7º, II) para guardar os
+                registros de venda e a nota fiscal pelo prazo que a lei fiscal
+                exige.
               </li>
             </ul>
           </section>
@@ -193,6 +219,16 @@ export default function PrivacidadePage() {
                   </tr>
                   <tr>
                     <td>
+                      <code>sb-…-auth-token</code>
+                    </td>
+                    <td>
+                      Mantém você logado na sua conta. Só existe depois que você
+                      entra, e some quando você sai. Necessário.
+                    </td>
+                    <td>enquanto a sessão durar</td>
+                  </tr>
+                  <tr>
+                    <td>
                       <code>_ga</code>, <code>_ga_*</code>
                     </td>
                     <td>
@@ -206,8 +242,8 @@ export default function PrivacidadePage() {
               </table>
             </div>
             <p>
-              Nenhum deles é de propaganda. Os dois primeiros são nossos; os
-              do Google só entram com o seu aceite.
+              Nenhum deles é de propaganda. Os nossos são os de escolha, de
+              contagem e de login; os do Google só entram com o seu aceite.
             </p>
           </section>
 
@@ -273,14 +309,23 @@ export default function PrivacidadePage() {
               não cedemos dado nenhum.
             </p>
             <p>
-              Dois fornecedores tratam dados por nossa conta e sob nossa
+              Estes fornecedores tratam dados por nossa conta e sob nossa
               instrução, como <em>operadores</em> (art. 5º, VII):{' '}
               <strong>Hostinger</strong>, que hospeda o site,{' '}
               <strong>Supabase</strong>, onde ficam o catálogo e os números de
               audiência, e o <strong>Google</strong>, pelo Analytics descrito
-              na seção 7. Ambos podem processar dados fora do Brasil, o que a
-              LGPD permite (art. 33) — e nenhum recebe dado que identifique
-              você, porque não coletamos esse tipo de dado.
+              na seção 7. Eles podem processar dados fora do Brasil, o que a
+              LGPD permite (art. 33).
+            </p>
+            <p>
+              Para quem cria conta e compra pelo site, entram mais estes
+              operadores: o <strong>Supabase</strong> guarda a conta (e a senha
+              embaralhada); o <strong>Mercado Pago</strong> processa o
+              pagamento e guarda os dados do pedido (peças, valores, dados da
+              loja e entrega), sob a política de privacidade dele; o{' '}
+              <strong>Resend</strong> entrega os e-mails da conta e do pedido.
+              Se o pedido for enviado, a transportadora recebe o nome, o
+              telefone e o endereço de entrega, só para entregar.
             </p>
             <p>
               Quando você toca no botão do WhatsApp, a conversa passa a
@@ -305,6 +350,12 @@ export default function PrivacidadePage() {
                 O cookie <code>uni_vid</code> expira em 180 dias, e some no
                 momento em que você trocar sua escolha para “só o essencial”.
               </li>
+              <li>A conta fica enquanto você quiser; pedindo, apagamos.</li>
+              <li>
+                Os registros dos pedidos e das notas fiscais ficam pelo prazo
+                que a lei fiscal exige (em geral, 5 anos), mesmo que a conta seja
+                apagada.
+              </li>
             </ul>
           </section>
 
@@ -324,10 +375,16 @@ export default function PrivacidadePage() {
               </a>
               . Respondemos em até 15 dias.
             </p>
+            <p>
+              Se você tem conta, dá para ver e corrigir os dados da loja e
+              acompanhar os pedidos em <Link href="/conta">Minha conta</Link>.
+              Para pedir uma cópia dos dados ou apagar a conta, fale com a gente
+              pelo WhatsApp a partir do número cadastrado.
+            </p>
             <p className="uni-legal-note">
-              Um aviso honesto sobre o que está ao nosso alcance. Nos nossos
-              próprios números não guardamos nada que ligue um dado a uma
-              pessoa, então não existe uma linha com o seu nome para mostrar ou
+              Um aviso honesto sobre o que está ao nosso alcance. Nos números de
+              visita não guardamos nada que ligue um dado a uma pessoa, então
+              ali não existe uma linha com o seu nome para mostrar ou
               apagar. No Google Analytics existe um código de visitante, mas
               ele é do Google e nós não conseguimos buscar por ele. O que você
               pode fazer, e tem efeito imediato, é revogar o consentimento: o
@@ -345,15 +402,18 @@ export default function PrivacidadePage() {
               O site roda inteiro em HTTPS. O cookie de medição é{' '}
               <code>httpOnly</code> e <code>secure</code>, ou seja, nenhum
               script consegue lê-lo. O acesso ao painel administrativo é
-              restrito e protegido por senha.
+              restrito e protegido por senha. As senhas das contas são
+              guardadas com criptografia de mão única, os links de e-mail
+              (confirmar conta, nova senha) valem uma vez só, e quem troca a
+              senha derruba as outras sessões abertas.
             </p>
           </section>
 
           <section>
             <h2>13. Mudanças nesta política</h2>
             <p>
-              Se o que medimos mudar, este texto muda junto e a data no topo é
-              atualizada. Mudança que dependa do seu consentimento faz o aviso
+              Se o que coletamos mudar, este texto muda junto e a data no topo
+              é atualizada. Mudança que dependa do seu consentimento faz o aviso
               aparecer de novo.
             </p>
           </section>
