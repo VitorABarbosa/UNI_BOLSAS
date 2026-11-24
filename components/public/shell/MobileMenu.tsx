@@ -7,6 +7,7 @@ import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
 import { CloseIcon } from '@/components/public/icons';
 import { waWholesale } from '@/lib/whatsapp';
 import { PEDIDO_MINIMO_FRASE } from '@/lib/content/atacado';
+import { useContasVisiveis } from '@/components/public/conta/ContaBotao';
 
 type MobileMenuProps = {
   onClose: () => void;
@@ -27,6 +28,7 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
   }, [onClose]);
 
   const close = () => onClose();
+  const contas = useContasVisiveis();
 
   return (
     <div className="uni-mobile-menu" role="dialog" aria-modal="true" aria-label="Menu">
@@ -53,6 +55,11 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
         <Link href="/#visite" onClick={close} className="uni-mobile-menu-link">
           V<em>i</em>site a loja
         </Link>
+        {contas && (
+          <Link href="/conta" onClick={close} className="uni-mobile-menu-link">
+            Minha c<em>o</em>nta
+          </Link>
+        )}
       </div>
       <div className="uni-mobile-menu-foot">
         <p className="uni-mobile-menu-note">

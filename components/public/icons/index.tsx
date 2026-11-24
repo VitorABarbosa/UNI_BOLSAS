@@ -401,3 +401,30 @@ export function ZoomIcon({
     </svg>
   );
 }
+
+/** Pessoa em traço: a conta da cliente. */
+export function UserIcon({
+  size = 18,
+  color = 'currentColor',
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="8" r="3.6" />
+      <path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6" />
+    </svg>
+  );
+}

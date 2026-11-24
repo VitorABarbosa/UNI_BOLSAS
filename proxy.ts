@@ -20,6 +20,16 @@ import { isAdminClaim } from '@/lib/auth/is-admin-claim';
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Contas de cliente: aqui só renova a sessão (o token vence a cada hora e
+  // páginas não conseguem gravar cookie). Quem decide o acesso são as
+  // próprias páginas e ações, conferindo no Supabase.
+  if (pathname === '/conta' || pathname.startsWith('/conta/')) {
+    const { supabase, response } = createMiddlewareClient(request);
+    await supabase.auth.getClaims();
+    response.headers.set('Cache-Control', 'private, no-store');
+    return response;
+  }
+
   // Bypass /admin/login itself to avoid redirect loops.
   // This must come BEFORE creating the supabase client to skip wasted work.
   if (pathname === '/admin/login') {
@@ -52,5 +62,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/conta', '/conta/:path*'],
 };

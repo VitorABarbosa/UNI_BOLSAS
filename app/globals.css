@@ -4255,3 +4255,114 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
     overscroll-behavior: contain;
   }
 }
+
+/* ─── Contas de cliente (/conta) ─────────────────────────────────────────── */
+.uni-conta { background: var(--color-bone); }
+.uni-conta-caixa { max-width: 440px; margin: 0 auto; padding: 0 20px; }
+.uni-conta-caixa.is-larga { max-width: 620px; }
+.uni-conta-titulo {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(34px, 6vw, 46px);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 10px 0 8px;
+  color: var(--color-ink);
+}
+.uni-conta-titulo em { font-style: italic; }
+.uni-conta-sub { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; color: var(--color-stone); margin: 0 0 26px; overflow-wrap: anywhere; }
+.uni-conta-form { display: flex; flex-direction: column; gap: 14px; }
+.uni-conta-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.uni-conta-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.uni-conta-campo > span { font-family: var(--font-sans); font-size: 13px; color: var(--color-charcoal); }
+.uni-conta-input { position: relative; display: flex; }
+.uni-conta-input input {
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  padding: 0 14px;
+  border: 1px solid var(--color-whisper);
+  background: var(--color-pearl);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: var(--color-ink);
+  border-radius: 0;
+  transition: border-color 0.15s ease;
+}
+.uni-conta-input input[type='password'],
+.uni-conta-input:has(.uni-conta-ver) input { padding-right: 88px; }
+.uni-conta-input input:focus { outline: none; border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
+.uni-conta-campo.has-erro input { border-color: #A3221F; }
+.uni-conta-campo small { font-family: var(--font-sans); font-size: 12.5px; line-height: 1.4; color: var(--color-stone); }
+.uni-conta-campo small.is-erro,
+.uni-conta-erro-solto { color: #A3221F; font-family: var(--font-sans); font-size: 12.5px; }
+.uni-conta-ver {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 38px;
+  padding: 0 10px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-stone);
+  cursor: pointer;
+}
+.uni-conta-ver:hover { color: var(--color-ink); }
+.uni-conta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 54px;
+  margin-top: 6px;
+  padding: 0 20px;
+  border: 1px solid var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.uni-conta-btn:hover { opacity: 0.88; }
+.uni-conta-btn:disabled { opacity: 0.55; cursor: default; }
+.uni-conta-btn.is-linha { background: transparent; color: var(--color-ink); }
+.uni-conta-btn.is-linha:hover { background: var(--color-ink); color: var(--color-bone); opacity: 1; }
+.uni-conta-aviso { margin: 0; padding: 12px 14px; font-family: var(--font-sans); font-size: 14px; line-height: 1.45; border-left: 3px solid; }
+.uni-conta-aviso.is-erro { background: #F8E9E7; color: #7E1A17; border-color: #A3221F; }
+.uni-conta-aviso.is-ok { background: #E7F1E4; color: #2F6B3E; border-color: #2F6B3E; margin-bottom: 18px; }
+.uni-conta-form .uni-conta-aviso.is-ok { margin-bottom: 0; }
+.uni-conta-linha-dir { margin: -4px 0 0; text-align: right; font-family: var(--font-sans); font-size: 13px; }
+.uni-conta-linha-dir a,
+.uni-conta-rodape a,
+.uni-conta-aceite a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+.uni-conta-rodape { margin: 6px 0 0; text-align: center; font-family: var(--font-sans); font-size: 14px; color: var(--color-stone); }
+.uni-conta-aceite { display: flex; gap: 10px; align-items: flex-start; font-family: var(--font-sans); font-size: 13.5px; line-height: 1.45; color: var(--color-charcoal); cursor: pointer; }
+.uni-conta-aceite input { width: 18px; height: 18px; margin: 1px 0 0; flex: 0 0 18px; accent-color: var(--color-ink); }
+.uni-conta-aceite.has-erro span { color: #7E1A17; }
+.uni-conta-isca { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.uni-conta-feito { display: flex; flex-direction: column; gap: 12px; font-family: var(--font-sans); font-size: 15px; line-height: 1.55; color: var(--color-charcoal); }
+.uni-conta-feito h2 { font-family: var(--font-serif); font-weight: 400; font-size: 26px; margin: 0; color: var(--color-ink); }
+.uni-conta-feito p { margin: 0; overflow-wrap: anywhere; }
+.uni-conta-pequeno { font-family: var(--font-sans); font-size: 13px; color: var(--color-stone); margin: 0 0 14px; }
+.uni-conta-feito .uni-conta-pequeno { margin: 0; }
+.uni-conta-bloco { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--color-whisper); }
+.uni-conta-bloco h2 { font-family: var(--font-serif); font-weight: 400; font-size: 24px; margin: 0 0 4px; color: var(--color-ink); }
+.uni-conta-bloco h2 + .uni-conta-form { margin-top: 14px; }
+@media (max-width: 560px) {
+  .uni-conta-grade { grid-template-columns: 1fr; }
+}
+/* Em celular estreito o cabeçalho não comporta mais um ícone: a conta fica
+   no menu (MobileMenu), que já tem o link "Minha conta". */
+@media (max-width: 400px) {
+  .uni-conta-botao { display: none; }
+}
