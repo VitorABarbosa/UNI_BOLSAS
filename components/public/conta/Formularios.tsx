@@ -235,7 +235,7 @@ export function FormTrocarSenha() {
   return (
     <form key={r?.ok ? 'feito' : 'aberto'} action={acao} className="uni-conta-form" noValidate>
       <Aviso r={r} />
-      <Campo nome="atual" rotulo="Senha atual" tipo="password" auto="current-password" r={r} max={200} />
+      <Campo nome="atual" rotulo="Senha atual" tipo="password" auto="current-password" r={r} dica="A que você usa para entrar no site." max={200} />
       <Campo nome="senha" rotulo="Nova senha" tipo="password" auto="new-password" r={r} dica={DICA_SENHA} max={200} />
       <Campo nome="confirmar" rotulo="Repita a nova senha" tipo="password" auto="new-password" r={r} max={200} />
       <Enviar pendente={pendente}>Trocar senha</Enviar>

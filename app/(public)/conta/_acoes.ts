@@ -137,6 +137,10 @@ export async function entrar(_: Resultado | null, fd: FormData): Promise<Resulta
     }
     return { ok: false, erro: `Falta confirmar seu e-mail. Mandamos um link para ${email}: abra e depois entre de novo.` };
   }
+  if (error && error.code !== 'invalid_credentials') {
+    console.error('[conta] login falhou:', error.code, error.message);
+    return { ok: false, erro: 'Não conseguimos entrar agora. Tente de novo em alguns minutos.' };
+  }
   if (error || !data.user) {
     return { ok: false, erro: 'E-mail ou senha incorretos.', campos: { senha: 'E-mail ou senha incorretos' } };
   }
@@ -269,7 +273,15 @@ export async function trocarSenha(_: Resultado | null, fd: FormData): Promise<Re
   // Confere a senha atual numa sessão à parte, que é fechada em seguida.
   const conferir = supabaseSemSessao();
   const { error: errAtual } = await conferir.auth.signInWithPassword({ email: cliente.email, password: p.data.atual });
-  if (errAtual) return { ok: false, erro: 'A senha atual não confere.', campos: { atual: 'Senha atual incorreta' } };
+  if (errAtual) {
+    // Só "credenciais inválidas" quer dizer senha errada. Qualquer outra
+    // falha (limite do Supabase, rede) não pode virar "senha incorreta".
+    if (errAtual.code === 'invalid_credentials') {
+      return { ok: false, erro: 'A senha atual não confere.', campos: { atual: 'Não é a senha que você usa para entrar' } };
+    }
+    console.error('[conta] conferir senha atual falhou:', errAtual.code, errAtual.message);
+    return { ok: false, erro: 'Não conseguimos conferir sua senha agora. Tente de novo em alguns minutos.' };
+  }
   // 'local': encerra só esta sessão de conferência. O padrão ('global')
   // derrubaria também a sessão da própria cliente.
   await conferir.auth.signOut({ scope: 'local' });
