@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { assinaturaValida, buscarPagamento, formaDePagamento, type Pagamento } from '@/lib/checkout/mercadopago';
+import { assinaturaValida, buscarPagamento, entregaEmTexto, formaDePagamento, pecasDoPagamento, type Pagamento } from '@/lib/checkout/mercadopago';
 import { enviarEmail } from '@/lib/contas/email';
 import { formatPriceBRL } from '@/lib/format';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
@@ -71,13 +71,10 @@ export async function POST(req: NextRequest) {
 async function avisarVenda(p: Pagamento) {
   const m = p.metadata ?? {};
   const ref = p.external_reference!;
-  const itens = (p.additional_info?.items ?? []).map(
+  const itens = pecasDoPagamento(p).map(
     (i) => `${Number(i.quantity)} × ${i.title} — ${formatPriceBRL(Number(i.unit_price) * Number(i.quantity))}`,
   );
-  const entrega =
-    m.entrega === 'retirada'
-      ? `Retirada na loja (${STORE.unitText})`
-      : `Enviar para: ${m.endereco || '(endereço não informado)'} — frete a combinar`;
+  const entrega = m.entrega === 'retirada' ? `Retirada na loja (${STORE.unitText})` : entregaEmTexto(m);
   const total = `${formaDePagamento(p)} · ${formatPriceBRL(p.transaction_amount)}`;
 
   const loja = (process.env.PEDIDOS_EMAIL ?? '')
@@ -115,7 +112,9 @@ async function avisarVenda(p: Pagamento) {
         ...itens,
         m.entrega === 'retirada'
           ? `Vamos separar suas peças e avisar no seu WhatsApp quando estiverem prontas para retirar no ${STORE.name}, ${STORE.unitText}.`
-          : 'Vamos separar suas peças e chamar você no WhatsApp para combinar o frete.',
+          : m.entrega === 'envio'
+            ? `Vamos separar e postar suas peças (${m.frete}). O código de rastreio chega no seu WhatsApp.`
+            : 'Vamos separar suas peças e chamar você no WhatsApp para combinar o frete.',
       ],
       botao: { texto: 'Ver meu pedido', url: `${SITE_URL}/pedido/${ref}` },
       rodape: 'Dúvidas sobre o pedido? Responda este e-mail ou fale com a gente no WhatsApp.',

@@ -56,9 +56,25 @@ export type MetadataPedido = {
   empresa: string;
   cnpj: string;
   telefone: string;
-  entrega: 'retirada' | 'combinar';
+  entrega: 'retirada' | 'envio' | 'combinar';
   endereco: string;
+  /** Só com entrega 'envio': serviço escolhido, valor cobrado e caixas a usar. */
+  frete?: string;
+  frete_valor?: number;
+  caixas?: string;
 };
+
+/** Itens do pagamento sem a linha do frete (as peças a separar). */
+export function pecasDoPagamento(p: Pagamento) {
+  return (p.additional_info?.items ?? []).filter((i) => i.id !== 'frete');
+}
+
+/** Como a cliente vai receber, numa frase (painel e e-mails). */
+export function entregaEmTexto(m: Partial<MetadataPedido>): string {
+  if (m.entrega === 'retirada') return 'Retirada na loja';
+  if (m.entrega === 'envio') return `Envio ${m.frete || ''}${m.caixas ? ` · ${m.caixas}` : ''} → ${m.endereco || '—'}`;
+  return `Envio com frete a combinar → ${m.endereco || '—'}`;
+}
 
 export type ItemPreferencia = {
   id: string;

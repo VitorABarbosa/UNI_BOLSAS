@@ -1,7 +1,9 @@
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { AdminShell } from '@/components/admin/shell/AdminShell';
 import {
+  entregaEmTexto,
   formaDePagamento,
+  pecasDoPagamento,
   listarPagamentos,
   mercadoPagoConfigurado,
   statusEmPortugues,
@@ -70,7 +72,7 @@ export default async function PedidosPage() {
         <div className="space-y-3">
           {pagamentos.map((p) => {
             const m = p.metadata ?? {};
-            const itens = p.additional_info?.items ?? [];
+            const itens = pecasDoPagamento(p);
             return (
               <details key={p.id} className="rounded-lg border bg-white">
                 <summary className="flex cursor-pointer flex-wrap items-center gap-x-6 gap-y-1 px-4 py-3 text-sm">
@@ -81,7 +83,9 @@ export default async function PedidosPage() {
                   <span className={`rounded px-2 py-0.5 text-xs font-semibold ${COR[p.status] ?? 'bg-stone-100'}`}>
                     {statusEmPortugues(p.status)} · {formaDePagamento(p)}
                   </span>
-                  <span className="text-stone-500">{m.entrega === 'retirada' ? 'Retirada' : 'Envio · frete a combinar'}</span>
+                  <span className="text-stone-500">
+                    {m.entrega === 'retirada' ? 'Retirada' : m.entrega === 'envio' ? `Envio · ${m.caixas || ''}` : 'Envio · frete a combinar'}
+                  </span>
                 </summary>
                 <div className="grid gap-4 border-t px-4 py-4 text-sm md:grid-cols-3">
                   <div>
@@ -103,7 +107,10 @@ export default async function PedidosPage() {
                   </div>
                   <div>
                     <div className="mb-1 text-xs uppercase tracking-wide text-stone-500">Entrega</div>
-                    <div>{m.entrega === 'retirada' ? 'Retirada na loja' : m.endereco || '—'}</div>
+                    <div>{entregaEmTexto(m)}</div>
+                    {m.entrega === 'envio' && m.frete_valor ? (
+                      <div className="mt-1 text-stone-500">Frete cobrado: {formatPriceBRL(Number(m.frete_valor))}</div>
+                    ) : null}
                     <div className="mt-2 text-xs text-stone-500">Mercado Pago nº {p.id}</div>
                   </div>
                 </div>
