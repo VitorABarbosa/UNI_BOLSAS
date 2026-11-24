@@ -17,7 +17,16 @@ import { SITE_URL } from '@/lib/seo';
 
 const REMETENTE = process.env.EMAIL_REMETENTE || 'Uni Bolsas <contato@unibolsas.store>';
 
-type Email = { para: string; assunto: string; titulo: string; paragrafos: string[]; botao?: { texto: string; url: string }; rodape?: string };
+export type Email = {
+  para: string | string[];
+  assunto: string;
+  titulo: string;
+  paragrafos: string[];
+  botao?: { texto: string; url: string };
+  rodape?: string;
+  /** Pra onde vai a resposta (ex.: o aviso de venda responde direto pra cliente). */
+  responderPara?: string;
+};
 
 function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -56,7 +65,14 @@ export async function enviarEmail(e: Email): Promise<boolean> {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: REMETENTE, to: [e.para], subject: e.assunto, html: html(e), text: texto(e) }),
+      body: JSON.stringify({
+        from: REMETENTE,
+        to: Array.isArray(e.para) ? e.para : [e.para],
+        subject: e.assunto,
+        html: html(e),
+        text: texto(e),
+        ...(e.responderPara ? { reply_to: e.responderPara } : {}),
+      }),
       cache: 'no-store',
       signal: AbortSignal.timeout(10_000),
     });
