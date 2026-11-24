@@ -29,6 +29,8 @@ export function dadosLoja() {
     '@type': 'WholesaleStore',
     '@id': LOJA_ID,
     name: SITE_NAME,
+    legalName: STORE.razaoSocial,
+    taxID: STORE.cnpj,
     description: `Bolsas, mochilas e malas no atacado, a partir de ${PEDIDO_MINIMO} peças, direto do nosso stand no ${STORE.name}, Brás, São Paulo.`,
     url: SITE_URL,
     logo: `${SITE_URL}/LOGO_UNI_BOLSAS_PNG.png`,
