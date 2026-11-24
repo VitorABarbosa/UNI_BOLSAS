@@ -105,7 +105,6 @@ export async function iniciarPagamento(entrada: {
         quantity: l.qty,
         unit_price: l.unitPrice,
       })),
-      pagador: { nome, email: cliente.email },
       metadata: {
         pedido: ref,
         cliente_id: cliente.id,
