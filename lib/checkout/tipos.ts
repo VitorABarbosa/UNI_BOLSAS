@@ -25,6 +25,8 @@ export type LinhaCotada = {
   qty: number;
   unitPrice: number;
   subtotal: number;
+  /** Espaço e peso de UMA peça, pro frete. */
+  fisico: { litros: number; kg: number };
 };
 
 export type Cotacao = {
@@ -35,7 +37,8 @@ export type Cotacao = {
   total: number;
 };
 
-export type EntregaTipo = 'retirada' | 'combinar';
+/** retirada na loja · envio com frete calculado (Melhor Envio) · envio com frete a combinar */
+export type EntregaTipo = 'retirada' | 'envio' | 'combinar';
 
 const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'] as const;
 

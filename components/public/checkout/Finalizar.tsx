@@ -8,8 +8,12 @@ import { formatPriceBRL } from '@/lib/format';
 import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 import { STORE } from '@/lib/content/store';
 import { waGeneral } from '@/lib/whatsapp';
-import { cotar, iniciarPagamento } from '@/app/(public)/finalizar/_acoes';
+import { cotar, cotarEnvio, iniciarPagamento } from '@/app/(public)/finalizar/_acoes';
+import { soDigitos } from '@/lib/contas/regras';
 import type { Cotacao, EntregaTipo } from '@/lib/checkout/tipos';
+
+type OpcaoFrete = { id: number; nome: string; transportadora: string; preco: number; prazoMin: number; prazoMax: number };
+const prazo = (o: OpcaoFrete) => (o.prazoMin === o.prazoMax ? `${o.prazoMax} dias úteis` : `${o.prazoMin} a ${o.prazoMax} dias úteis`);
 import type { Perfil } from '@/lib/contas/regras';
 import { FormPerfil } from '@/components/public/conta/Formularios';
 
@@ -31,7 +35,12 @@ export function Finalizar({ perfil, email }: { perfil: Partial<Perfil>; email: s
 
   const [cotacao, setCotacao] = useState<{ chave: string; c: Cotacao } | null>(null);
   const [erroCotacao, setErroCotacao] = useState<string | null>(null);
-  const [entrega, setEntrega] = useState<EntregaTipo>('retirada');
+  const [modo, setModo] = useState<'retirada' | 'enviar'>('retirada');
+  /** Serviço de frete escolhido (id do Melhor Envio) ou "a combinar". */
+  const [servico, setServico] = useState<number | 'combinar' | null>(null);
+  const [fretes, setFretes] = useState<{ cep: string; chave: string; opcoes: OpcaoFrete[]; caixas: string } | null>(null);
+  const [freteMsg, setFreteMsg] = useState<string | null>(null);
+  const [calculando, startCalcular] = useTransition();
   const [end, setEnd] = useState<EnderecoForm>(ENDERECO_VAZIO);
   const [erro, setErro] = useState<{ msg: string; campos?: Record<string, string> } | null>(null);
   const [pagando, startPagar] = useTransition();
@@ -75,10 +84,42 @@ export function Finalizar({ perfil, email }: { perfil: Partial<Perfil>; email: s
   const keysValidas = new Set(c.linhas.map((l) => l.key));
   const faltam = Math.max(0, PEDIDO_MINIMO - c.pecas);
 
+  // O frete calculado só vale pro CEP e pro pedido com que foi calculado.
+  const fretesValidos = fretes && fretes.cep === soDigitos(end.cep) && fretes.chave === chave ? fretes : null;
+  const opcaoSel = fretesValidos && typeof servico === 'number' ? (fretesValidos.opcoes.find((o) => o.id === servico) ?? null) : null;
+  const entrega: EntregaTipo = modo === 'retirada' ? 'retirada' : servico === 'combinar' ? 'combinar' : 'envio';
+  const freteEscolhido = modo === 'retirada' || servico === 'combinar' || !!opcaoSel;
+  const totalAgora = c.total + (modo === 'enviar' && opcaoSel ? opcaoSel.preco : 0);
+
+  const calcularFrete = () => {
+    setFreteMsg(null);
+    const cep = soDigitos(end.cep);
+    if (cep.length !== 8) {
+      setFreteMsg('Digite o CEP com 8 números.');
+      return;
+    }
+    startCalcular(async () => {
+      const r = await cotarEnvio(enviados, cep);
+      if (r.ok) {
+        setFretes({ cep, chave, opcoes: r.opcoes, caixas: r.caixas });
+        setServico(r.opcoes[0]?.id ?? null);
+      } else {
+        setFretes(null);
+        setFreteMsg(r.erro);
+        if (r.semCalculo) setServico('combinar');
+      }
+    });
+  };
+
   const pagar = () => {
     setErro(null);
     startPagar(async () => {
-      const r = await iniciarPagamento({ itens: enviados, entrega, endereco: entrega === 'combinar' ? end : undefined });
+      const r = await iniciarPagamento({
+        itens: enviados,
+        entrega,
+        endereco: modo === 'enviar' ? end : undefined,
+        servicoFrete: entrega === 'envio' && opcaoSel ? opcaoSel.id : undefined,
+      });
       if (!r.ok) {
         setErro({ msg: r.erro, campos: r.campos });
         return;
@@ -180,8 +221,8 @@ export function Finalizar({ perfil, email }: { perfil: Partial<Perfil>; email: s
       <section className="uni-conta-bloco">
         <h2>Como receber</h2>
         <div className="uni-checkout-opcoes" role="radiogroup" aria-label="Como receber">
-          <label className={'uni-checkout-opcao' + (entrega === 'retirada' ? ' is-sel' : '')}>
-            <input type="radio" name="entrega" checked={entrega === 'retirada'} onChange={() => setEntrega('retirada')} />
+          <label className={'uni-checkout-opcao' + (modo === 'retirada' ? ' is-sel' : '')}>
+            <input type="radio" name="entrega" checked={modo === 'retirada'} onChange={() => setModo('retirada')} />
             <span>
               <strong>Retirar na loja</strong>
               <small>
@@ -190,24 +231,54 @@ export function Finalizar({ perfil, email }: { perfil: Partial<Perfil>; email: s
             </span>
             <em className="is-gratis">Grátis</em>
           </label>
-          <label className={'uni-checkout-opcao' + (entrega === 'combinar' ? ' is-sel' : '')}>
-            <input type="radio" name="entrega" checked={entrega === 'combinar'} onChange={() => setEntrega('combinar')} />
+          <label className={'uni-checkout-opcao' + (modo === 'enviar' ? ' is-sel' : '')}>
+            <input type="radio" name="entrega" checked={modo === 'enviar'} onChange={() => setModo('enviar')} />
             <span>
-              <strong>Enviar pelo correio ou transportadora</strong>
-              <small>O frete é combinado pelo WhatsApp depois do pagamento e cobrado à parte.</small>
+              <strong>Receber pelo correio ou transportadora</strong>
+              <small>Frete calculado pelo CEP. Enviamos de São Paulo/SP.</small>
             </span>
-            <em>A combinar</em>
+            <em>{opcaoSel ? formatPriceBRL(opcaoSel.preco) : 'pelo CEP'}</em>
           </label>
         </div>
 
-        {entrega === 'combinar' && (
+        {modo === 'enviar' && (
           <div className="uni-checkout-endereco">
-            <div className="uni-conta-grade">
+            <div className="uni-checkout-cep">
               {campo('cep', 'CEP', { inputMode: 'numeric', autoComplete: 'postal-code', maxLength: 9 })}
+              <button type="button" className="uni-conta-btn is-linha" onClick={calcularFrete} disabled={calculando}>
+                {calculando ? 'Calculando…' : fretesValidos ? 'Recalcular' : 'Calcular frete'}
+              </button>
+            </div>
+            {freteMsg && <p className="uni-conta-aviso is-erro" role="alert">{freteMsg}</p>}
+            {(fretesValidos || servico === 'combinar') && (
+              <div className="uni-checkout-opcoes is-fretes" role="radiogroup" aria-label="Opções de frete">
+                {fretesValidos?.opcoes.map((o) => (
+                  <label key={o.id} className={'uni-checkout-opcao' + (servico === o.id ? ' is-sel' : '')}>
+                    <input type="radio" name="frete" checked={servico === o.id} onChange={() => setServico(o.id)} />
+                    <span>
+                      <strong>
+                        {o.transportadora} {o.nome}
+                      </strong>
+                      <small>Chega em {prazo(o)} depois do pagamento</small>
+                    </span>
+                    <em>{formatPriceBRL(o.preco)}</em>
+                  </label>
+                ))}
+                <label className={'uni-checkout-opcao' + (servico === 'combinar' ? ' is-sel' : '')}>
+                  <input type="radio" name="frete" checked={servico === 'combinar'} onChange={() => setServico('combinar')} />
+                  <span>
+                    <strong>Combinar o frete pelo WhatsApp</strong>
+                    <small>Você paga as peças agora e o frete à parte, depois de combinar com a gente.</small>
+                  </span>
+                  <em>A combinar</em>
+                </label>
+              </div>
+            )}
+            <div className="uni-conta-grade">
               {campo('numero', 'Número', { autoComplete: 'address-line2', maxLength: 20 })}
+              {campo('complemento', 'Complemento (opcional)', { maxLength: 60 })}
             </div>
             {campo('rua', 'Rua', { autoComplete: 'address-line1', maxLength: 120 })}
-            {campo('complemento', 'Complemento (opcional)', { maxLength: 60 })}
             {campo('bairro', 'Bairro', { maxLength: 80 })}
             <div className="uni-conta-grade is-cidade">
               {campo('cidade', 'Cidade', { autoComplete: 'address-level2', maxLength: 80 })}
@@ -226,11 +297,13 @@ export function Finalizar({ perfil, email }: { perfil: Partial<Perfil>; email: s
         </div>
         <div>
           <span>Frete</span>
-          <span>{entrega === 'retirada' ? 'Grátis' : 'A combinar'}</span>
+          <span>
+            {modo === 'retirada' ? 'Grátis' : opcaoSel ? formatPriceBRL(opcaoSel.preco) : servico === 'combinar' ? 'A combinar' : 'Calcule pelo CEP'}
+          </span>
         </div>
         <div className="is-grande">
           <span>Total agora</span>
-          <span>{formatPriceBRL(c.total)}</span>
+          <span>{formatPriceBRL(totalAgora)}</span>
         </div>
 
         {erro && (
@@ -246,10 +319,14 @@ export function Finalizar({ perfil, email }: { perfil: Partial<Perfil>; email: s
           <button
             type="button"
             className="uni-conta-btn uni-checkout-pagar"
-            disabled={!dadosOk || pagando || indo || c.removidas.length > 0}
+            disabled={!dadosOk || pagando || indo || c.removidas.length > 0 || !freteEscolhido}
             onClick={pagar}
           >
-            {pagando || indo ? 'Abrindo o Mercado Pago…' : `Pagar ${formatPriceBRL(c.total)} com Mercado Pago`}
+            {pagando || indo
+              ? 'Abrindo o Mercado Pago…'
+              : !freteEscolhido
+                ? 'Calcule o frete para continuar'
+                : `Pagar ${formatPriceBRL(totalAgora)} com Mercado Pago`}
           </button>
         )}
         <p className="uni-conta-pequeno uni-checkout-nota">

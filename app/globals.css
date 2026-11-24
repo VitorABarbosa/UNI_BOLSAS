@@ -4481,3 +4481,6 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
 .uni-etapas li.is-feita { border-color: var(--color-leather, #6B4326); }
 .uni-etapas li.is-atual { border-color: var(--color-leather, #6B4326); color: var(--color-ink); font-weight: 600; }
 .uni-etapas li.is-feita::before { content: '✓ '; }
+.uni-checkout-cep { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+.uni-checkout-cep .uni-conta-btn { width: auto; min-height: 50px; margin: 0; padding: 0 18px; font-size: 12px; }
+.uni-checkout-opcoes.is-fretes { margin-top: 0; }

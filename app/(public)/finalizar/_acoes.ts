@@ -9,6 +9,9 @@ import { SITE_URL } from '@/lib/seo';
 import { cotarPedido } from '@/lib/checkout/cotacao';
 import { criarPreferencia, mercadoPagoConfigurado } from '@/lib/checkout/mercadopago';
 import { registrarPedido } from '@/lib/checkout/meus-pedidos';
+import { embalar, resumoCaixas, type Volume } from '@/lib/frete/caixas';
+import { cotarFrete, melhorEnvioConfigurado, prazoEmTexto, type OpcaoFrete } from '@/lib/frete/melhorenvio';
+import { soDigitos } from '@/lib/contas/regras';
 import {
   enderecoEmLinha,
   enderecoSchema,
@@ -41,6 +44,40 @@ export async function cotar(itens: unknown): Promise<ResultadoCotacao> {
   }
 }
 
+export type ResultadoFrete =
+  | { ok: true; opcoes: OpcaoFrete[]; caixas: string }
+  | { ok: false; erro: string; semCalculo?: boolean };
+
+/** Volumes do pedido e as opções de frete pro CEP. Tudo recalculado aqui. */
+async function freteDoPedido(cotacao: Cotacao, cep: string): Promise<{ volumes: Volume[]; opcoes: OpcaoFrete[] }> {
+  const volumes = embalar(cotacao.linhas.map((l) => ({ ...l.fisico, qty: l.qty })));
+  const opcoes = await cotarFrete({ cepDestino: cep, volumes, valorDeclarado: cotacao.total });
+  return { volumes, opcoes };
+}
+
+export async function cotarEnvio(itens: unknown, cep: string): Promise<ResultadoFrete> {
+  if (!(await contasLiberadas())) return { ok: false, erro: 'Compra pelo site ainda não está disponível.' };
+  const cliente = await clienteAtual();
+  if (!cliente) return { ok: false, erro: 'Entre na sua conta para continuar.' };
+  if (!melhorEnvioConfigurado()) return { ok: false, erro: 'Cálculo de frete indisponível.', semCalculo: true };
+  if (soDigitos(String(cep ?? '')).length !== 8) return { ok: false, erro: 'Digite o CEP com 8 números.' };
+  if (!dentroDoLimite(`frete:${cliente.id}`, 20, 10 * MINUTO)) return { ok: false, erro: 'Muitas consultas seguidas. Espere alguns minutos.' };
+  const p = itensEnviadosSchema.safeParse(itens);
+  if (!p.success) return { ok: false, erro: 'Seu pedido está vazio.' };
+  try {
+    const cotacao = await cotarPedido(p.data);
+    if (cotacao.linhas.length === 0) return { ok: false, erro: 'Seu pedido está vazio.' };
+    const { volumes, opcoes } = await freteDoPedido(cotacao, cep);
+    if (opcoes.length === 0) {
+      return { ok: false, erro: 'Nenhuma transportadora atende esse CEP com este pedido. Escolha "frete a combinar".', semCalculo: true };
+    }
+    return { ok: true, opcoes, caixas: resumoCaixas(volumes) };
+  } catch (e) {
+    console.error('[frete] cotação falhou:', e instanceof Error ? e.message : e);
+    return { ok: false, erro: 'Não conseguimos calcular o frete agora. Tente de novo ou escolha "frete a combinar".', semCalculo: true };
+  }
+}
+
 export type ResultadoPagamento =
   | { ok: true; url: string }
   | { ok: false; erro: string; campos?: Record<string, string> };
@@ -49,6 +86,8 @@ export async function iniciarPagamento(entrada: {
   itens: unknown;
   entrega: EntregaTipo;
   endereco?: unknown;
+  /** id do serviço do Melhor Envio escolhido (só com entrega 'envio'). */
+  servicoFrete?: number;
 }): Promise<ResultadoPagamento> {
   if (!(await contasLiberadas())) return { ok: false, erro: 'Compra pelo site ainda não está disponível.' };
   if (!mercadoPagoConfigurado()) {
@@ -68,11 +107,12 @@ export async function iniciarPagamento(entrada: {
   const itens = itensEnviadosSchema.safeParse(entrada.itens);
   if (!itens.success) return { ok: false, erro: 'Seu pedido está vazio.' };
 
-  if (entrada.entrega !== 'retirada' && entrada.entrega !== 'combinar') {
+  if (entrada.entrega !== 'retirada' && entrada.entrega !== 'combinar' && entrada.entrega !== 'envio') {
     return { ok: false, erro: 'Escolha como quer receber.' };
   }
   let endereco = '';
-  if (entrada.entrega === 'combinar') {
+  let cepEnvio = '';
+  if (entrada.entrega !== 'retirada') {
     const e = enderecoSchema.safeParse(entrada.endereco);
     if (!e.success) {
       const campos: Record<string, string> = {};
@@ -80,6 +120,7 @@ export async function iniciarPagamento(entrada: {
       return { ok: false, erro: 'Confira o endereço de entrega.', campos };
     }
     endereco = enderecoEmLinha(e.data);
+    cepEnvio = e.data.cep;
   }
 
   let cotacao: Cotacao;
@@ -96,6 +137,21 @@ export async function iniciarPagamento(entrada: {
     return { ok: false, erro: `O pedido mínimo é de ${PEDIDO_MINIMO} peças.` };
   }
 
+  // Frete calculado: cota de novo AQUI. O preço do frete nunca vem do navegador.
+  let frete: { opcao: OpcaoFrete; caixas: string } | null = null;
+  if (entrada.entrega === 'envio') {
+    if (!melhorEnvioConfigurado()) return { ok: false, erro: 'Cálculo de frete indisponível. Escolha "frete a combinar".' };
+    try {
+      const { volumes, opcoes } = await freteDoPedido(cotacao, cepEnvio);
+      const opcao = opcoes.find((o) => o.id === entrada.servicoFrete);
+      if (!opcao) return { ok: false, erro: 'O frete escolhido mudou. Calcule o frete de novo.' };
+      frete = { opcao, caixas: resumoCaixas(volumes) };
+    } catch (e) {
+      console.error('[frete] recotação falhou:', e instanceof Error ? e.message : e);
+      return { ok: false, erro: 'Não conseguimos confirmar o frete agora. Tente de novo ou escolha "frete a combinar".' };
+    }
+  }
+
   const ref = `UB-${Date.now().toString(36).toUpperCase()}${randomBytes(2).toString('hex').toUpperCase()}`;
   try {
     const { url } = await criarPreferencia({
@@ -105,7 +161,16 @@ export async function iniciarPagamento(entrada: {
         title: [l.nome, l.cor, l.tamanho && `Tam. ${l.tamanho}`].filter(Boolean).join(' · ').slice(0, 250),
         quantity: l.qty,
         unit_price: l.unitPrice,
-      })),
+      })).concat(
+        frete
+          ? [{
+              id: 'frete',
+              title: `Frete · ${frete.opcao.transportadora} ${frete.opcao.nome} (${prazoEmTexto(frete.opcao)})`.slice(0, 250),
+              quantity: 1,
+              unit_price: frete.opcao.preco,
+            }]
+          : [],
+      ),
       metadata: {
         pedido: ref,
         cliente_id: cliente.id,
@@ -116,6 +181,9 @@ export async function iniciarPagamento(entrada: {
         telefone,
         entrega: entrada.entrega,
         endereco,
+        frete: frete ? `${frete.opcao.transportadora} ${frete.opcao.nome} · ${prazoEmTexto(frete.opcao)}` : '',
+        frete_valor: frete ? frete.opcao.preco : 0,
+        caixas: frete?.caixas ?? '',
       },
       urlRetorno: `${SITE_URL}/pedido/${ref}`,
       urlAviso: `${SITE_URL}/api/mercadopago/aviso`,

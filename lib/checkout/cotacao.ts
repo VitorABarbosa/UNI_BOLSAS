@@ -3,6 +3,7 @@ import { listProductsForCheckout } from '@/lib/queries/products';
 import { productPrice } from '@/lib/product-price';
 import { itemKey } from '@/lib/pedido';
 import type { Cotacao, ItemEnviado, LinhaCotada } from '@/lib/checkout/tipos';
+import { fisicoDaPeca } from '@/lib/frete/caixas';
 
 const centavos = (n: number) => Math.round(n * 100);
 
@@ -68,6 +69,7 @@ export async function cotarPedido(itens: ItemEnviado[]): Promise<Cotacao> {
       qty,
       unitPrice,
       subtotal: centavos(unitPrice) * qty / 100,
+      fisico: fisicoDaPeca({ categoria: p.category?.slug, peso: p.weight, medidas: p.dimensions }),
     });
   }
 

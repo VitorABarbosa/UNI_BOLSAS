@@ -106,9 +106,11 @@ export default function TermosPage() {
                 {STORE.district}. Avisamos pelo WhatsApp quando estiver separado. Horário: {STORE.hours.join(' · ')}.
               </li>
               <li>
-                <strong>Envio pelo correio ou transportadora:</strong> o frete é combinado pelo WhatsApp depois do
-                pagamento e cobrado à parte. Os pedidos saem de São Paulo/SP. O prazo de entrega é o da
-                transportadora escolhida, e mandamos o código de rastreio.
+                <strong>Envio pelo correio ou transportadora:</strong> o frete é calculado pelo CEP na hora de
+                fechar o pedido (Correios, Jadlog e outras, pelo Melhor Envio) e pago junto com as peças, com seguro
+                pelo valor delas. Se preferir, ou se o cálculo não estiver disponível, dá para combinar o frete pelo
+                WhatsApp depois do pagamento, cobrado à parte. Os pedidos saem de São Paulo/SP; o prazo mostrado já
+                conta o dia de separação. Mandamos o código de rastreio.
               </li>
               <li>
                 Confira o endereço de entrega antes de pagar. Se o pacote voltar por endereço errado ou ausência, o

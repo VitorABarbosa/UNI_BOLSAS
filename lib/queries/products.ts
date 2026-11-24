@@ -231,7 +231,8 @@ export async function listProductsForCheckout(ids: string[]): Promise<ProductWit
         .eq('active', true)
         .in('id', ids)
         .returns<ProductWithRelations[]>(),
-    LIST_SELECT,
+    // Peso e medidas entram pro cálculo do frete (lib/frete/caixas).
+    `${LIST_SELECT.trimEnd()},\n  weight, dimensions\n`,
     'listProductsForCheckout',
   );
   return (data ?? []).map(sortRelations);
