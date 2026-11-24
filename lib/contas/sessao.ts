@@ -2,11 +2,14 @@ import 'server-only';
 import { createClient as criarSemCookie } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import type { Perfil } from '@/lib/contas/regras';
+import { REF_PEDIDO } from '@/lib/checkout/tipos';
 
 export type Cliente = {
   id: string;
   email: string;
   perfil: Partial<Perfil>;
+  /** Códigos dos pedidos que ela abriu no site, do mais novo pro mais antigo. */
+  pedidos: string[];
 };
 
 /**
@@ -20,7 +23,11 @@ export async function clienteAtual(): Promise<Cliente | null> {
   if (error || !u || !u.email || !u.email_confirmed_at) return null;
   const m = (u.user_metadata ?? {}) as Record<string, unknown>;
   const s = (k: string) => (typeof m[k] === 'string' ? (m[k] as string) : undefined);
-  return { id: u.id, email: u.email, perfil: { nome: s('nome'), empresa: s('empresa'), cnpj: s('cnpj'), telefone: s('telefone') } };
+  // `app_metadata` só o servidor (chave de serviço) escreve: a cliente não
+  // consegue pendurar o pedido de outra pessoa na própria conta.
+  const lista = (u.app_metadata as Record<string, unknown> | undefined)?.pedidos;
+  const pedidos = Array.isArray(lista) ? lista.filter((r): r is string => typeof r === 'string' && REF_PEDIDO.test(r)) : [];
+  return { id: u.id, email: u.email, perfil: { nome: s('nome'), empresa: s('empresa'), cnpj: s('cnpj'), telefone: s('telefone') }, pedidos };
 }
 
 /**

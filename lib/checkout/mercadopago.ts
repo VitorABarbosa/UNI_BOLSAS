@@ -138,6 +138,18 @@ export async function pagamentosDoPedido(ref: string): Promise<Pagamento[]> {
   return r.results ?? [];
 }
 
+/** Ordem de importância: um pagamento aprovado vale mais que um recusado antes dele. */
+const PESO: Record<string, number> = { approved: 5, authorized: 4, in_process: 3, pending: 3, in_mediation: 2, rejected: 1, cancelled: 1 };
+
+/** O pagamento que representa o pedido, entre os desta cliente. */
+export function melhorPagamento(pagamentos: Pagamento[], clienteId: string): Pagamento | null {
+  return (
+    pagamentos
+      .filter((p) => p.metadata?.cliente_id === clienteId)
+      .sort((a, b) => (PESO[b.status] ?? 0) - (PESO[a.status] ?? 0))[0] ?? null
+  );
+}
+
 // ─── Aviso (webhook) ────────────────────────────────────────────────────────
 
 /**

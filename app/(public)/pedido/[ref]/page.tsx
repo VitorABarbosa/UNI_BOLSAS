@@ -5,7 +5,7 @@ import { contasLiberadas } from '@/lib/contas/acesso';
 import { clienteAtual } from '@/lib/contas/sessao';
 import { Caixa } from '@/components/public/conta/Caixa';
 import { LimparSacola } from '@/components/public/checkout/LimparSacola';
-import { formaDePagamento, mercadoPagoConfigurado, pagamentosDoPedido, type Pagamento } from '@/lib/checkout/mercadopago';
+import { formaDePagamento, melhorPagamento, mercadoPagoConfigurado, pagamentosDoPedido, type Pagamento } from '@/lib/checkout/mercadopago';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
 import { formatPriceBRL } from '@/lib/format';
 import { STORE } from '@/lib/content/store';
@@ -15,9 +15,6 @@ export const metadata: Metadata = {
   title: 'Seu pedido · Uni Bolsas',
   robots: { index: false, follow: false },
 };
-
-/** Ordem de importância: um pagamento aprovado vale mais que um recusado antes dele. */
-const PESO: Record<string, number> = { approved: 5, authorized: 4, in_process: 3, pending: 3, in_mediation: 2, rejected: 1, cancelled: 1 };
 
 /**
  * Para onde o Mercado Pago devolve a cliente. O status vem da API do
@@ -35,8 +32,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
   let falhou = false;
   if (mercadoPagoConfigurado()) {
     try {
-      const meus = (await pagamentosDoPedido(ref)).filter((p) => p.metadata?.cliente_id === cliente.id);
-      pagamento = meus.sort((a, b) => (PESO[b.status] ?? 0) - (PESO[a.status] ?? 0))[0] ?? null;
+      pagamento = melhorPagamento(await pagamentosDoPedido(ref), cliente.id);
     } catch (e) {
       console.error('[pedido] consulta falhou:', e instanceof Error ? e.message : e);
       falhou = true;
@@ -69,7 +65,9 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
               <li>Chamamos você no WhatsApp para combinar o frete e mandar o código de rastreio.</li>
             )}
           </ol>
-          <Link className="uni-conta-btn" href="/#catalogo">Voltar ao catálogo</Link>
+          <Link className="uni-conta-btn" href="/conta#pedidos">Ver meus pedidos</Link>
+          <Link className="uni-conta-btn" href="/conta#pedidos">Ver meus pedidos</Link>
+          <Link className="uni-conta-btn is-linha" href="/#catalogo">Voltar ao catálogo</Link>
           <p className="uni-conta-pequeno">Dúvidas? <a href={ajuda} target="_blank" rel="noopener noreferrer">Fale com a gente no WhatsApp</a></p>
         </div>
       </Caixa>
@@ -86,6 +84,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
               ? 'Assim que o boleto compensar (até 2 dias úteis), seu pedido entra em separação.'
               : 'Assim que o pagamento for confirmado, seu pedido entra em separação. Avisamos por e-mail.'}
           </p>
+          <Link className="uni-conta-btn" href="/conta#pedidos">Ver meus pedidos</Link>
           <Link className="uni-conta-btn is-linha" href="/#catalogo">Voltar ao catálogo</Link>
           <p className="uni-conta-pequeno">Dúvidas? <a href={ajuda} target="_blank" rel="noopener noreferrer">Fale com a gente no WhatsApp</a></p>
         </div>
