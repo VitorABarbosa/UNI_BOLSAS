@@ -214,3 +214,25 @@ export async function listProductSlugs(): Promise<ProductSlugRow[]> {
   }
   return data ?? [];
 }
+
+/**
+ * As peças de um pedido, direto do banco, para o checkout recalcular preço e
+ * conferir disponibilidade. Só produtos ativos voltam: peça desativada no
+ * painel ("esgotada") some do pedido em vez de ser cobrada.
+ */
+export async function listProductsForCheckout(ids: string[]): Promise<ProductWithRelations[]> {
+  if (ids.length === 0) return [];
+  const supabase = createAnonClient();
+  const data = await withShopeeFallback<ProductWithRelations[]>(
+    (select) =>
+      supabase
+        .from('products')
+        .select(select)
+        .eq('active', true)
+        .in('id', ids)
+        .returns<ProductWithRelations[]>(),
+    LIST_SELECT,
+    'listProductsForCheckout',
+  );
+  return (data ?? []).map(sortRelations);
+}

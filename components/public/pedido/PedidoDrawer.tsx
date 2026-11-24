@@ -25,6 +25,8 @@ import {
   type PedidoContato,
 } from '@/lib/pedido';
 import { publicImageUrl } from '@/lib/supabase/image-url';
+import { useContasVisiveis } from '@/components/public/conta/ContaBotao';
+import { waGeneral } from '@/lib/whatsapp';
 
 /** Quanto tempo a confirmação "adicionada" fica na tela. */
 const AVISO_MS = 3200;
@@ -96,6 +98,10 @@ export function PedidoDrawer() {
   }, [aberto, fechar]);
 
   const { pecas, total, faltam } = resumoPedido(items);
+  /* Com as contas ligadas (ou na prévia), a compra é pelo site: o botão vira
+     "Finalizar compra" e o WhatsApp fica só para dúvidas. Desligadas, tudo
+     continua como sempre, pelo WhatsApp. */
+  const compraNoSite = useContasVisiveis();
   const progresso = Math.min(1, pecas / PEDIDO_MINIMO);
 
   const mudarContato = (campo: keyof PedidoContato, valor: string) => {
@@ -277,6 +283,7 @@ export function PedidoDrawer() {
                       );
                     })}
                   </ul>
+                  {!compraNoSite && (
                   <div className="uni-pedido-campos">
                     <label>
                       <span>Nome ou loja (opcional)</span>
@@ -299,6 +306,7 @@ export function PedidoDrawer() {
                       />
                     </label>
                   </div>
+                  )}
                 </div>
 
                 <div className="uni-pedido-foot">
@@ -309,8 +317,9 @@ export function PedidoDrawer() {
                     <strong>{formatPriceBRL(total)}</strong>
                   </div>
                   <p className="uni-pedido-obs">
-                    Preços do site. Disponibilidade e frete são confirmados na
-                    conversa.
+                    {compraNoSite
+                      ? 'Frete e forma de pagamento você escolhe no próximo passo.'
+                      : 'Preços do site. Disponibilidade e frete são confirmados na conversa.'}
                   </p>
                   {enviado ? (
                     <div className="uni-pedido-enviado" role="status">
@@ -340,7 +349,18 @@ export function PedidoDrawer() {
                     </div>
                   ) : (
                     <>
-                      {faltam > 0 ? (
+                      {compraNoSite ? (
+                        faltam > 0 ? (
+                          <button type="button" className="uni-pedido-enviar is-site" disabled>
+                            Adicione mais {faltam} {faltam === 1 ? 'peça' : 'peças'} pra
+                            finalizar
+                          </button>
+                        ) : (
+                          <Link href="/finalizar" className="uni-pedido-enviar is-site" onClick={fechar}>
+                            Finalizar compra
+                          </Link>
+                        )
+                      ) : faltam > 0 ? (
                         <button type="button" className="uni-pedido-enviar" disabled>
                           Adicione mais {faltam} {faltam === 1 ? 'peça' : 'peças'} pra
                           enviar
@@ -355,6 +375,11 @@ export function PedidoDrawer() {
                         >
                           <WhatsAppIcon size={18} />
                           Enviar pedido pelo WhatsApp
+                        </a>
+                      )}
+                      {compraNoSite && (
+                        <a href={waGeneral} target="_blank" rel="noopener noreferrer" className="uni-pedido-duvida">
+                          Dúvidas? Fale com a gente no WhatsApp
                         </a>
                       )}
                       <button

@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Package,
   Percent,
+  Receipt,
   ShoppingBag,
   Tag,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ import { SignOutButton } from './SignOutButton';
 
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { href: '/admin/pedidos', label: 'Pedidos', icon: Receipt, exact: false },
   { href: '/admin/produtos', label: 'Produtos', icon: Package, exact: false },
   { href: '/admin/categorias', label: 'Categorias', icon: Tag, exact: false },
   { href: '/admin/campanhas', label: 'Campanhas', icon: Percent, exact: false },
