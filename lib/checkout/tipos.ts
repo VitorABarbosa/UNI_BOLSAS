@@ -19,7 +19,12 @@ export type ItemEnviado = z.infer<typeof itemEnviadoSchema>;
 export type LinhaCotada = {
   key: string;
   productId: string;
+  slug: string;
   nome: string;
+  /** Foto da peça na cor escolhida (caminho no Storage). */
+  imagem: string | null;
+  /** Cor de verdade, pra bolinha ao lado do nome. */
+  corHex: string | null;
   cor: string | null;
   tamanho: string | null;
   qty: number;
