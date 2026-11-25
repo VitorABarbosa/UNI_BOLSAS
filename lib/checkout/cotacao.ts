@@ -4,6 +4,7 @@ import { productPrice } from '@/lib/product-price';
 import { itemKey } from '@/lib/pedido';
 import type { Cotacao, ItemEnviado, LinhaCotada } from '@/lib/checkout/tipos';
 import { fisicoDaPeca } from '@/lib/frete/caixas';
+import { cardCoverImage } from '@/lib/product-images';
 
 const centavos = (n: number) => Math.round(n * 100);
 
@@ -60,10 +61,15 @@ export async function cotarPedido(itens: ItemEnviado[]): Promise<Cotacao> {
     const key = itemKey(p.id, item.colorName, item.size);
     const atual = linhas.get(key);
     const qty = Math.min(999, (atual?.qty ?? 0) + item.qty);
+    const corRow = cor ? (p.colors.find((x) => x.name === cor) ?? null) : null;
+    const foto = cardCoverImage(p, corRow) ?? (p.images[0] ? { storage_path: p.images[0].storage_path } : null);
     linhas.set(key, {
       key,
       productId: p.id,
+      slug: p.slug,
       nome: p.name,
+      imagem: foto?.storage_path ?? null,
+      corHex: corRow?.hex ?? null,
       cor,
       tamanho,
       qty,

@@ -69,12 +69,12 @@ export async function cotarEnvio(itens: unknown, cep: string): Promise<Resultado
     if (cotacao.linhas.length === 0) return { ok: false, erro: 'Seu pedido está vazio.' };
     const { volumes, opcoes } = await freteDoPedido(cotacao, cep);
     if (opcoes.length === 0) {
-      return { ok: false, erro: 'Nenhuma transportadora atende esse CEP com este pedido. Escolha "frete a combinar".', semCalculo: true };
+      return { ok: false, erro: 'Nenhuma transportadora atende esse CEP com este pedido. Você pode retirar na loja ou falar com a gente no WhatsApp.', semCalculo: true };
     }
     return { ok: true, opcoes, caixas: resumoCaixas(volumes) };
   } catch (e) {
     console.error('[frete] cotação falhou:', e instanceof Error ? e.message : e);
-    return { ok: false, erro: 'Não conseguimos calcular o frete agora. Tente de novo ou escolha "frete a combinar".', semCalculo: true };
+    return { ok: false, erro: 'Não conseguimos calcular o frete agora. Tente de novo em instantes ou retire na loja.', semCalculo: true };
   }
 }
 
@@ -107,7 +107,8 @@ export async function iniciarPagamento(entrada: {
   const itens = itensEnviadosSchema.safeParse(entrada.itens);
   if (!itens.success) return { ok: false, erro: 'Seu pedido está vazio.' };
 
-  if (entrada.entrega !== 'retirada' && entrada.entrega !== 'combinar' && entrada.entrega !== 'envio') {
+  // Só retirada ou envio com frete calculado: não existe mais "frete a combinar".
+  if (entrada.entrega !== 'retirada' && entrada.entrega !== 'envio') {
     return { ok: false, erro: 'Escolha como quer receber.' };
   }
   let endereco = '';
@@ -140,7 +141,7 @@ export async function iniciarPagamento(entrada: {
   // Frete calculado: cota de novo AQUI. O preço do frete nunca vem do navegador.
   let frete: { opcao: OpcaoFrete; caixas: string } | null = null;
   if (entrada.entrega === 'envio') {
-    if (!melhorEnvioConfigurado()) return { ok: false, erro: 'Cálculo de frete indisponível. Escolha "frete a combinar".' };
+    if (!melhorEnvioConfigurado()) return { ok: false, erro: 'Envio indisponível no momento. Escolha retirar na loja.' };
     try {
       const { volumes, opcoes } = await freteDoPedido(cotacao, cepEnvio);
       const opcao = opcoes.find((o) => o.id === entrada.servicoFrete);
@@ -148,7 +149,7 @@ export async function iniciarPagamento(entrada: {
       frete = { opcao, caixas: resumoCaixas(volumes) };
     } catch (e) {
       console.error('[frete] recotação falhou:', e instanceof Error ? e.message : e);
-      return { ok: false, erro: 'Não conseguimos confirmar o frete agora. Tente de novo ou escolha "frete a combinar".' };
+      return { ok: false, erro: 'Não conseguimos confirmar o frete agora. Tente de novo em instantes.' };
     }
   }
 

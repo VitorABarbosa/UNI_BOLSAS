@@ -16,7 +16,7 @@ const ATUALIZADO_EM = '24 de novembro de 2026';
 /**
  * Termos de compra. Escritos a partir do que o checkout realmente faz
  * (`app/(public)/finalizar`): mínimo conferido no servidor, preço recalculado
- * no fechamento, Mercado Pago, retirada ou frete a combinar. Se o checkout
+ * no fechamento, Mercado Pago, retirada ou envio com frete calculado. Se o checkout
  * mudar, este texto muda no mesmo commit.
  */
 export default function TermosPage() {
@@ -108,9 +108,9 @@ export default function TermosPage() {
               <li>
                 <strong>Envio pelo correio ou transportadora:</strong> o frete é calculado pelo CEP na hora de
                 fechar o pedido (Correios, Jadlog e outras, pelo Melhor Envio) e pago junto com as peças, com seguro
-                pelo valor delas. Se preferir, ou se o cálculo não estiver disponível, dá para combinar o frete pelo
-                WhatsApp depois do pagamento, cobrado à parte. Os pedidos saem de São Paulo/SP; o prazo mostrado já
-                conta o dia de separação. Mandamos o código de rastreio.
+                pelo valor delas. Os pedidos saem de São Paulo/SP; o prazo mostrado já conta o dia de separação.
+                Mandamos o código de rastreio. Se nenhuma transportadora atender o seu CEP, a retirada na loja continua
+                disponível.
               </li>
               <li>
                 Confira o endereço de entrega antes de pagar. Se o pacote voltar por endereço errado ou ausência, o
