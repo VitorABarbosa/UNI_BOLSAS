@@ -96,7 +96,42 @@ export const perfilSchema = z.object({
     .refine((v) => [10, 11].includes(soDigitos(v).length), 'Telefone com DDD')
     .transform(formatarTelefone),
 });
-export type Perfil = z.output<typeof perfilSchema>;
+export type Perfil = z.output<typeof perfilSchema> & Partial<Omit<EnderecoLoja, 'uf'> & { uf: string }>;
+
+const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'] as const;
+const parte = (max: number, msg: string) => z.string().trim().min(1, msg).max(max, 'Texto longo demais');
+
+/**
+ * Endereço da loja da cliente. A nota fiscal exige o endereço do comprador,
+ * mesmo quando a cliente retira na loja; no envio, ele vem preenchido como
+ * endereço de entrega.
+ */
+export const enderecoLojaSchema = z.object({
+  cep: z
+    .string()
+    .trim()
+    .refine((v) => soDigitos(v).length === 8, 'CEP com 8 números')
+    .transform((v) => soDigitos(v).replace(/^(\d{5})(\d{3})$/, '$1-$2')),
+  rua: parte(120, 'Rua'),
+  numero: parte(20, 'Número'),
+  complemento: z.string().trim().max(60, 'Texto longo demais').optional().default(''),
+  bairro: parte(80, 'Bairro'),
+  cidade: parte(80, 'Cidade'),
+  uf: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .pipe(z.enum(UFS, { message: 'UF' })),
+});
+export type EnderecoLoja = z.output<typeof enderecoLojaSchema>;
+
+/** Perfil completo, com o endereço: é o que o checkout salva. */
+export const perfilComEnderecoSchema = perfilSchema.extend(enderecoLojaSchema.shape);
+
+/** Os dados da loja estão completos pra emitir nota? */
+export function perfilCompleto(p: Partial<Perfil>): boolean {
+  return !!(p.nome && p.empresa && p.cnpj && p.telefone && p.cep && p.rua && p.numero && p.bairro && p.cidade && p.uf);
+}
 
 export const cadastroSchema = perfilSchema.extend({
   email,

@@ -7,6 +7,7 @@ import { Caixa } from '@/components/public/conta/Caixa';
 import { LimparSacola } from '@/components/public/checkout/LimparSacola';
 import { formaDePagamento, melhorPagamento, mercadoPagoConfigurado, pagamentosDoPedido, type Pagamento } from '@/lib/checkout/mercadopago';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
+import { atualizarRastreio, lerEstado } from '@/lib/automacao/pedido';
 import { formatPriceBRL } from '@/lib/format';
 import { STORE } from '@/lib/content/store';
 import { waLink } from '@/lib/whatsapp';
@@ -52,6 +53,8 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
   }
 
   if (status === 'approved' || status === 'authorized') {
+    const bruto = await lerEstado(ref).catch(() => null);
+    const andamento = bruto ? await atualizarRastreio(bruto) : null;
     return (
       <Caixa rotulo={`Pedido ${ref}`} titulo={<>Pedido <em>confirmado.</em></>} sub={`${formaDePagamento(pagamento!)} aprovado · ${formatPriceBRL(pagamento!.transaction_amount)}`}>
         <LimparSacola />
@@ -67,7 +70,24 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
               <li>Chamamos você no WhatsApp para combinar o frete e mandar o código de rastreio.</li>
             )}
           </ol>
-          <Link className="uni-conta-btn" href="/conta#pedidos">Ver meus pedidos</Link>
+          {(andamento?.nota || andamento?.rastreio?.length) && (
+            <div className="uni-conta-bloco is-primeiro uni-pedido-docs">
+              {andamento?.nota && (
+                <p>
+                  Nota fiscal nº {andamento.nota.numero}
+                  {andamento.nota.danfe && (
+                    <>
+                      {' · '}
+                      <a href={andamento.nota.danfe} target="_blank" rel="noopener noreferrer">
+                        ver a nota (DANFE)
+                      </a>
+                    </>
+                  )}
+                </p>
+              )}
+              {andamento?.rastreio?.length ? <p>Código de rastreio: <strong>{andamento.rastreio.join(', ')}</strong></p> : null}
+            </div>
+          )}
           <Link className="uni-conta-btn" href="/conta#pedidos">Ver meus pedidos</Link>
           <Link className="uni-conta-btn is-linha" href="/#catalogo">Voltar ao catálogo</Link>
           <p className="uni-conta-pequeno">Dúvidas? <a href={ajuda} target="_blank" rel="noopener noreferrer">Fale com a gente no WhatsApp</a></p>
