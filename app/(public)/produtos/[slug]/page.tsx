@@ -11,6 +11,7 @@ import { truncate } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
 import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 import { JsonLd } from '@/components/public/primitives/JsonLd';
+import { descricaoPecaPadrao, tituloPeca } from '@/lib/content/vitrine';
 import { dadosCaminho, dadosPeca } from '@/lib/dados-estruturados';
 
 export const revalidate = 60;
@@ -43,13 +44,13 @@ export async function generateMetadata({
   const product = await getProductBySlug(slug);
   if (!product) return {};
   // "no atacado" no título: é a palavra que a lojista digita no Google.
-  const title = product.seo_title ?? `${product.name} no atacado — ${SITE_NAME}`;
+  const title = product.seo_title ?? tituloPeca(product.name);
   const description =
     product.seo_description ??
     truncate(
       product.description?.trim() ||
         product.tagline?.trim() ||
-        `${product.name} no atacado, a partir de ${PEDIDO_MINIMO} peças, direto do Brás.`,
+        descricaoPecaPadrao(product.name),
       160,
     );
   const url = `${SITE_URL}/produtos/${slug}`;

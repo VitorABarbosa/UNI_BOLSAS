@@ -44,7 +44,7 @@ export async function generateMetadata({
   const { precos } = await searchParams;
   return {
     title: `Catálogo de atacado — ${SITE_NAME}`,
-    description: `Todas as peças da ${SITE_NAME} numa página só, pra compartilhar ou salvar em PDF. Venda no atacado, a partir de ${PEDIDO_MINIMO} peças.`,
+    description: `Todas as bolsas, mochilas e malas da ${SITE_NAME} numa página só, com preço de atacado. Compre pelo site a partir de ${PEDIDO_MINIMO} peças ou salve em PDF.`,
     alternates: { canonical: `${SITE_URL}/catalogo` },
     // A versão sem preços é da lojista pras clientes dela: não é página pra
     // aparecer no Google.

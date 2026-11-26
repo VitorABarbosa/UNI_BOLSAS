@@ -8,6 +8,7 @@ import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 import { adicionarAoPedido, abrirPedido, itemKey, QTD_MAXIMA } from '@/lib/pedido';
 import { productPrice, type ShopeePricing } from '@/lib/product-price';
 import { waProduct } from '@/lib/whatsapp';
+import { COMPRA_NO_SITE } from '@/lib/contas/ligado';
 import type { Database } from '@/types/db';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -115,6 +116,14 @@ export function AdicionarAoPedido({
           <>Pedido mínimo de {PEDIDO_MINIMO} peças, somando todos os modelos.</>
         )}
       </p>
+      {COMPRA_NO_SITE && (
+        <ul className="uni-confianca" aria-label="Como funciona a compra">
+          <li>Pagamento seguro pelo Mercado Pago</li>
+          <li>Pix, cartão ou boleto</li>
+          <li>Envio para todo o Brasil</li>
+          <li>Nota fiscal</li>
+        </ul>
+      )}
       <WaLink
         href={waProduct(product, color, size)}
         trackPath={`/produtos/${product.slug}`}

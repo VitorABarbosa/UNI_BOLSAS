@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { COMPRA_NO_SITE } from '@/lib/contas/ligado';
 import { Reveal } from '@/components/public/primitives/Reveal';
 import { CategoryFilter, type CategoryOption } from './CategoryFilter';
 import { ProductGrid } from './ProductGrid';
@@ -233,8 +234,9 @@ export function Catalog({
               Bolsas <em>em foco.</em>
             </h2>
             <p className="uni-section-lede">
-              Busque pelo nome ou filtre por categoria, abra cada peça pra
-              ver medidas e fotos, e monte o pedido pelo WhatsApp.
+              {COMPRA_NO_SITE
+                ? 'Busque pelo nome ou filtre por categoria, abra cada peça pra ver medidas e fotos, monte o pedido e finalize a compra aqui mesmo.'
+                : 'Busque pelo nome ou filtre por categoria, abra cada peça pra ver medidas e fotos, e monte o pedido pelo WhatsApp.'}
             </p>
           </div>
         </Reveal>

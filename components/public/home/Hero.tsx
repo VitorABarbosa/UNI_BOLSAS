@@ -5,7 +5,8 @@ import { ArrowIcon } from '@/components/public/icons';
 import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
 import { HeroCarousel } from '@/components/public/home/HeroCarousel';
 import { PEDIDO_MINIMO, PEDIDO_MINIMO_FRASE } from '@/lib/content/atacado';
-import { waWholesale } from '@/lib/whatsapp';
+import { waGeneral, waWholesale } from '@/lib/whatsapp';
+import { COMPRA_NO_SITE } from '@/lib/contas/ligado';
 
 /**
  * O título é montado em linhas explícitas, não deixado quebrar sozinho: a
@@ -65,33 +66,67 @@ export function Hero() {
             </h1>
           </div>
           <div className="uni-hero-aside">
-            <p className="uni-hero-lede">
-              Bolsas, mochilas e malas vendidas <strong>só no atacado</strong>,{' '}
-              {PEDIDO_MINIMO_FRASE} por pedido. Escolha no catálogo e feche
-              direto pelo WhatsApp.
-            </p>
-            <div className="uni-hero-ctas">
-              <WhatsAppButton href={waWholesale} variant="default">
-                Pedir no atacado
-              </WhatsAppButton>
-              <a className="uni-secondary-btn" href="#catalogo">
-                Ver catálogo <ArrowIcon size={14} />
-              </a>
-            </div>
-            <ul className="uni-hero-facts">
-              <li>
-                <strong>{PEDIDO_MINIMO} peças</strong>
-                pedido mínimo
-              </li>
-              <li>
-                <strong>Todo o Brasil</strong>
-                por transportadora
-              </li>
-              <li>
-                <strong>+25 anos</strong>
-                no Brás
-              </li>
-            </ul>
+            {COMPRA_NO_SITE ? (
+              <>
+                <p className="uni-hero-lede">
+                  Compre bolsas, mochilas e malas <strong>no atacado, direto pelo site</strong>,{' '}
+                  {PEDIDO_MINIMO_FRASE}. Pague com Pix, cartão ou boleto e receba em todo o
+                  Brasil, com nota fiscal.
+                </p>
+                <div className="uni-hero-ctas">
+                  <a className="uni-hero-buy" href="#catalogo">
+                    Comprar agora <ArrowIcon size={14} />
+                  </a>
+                  <WhatsAppButton href={waGeneral} variant="outline">
+                    Tirar dúvidas
+                  </WhatsAppButton>
+                </div>
+                <ul className="uni-hero-facts">
+                  <li>
+                    <strong>{PEDIDO_MINIMO} peças</strong>
+                    pedido mínimo
+                  </li>
+                  <li>
+                    <strong>Pix · cartão · boleto</strong>
+                    pagamento seguro
+                  </li>
+                  <li>
+                    <strong>Todo o Brasil</strong>
+                    envio com rastreio
+                  </li>
+                </ul>
+              </>
+            ) : (
+              <>
+                <p className="uni-hero-lede">
+                  Bolsas, mochilas e malas vendidas <strong>só no atacado</strong>,{' '}
+                  {PEDIDO_MINIMO_FRASE} por pedido. Escolha no catálogo e feche
+                  direto pelo WhatsApp.
+                </p>
+                <div className="uni-hero-ctas">
+                  <WhatsAppButton href={waWholesale} variant="default">
+                    Pedir no atacado
+                  </WhatsAppButton>
+                  <a className="uni-secondary-btn" href="#catalogo">
+                    Ver catálogo <ArrowIcon size={14} />
+                  </a>
+                </div>
+                <ul className="uni-hero-facts">
+                  <li>
+                    <strong>{PEDIDO_MINIMO} peças</strong>
+                    pedido mínimo
+                  </li>
+                  <li>
+                    <strong>Todo o Brasil</strong>
+                    por transportadora
+                  </li>
+                  <li>
+                    <strong>+25 anos</strong>
+                    no Brás
+                  </li>
+                </ul>
+              </>
+            )}
           </div>
           <div className="uni-hero-image-frame">
             <HeroCarousel />

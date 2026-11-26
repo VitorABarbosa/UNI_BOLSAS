@@ -26,6 +26,8 @@ const dmMono = DM_Mono({
   variable: '--font-dm-mono',
 });
 
+import { DESCRICAO_INICIO, PALAVRAS_CHAVE, TITULO_INICIO } from '@/lib/content/vitrine';
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -37,9 +39,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'Uni Bolsas — Bolsas no atacado · Brás SP',
-  description:
-    'Fabricante de bolsas no Brás · São Paulo. Venda no atacado, a partir de 3 peças, pelo WhatsApp.',
+  title: TITULO_INICIO,
+  description: DESCRICAO_INICIO,
+  keywords: PALAVRAS_CHAVE,
+  applicationName: 'Uni Bolsas',
+  formatDetection: { telephone: false },
 };
 
 /**
