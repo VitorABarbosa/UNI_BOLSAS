@@ -3578,46 +3578,129 @@ input, select, textarea { font-size: 16px; }
   cursor: pointer;
 }
 
-/* ---- Confirmação "no pedido" ---- */
-@keyframes uni-aviso-in {
-  from { opacity: 0; transform: translate(-50%, 12px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+/* ---- Barra do pedido ----
+   Fica fixa enquanto houver peças: resumo, quanto falta pro mínimo e o
+   próximo passo. Antes era só um aviso de 3s — depois dele, nada guiava. */
+@keyframes uni-barra-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
 }
-.uni-pedido-aviso {
+@keyframes uni-barra-pulso {
+  0% { box-shadow: 0 0 0 0 rgba(193, 154, 107, 0.7), 0 18px 40px -18px rgba(17, 17, 17, 0.5); }
+  100% { box-shadow: 0 0 0 14px rgba(193, 154, 107, 0), 0 18px 40px -18px rgba(17, 17, 17, 0.5); }
+}
+.uni-pedido-fixa {
   position: fixed;
   left: 50%;
-  bottom: calc(28px + env(safe-area-inset-bottom));
+  bottom: calc(24px + env(safe-area-inset-bottom));
   z-index: 95;
-  transform: translateX(-50%);
+  translate: -50% 0;
   display: flex;
   align-items: center;
-  gap: 18px;
-  width: max-content;
-  max-width: calc(100vw - 32px);
-  padding: 12px 12px 12px 20px;
+  gap: 14px;
+  width: min(600px, calc(100vw - 32px));
+  padding: 10px 10px 10px 12px;
   background: var(--color-ink);
   color: var(--color-bone);
   font-family: var(--font-sans);
-  font-size: 14px;
   box-shadow: 0 18px 40px -18px rgba(17, 17, 17, 0.5);
-  animation: uni-aviso-in 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: uni-barra-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.uni-pedido-aviso strong { font-weight: 600; }
-.uni-pedido-aviso button {
-  flex-shrink: 0;
-  min-height: 40px;
-  padding: 0 16px;
-  border: 1px solid rgba(244, 239, 230, 0.4);
-  background: transparent;
-  color: var(--color-bone);
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.uni-pedido-fixa.is-novo { animation: uni-barra-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both, uni-barra-pulso 0.9s ease-out 0.1s 2; }
+.uni-pedido-fixa-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
 }
-.uni-pedido-aviso button:hover { background: var(--color-bone); color: var(--color-ink); }
+.uni-pedido-fixa-icone {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(244, 239, 230, 0.28);
+}
+.uni-pedido-fixa-icone > span {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--color-caramel);
+  color: var(--color-ink);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 19px;
+  text-align: center;
+}
+.uni-pedido-fixa-texto { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.uni-pedido-fixa-linha1 {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.uni-pedido-fixa-linha1 strong { font-weight: 600; }
+.uni-pedido-fixa.is-novo .uni-pedido-fixa-linha1 strong { color: var(--color-caramel); }
+.uni-pedido-fixa-total { font-family: var(--font-mono); }
+.uni-pedido-fixa-linha2 {
+  font-size: 12px;
+  color: rgba(244, 239, 230, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.uni-pedido-fixa.is-pronto .uni-pedido-fixa-linha2 { color: #9BD3A8; }
+.uni-pedido-fixa-progresso {
+  display: block;
+  height: 3px;
+  margin-top: 2px;
+  background: rgba(244, 239, 230, 0.18);
+}
+.uni-pedido-fixa-progresso > span {
+  display: block;
+  height: 100%;
+  background: var(--color-caramel);
+  transition: width 0.4s ease;
+}
+.uni-pedido-fixa.is-pronto .uni-pedido-fixa-progresso > span { background: #9BD3A8; }
+.uni-pedido-fixa-cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  background: var(--color-caramel);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+.uni-pedido-fixa-cta.is-secundario {
+  background: var(--color-bone);
+}
+.uni-pedido-fixa-cta:hover { filter: brightness(1.06); }
+/* Com a barra na tela, o botão do WhatsApp e o aviso de cookies sobem pra
+   não ficar por baixo dela, e o rodapé ganha folga no fim. */
+body:has(.uni-pedido-fixa) .uni-footer { padding-bottom: 120px; }
 
 /* ---- Gaveta ---- */
 @keyframes uni-gaveta-in { from { transform: translateX(100%); } to { transform: none; } }
@@ -3847,14 +3930,26 @@ input, select, textarea { font-size: 16px; }
   .uni-pedido-head, .uni-pedido-meta, .uni-pedido-foot { padding-left: 20px; padding-right: 20px; }
   .uni-pedido-corpo { padding: 0 20px 18px; }
   .uni-pedido-campos { grid-template-columns: 1fr; gap: 8px; }
-  /* No celular a confirmação desce do topo: embaixo ela brigava com o botão
-     flutuante do WhatsApp e com a barra da peça. */
-  .uni-pedido-aviso {
-    top: calc(var(--uni-header-h, 64px) + 10px);
-    bottom: auto;
-    font-size: 13px;
-    gap: 12px;
+  /* No celular a barra do pedido ocupa a largura toda, colada embaixo; na
+     página da peça ela fica logo acima da barra de compra. */
+  .uni-pedido-fixa {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    translate: none;
+    gap: 10px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
   }
+  .uni-pedido-fixa-cta { min-height: 44px; padding: 0 14px; letter-spacing: 0.1em; }
+  body:has(.uni-pdp-buybar) .uni-pedido-fixa {
+    bottom: calc(68px + env(safe-area-inset-bottom));
+    padding-bottom: 10px;
+  }
+  body:has(.uni-pedido-fixa) .uni-float-wa-wrap { bottom: calc(86px + env(safe-area-inset-bottom)); }
+  body:has(.uni-pedido-fixa) .uni-cookie { bottom: calc(80px + env(safe-area-inset-bottom)); }
+  body:has(.uni-pedido-fixa):has(.uni-pdp-buybar) .uni-cookie { bottom: calc(148px + env(safe-area-inset-bottom)); }
+  body:has(.uni-pedido-fixa):has(.uni-pdp-buybar) .uni-footer { padding-bottom: calc(180px + env(safe-area-inset-bottom)); }
   .uni-header-right { gap: 8px; }
   .uni-qty { height: 52px; }
   .uni-add-btn { font-size: 11px; letter-spacing: 0.1em; padding: 0 12px; }
@@ -3871,7 +3966,7 @@ input, select, textarea { font-size: 16px; }
   .uni-pedido-icone { width: 40px; height: 40px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .uni-pedido, .uni-pedido-overlay, .uni-pedido-aviso { animation: none; }
+  .uni-pedido, .uni-pedido-overlay, .uni-pedido-fixa, .uni-pedido-fixa.is-novo { animation: none; }
 }
 
 /* ---- Novidades ----
@@ -4151,7 +4246,7 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
   .uni-footer,
   .uni-float-wa-wrap,
   .uni-cookie,
-  .uni-pedido-aviso,
+  .uni-pedido-fixa,
   .uni-cat-doc-acoes { display: none !important; }
   .uni-cat-doc { padding: 0; background: #fff; }
   .uni-cat-doc .uni-container { max-width: none; padding: 0; }
@@ -4690,22 +4785,6 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
 }
 .uni-confianca li { display: inline-flex; align-items: center; gap: 6px; }
 .uni-confianca li::before { content: '✓'; color: #2F6B3E; font-weight: 700; }
-.uni-pedido-aviso-finalizar {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 16px;
-  background: var(--color-caramel);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-}
-
 /* ─── Lookbook (só no computador) ─────────────────────────────────────────── */
 .uni-lb {
   --lb-u: min(calc(100vw / 1600), calc(100vh / 900));

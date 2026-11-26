@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BagIcon, CloseIcon, WhatsAppIcon } from '@/components/public/icons';
 import { usePedido } from '@/hooks/usePedido';
@@ -28,15 +29,19 @@ import { publicImageUrl } from '@/lib/supabase/image-url';
 import { useContasVisiveis } from '@/components/public/conta/ContaBotao';
 import { waGeneral } from '@/lib/whatsapp';
 
-/** Quanto tempo a confirmação "adicionada" fica na tela. */
+/** Quanto tempo a barra mostra "Peça adicionada" antes de voltar ao resumo. */
 const AVISO_MS = 3200;
+
+/** Páginas em que a barra do pedido sairia do caminho (ou já é o próprio pedido). */
+const SEM_BARRA = ['/finalizar', '/pedido/', '/conta'];
 
 /**
  * A gaveta do pedido de atacado, montada uma vez no layout público.
  *
- * Qualquer parte do site a abre com `abrirPedido()` (o ícone do cabeçalho, o
- * "Ver pedido" da confirmação). Também mostra a confirmação curta quando uma
- * peça entra — sem ela, o botão "Adicionar" parecia não ter feito nada.
+ * Qualquer parte do site a abre com `abrirPedido()` (o ícone do cabeçalho, a
+ * barra do pedido). Enquanto houver peças, a barra fica fixa embaixo com o
+ * resumo, quantas faltam pro mínimo e o próximo passo ("Ver pedido" ou
+ * "Finalizar compra"). Quando uma peça entra, ela pisca "Peça adicionada".
  */
 export function PedidoDrawer() {
   const items = usePedido();
@@ -103,6 +108,8 @@ export function PedidoDrawer() {
      continua como sempre, pelo WhatsApp. */
   const compraNoSite = useContasVisiveis();
   const progresso = Math.min(1, pecas / PEDIDO_MINIMO);
+  const pathname = usePathname() ?? '';
+  const escondeBarra = SEM_BARRA.some((r) => pathname === r || pathname.startsWith(r.endsWith('/') ? r : r + '/'));
 
   const mudarContato = (campo: keyof PedidoContato, valor: string) => {
     const novo = { ...contato, [campo]: valor };
@@ -122,22 +129,52 @@ export function PedidoDrawer() {
 
   return (
     <>
-      {aviso && !aberto && (
-        <div className="uni-pedido-aviso" role="status">
-          <span>
-            <strong>
-              {aviso.qty > 1 ? `${aviso.qty} peças` : 'Peça'} no pedido
-            </strong>{' '}
-            · {pecas} no total
-            {faltam > 0 ? `, faltam ${faltam} pro mínimo` : ''}
-          </span>
+      {pecas > 0 && !aberto && !escondeBarra && (
+        <div
+          className={'uni-pedido-fixa' + (aviso ? ' is-novo' : '') + (faltam === 0 ? ' is-pronto' : '')}
+          role="region"
+          aria-label="Seu pedido"
+        >
+          <button
+            type="button"
+            className="uni-pedido-fixa-info"
+            onClick={abrirPedido}
+            aria-label={`Ver pedido: ${pecas} ${pecas === 1 ? 'peça' : 'peças'}, ${formatPriceBRL(total)}`}
+          >
+            <span className="uni-pedido-fixa-icone" aria-hidden="true">
+              <BagIcon size={18} />
+              <span>{pecas > 99 ? '99+' : pecas}</span>
+            </span>
+            <span className="uni-pedido-fixa-texto">
+              <span className="uni-pedido-fixa-linha1" role="status">
+                {aviso ? (
+                  <strong>✓ {aviso.qty > 1 ? `${aviso.qty} peças adicionadas` : 'Peça adicionada'}</strong>
+                ) : (
+                  <>
+                    <strong>
+                      {pecas} {pecas === 1 ? 'peça' : 'peças'}
+                    </strong>{' '}
+                    · <span className="uni-pedido-fixa-total">{formatPriceBRL(total)}</span>
+                  </>
+                )}
+              </span>
+              <span className="uni-pedido-fixa-linha2">
+                {faltam > 0
+                  ? `Falta${faltam === 1 ? '' : 'm'} ${faltam} ${faltam === 1 ? 'peça' : 'peças'} pro mínimo de ${PEDIDO_MINIMO}`
+                  : 'Pedido mínimo atingido ✓'}
+              </span>
+              <span className="uni-pedido-fixa-progresso" aria-hidden="true">
+                <span style={{ width: `${progresso * 100}%` }} />
+              </span>
+            </span>
+          </button>
           {compraNoSite && faltam === 0 ? (
-            <Link href="/finalizar" className="uni-pedido-aviso-finalizar">
+            <Link href="/finalizar" className="uni-pedido-fixa-cta">
               Finalizar compra
             </Link>
           ) : (
-            <button type="button" onClick={abrirPedido}>
-              Ver pedido
+            <button type="button" className="uni-pedido-fixa-cta is-secundario" onClick={abrirPedido}>
+              {faltam === 0 ? 'Enviar pedido' : 'Ver pedido'}
             </button>
           )}
         </div>
