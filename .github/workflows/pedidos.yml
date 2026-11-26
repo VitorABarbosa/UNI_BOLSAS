@@ -1,0 +1,25 @@
+# Checagem automática dos pedidos do site, de hora em hora:
+# rastreio, e-mails de "postado"/"entregue" e nova tentativa de nota/etiqueta.
+#
+# Precisa do segredo CRON_SECRET no GitHub (Settings → Secrets and variables →
+# Actions), com o MESMO valor da variável CRON_SECRET da Hostinger.
+name: Checagem dos pedidos
+
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  checar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Chamar a checagem no site
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then echo "Falta o segredo CRON_SECRET no GitHub."; exit 1; fi
+          curl -fsS --max-time 300 -H "Authorization: Bearer $CRON_SECRET" https://unibolsas.store/api/automacao/rastreio

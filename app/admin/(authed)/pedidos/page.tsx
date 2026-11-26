@@ -161,8 +161,18 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
                           </div>
                         )}
                         {e?.rastreio?.length ? <div>Rastreio: {e.rastreio.join(', ')}</div> : null}
+                        {e?.postadoEm || e?.entregueEm || e?.prontoEm || e?.retiradoEm ? (
+                          <div className="text-stone-600">
+                            {e.entregueEm ? 'Entregue' : e.postadoEm ? 'Postado, a caminho' : e.retiradoEm ? 'Retirado pela cliente' : 'Pronto para retirar (cliente avisada)'}
+                          </div>
+                        ) : null}
                         {e?.erro && <div className="text-red-700">⚠ {e.erro.mensagem}</div>}
-                        <PedidoAcoes refPedido={p.external_reference!} temEtiqueta={!!e?.etiqueta} temErro={!!e?.erro || !e} />
+                        <PedidoAcoes
+                          refPedido={p.external_reference!}
+                          temEtiqueta={!!e?.etiqueta}
+                          temErro={!!e?.erro || !e}
+                          retirada={m.entrega === 'retirada' ? { pronto: !!e?.prontoEm, retirado: !!e?.retiradoEm } : undefined}
+                        />
                       </div>
                     );
                   })()}
@@ -186,6 +196,10 @@ function Andamento({ e, envio }: { e: EstadoPedido | null; envio: boolean }) {
     <span className="flex gap-1">
       {chip(!!e?.nota, 'NF')}
       {envio && chip(!!e?.etiqueta, 'Etiqueta')}
+      {envio && chip(!!e?.postadoEm, 'Postado')}
+      {envio && chip(!!e?.entregueEm, 'Entregue')}
+      {!envio && chip(!!e?.prontoEm, 'Pronto')}
+      {!envio && chip(!!e?.retiradoEm, 'Retirado')}
       {e?.erro && <span className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-800">⚠ {e.erro.etapa}</span>}
     </span>
   );

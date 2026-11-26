@@ -44,3 +44,15 @@ export async function gravarJson(caminho: string, valor: unknown): Promise<void>
   });
   if (error) throw new Error(`gravação de ${caminho} falhou: ${error.message}`);
 }
+
+/** Arquivos .json de uma pasta, dos mais recentes pros mais antigos. */
+export async function listarJson(pasta: string, limite = 500): Promise<{ nome: string; atualizadoEm: string }[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .list(pasta, { limit: limite, sortBy: { column: 'updated_at', order: 'desc' } });
+  if (error) throw new Error(`listagem de ${pasta} falhou: ${error.message}`);
+  return (data ?? [])
+    .filter((f) => f.name.endsWith('.json'))
+    .map((f) => ({ nome: f.name, atualizadoEm: f.updated_at ?? f.created_at ?? new Date().toISOString() }));
+}

@@ -11,7 +11,11 @@ const data = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', 
 /** O que a cliente quer saber de relance: em que pé está o pedido. */
 function situacao(p: ResumoPedido['pagamento'], e?: EstadoPedido): { texto: string; tom: string } {
   if (p.status === 'approved') {
-    if (e?.rastreio?.length) return { texto: 'Enviado', tom: 'is-enviado' };
+    if (e?.entregueEm) return { texto: 'Entregue', tom: 'is-enviado' };
+    if (e?.retiradoEm) return { texto: 'Retirado', tom: 'is-enviado' };
+    if (e?.prontoEm) return { texto: 'Pronto para retirar', tom: 'is-enviado' };
+    if (e?.postadoEm) return { texto: 'A caminho', tom: 'is-enviado' };
+    if (e?.rastreio?.length) return { texto: 'Etiqueta pronta · postando', tom: 'is-enviado' };
     if (p.metadata?.entrega === 'retirada') return { texto: 'Pago · separando para retirada', tom: 'is-approved' };
     return { texto: 'Pago · em separação', tom: 'is-approved' };
   }

@@ -117,9 +117,9 @@ async function avisarVenda(p: Pagamento) {
         `Recebemos seu pagamento: ${total}.`,
         ...itens,
         m.entrega === 'retirada'
-          ? `Vamos separar suas peças e avisar no seu WhatsApp quando estiverem prontas para retirar no ${STORE.name}, ${STORE.unitText}.`
+          ? `Vamos separar suas peças e avisar por e-mail quando estiverem prontas para retirar no ${STORE.name}, ${STORE.unitText}.`
           : m.entrega === 'envio'
-            ? `Vamos separar e postar suas peças (${m.frete}). O código de rastreio chega no seu WhatsApp.`
+            ? `Vamos separar e postar suas peças (${m.frete}). Você recebe por e-mail a nota fiscal, o código de rastreio e o aviso de entrega.`
             : 'Vamos separar suas peças e chamar você no WhatsApp para combinar o frete.',
       ],
       botao: { texto: 'Ver meu pedido', url: `${SITE_URL}/pedido/${ref}` },

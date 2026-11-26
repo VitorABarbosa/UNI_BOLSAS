@@ -66,9 +66,9 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
           <ol className="uni-pedido-passos">
             <li>Separamos suas peças no Brás em até 1 dia útil.</li>
             {retirada ? (
-              <li>Avisamos no seu WhatsApp quando estiver pronto para retirar no {STORE.name}, {STORE.unitText}.</li>
+              <li>Avisamos por e-mail quando estiver pronto para retirar no {STORE.name}, {STORE.unitText}.</li>
             ) : pagamento?.metadata?.entrega === 'envio' ? (
-              <li>Postamos pelo {pagamento.metadata.frete} e mandamos o código de rastreio no seu WhatsApp.</li>
+              <li>Postamos pelo {pagamento.metadata.frete}. O código de rastreio chega no seu e-mail e aparece aqui embaixo.</li>
             ) : (
               <li>Chamamos você no WhatsApp para combinar o frete e mandar o código de rastreio.</li>
             )}
