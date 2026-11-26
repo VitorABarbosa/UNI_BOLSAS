@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/auth/require-admin';
 import { AdminShell } from '@/components/admin/shell/AdminShell';
 import { BotaoImprimir, PedidoAcoes } from '@/components/admin/PedidoAcoes';
 import { CancelarNota } from '@/components/admin/CancelarNota';
+import { CancelarPedido } from '@/components/admin/CancelarPedido';
 import { formaDePagamento, pagamentosDoPedido, pecasDoPagamento, statusEmPortugues, type Pagamento } from '@/lib/checkout/mercadopago';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
 import { fotosDosPedidos } from '@/lib/checkout/meus-pedidos';
@@ -56,7 +57,7 @@ export default async function PedidoAdminPage({ params }: { params: Promise<{ re
 
   const m = p.metadata ?? {};
   const pago = p.status === 'approved' || p.status === 'authorized';
-  const bruto = pago ? await lerEstado(ref).catch(() => null) : null;
+  const bruto = pago || p.status === 'refunded' ? await lerEstado(ref).catch(() => null) : null;
   const e = bruto ? await atualizarRastreio(bruto) : null;
   const fila = FILAS.find((f) => f.id === filaDo(p, e))!;
   const pecas = pecasDoPagamento(p);
@@ -106,7 +107,13 @@ export default async function PedidoAdminPage({ params }: { params: Promise<{ re
           <span className="text-sm text-stone-500">{fila.dica}</span>
         </div>
 
-        {e?.erro && (
+        {(e?.cancelado || p.status === 'refunded') && (
+          <p className="rounded-md border border-stone-300 bg-stone-100 p-3 text-sm">
+            Pedido cancelado{e?.cancelado ? ` em ${dataHora.format(new Date(e.cancelado.em))} · ${formatPriceBRL(e.cancelado.valor)} devolvido · motivo: ${e.cancelado.motivo}` : ' (valor devolvido pelo Mercado Pago)'}.
+          </p>
+        )}
+
+        {e?.erro && !e.cancelado && (
           <p className={`rounded-md border p-3 text-sm print:hidden ${erroDeConfiguracao(e) ? 'border-stone-300 bg-stone-50 text-stone-700' : 'border-red-300 bg-red-50 text-red-800'}`}>
             {erroDeConfiguracao(e) ? 'ℹ ' : '⚠ '}
             {e.erro.mensagem}
@@ -256,6 +263,12 @@ export default async function PedidoAdminPage({ params }: { params: Promise<{ re
             <div className="text-stone-500">Mercado Pago nº {p.id}</div>
             {pagamentos.length > 1 && <div className="mt-1 text-xs text-stone-500">{pagamentos.length - 1} tentativa(s) anterior(es) de pagamento.</div>}
           </Bloco>
+
+          {pago && !e?.cancelado && (
+            <Bloco titulo="Cancelar" className="print:hidden">
+              <CancelarPedido refPedido={ref} valor={formatPriceBRL(p.transaction_amount)} />
+            </Bloco>
+          )}
         </div>
       </div>
     </AdminShell>

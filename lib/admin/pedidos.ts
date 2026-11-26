@@ -37,6 +37,7 @@ export function filaDo(p: Pagamento, e: EstadoPedido | null): Fila {
   if (p.status === 'pending' || p.status === 'in_process' || p.status === 'in_mediation') return 'aguardando';
   if (p.status !== 'approved' && p.status !== 'authorized') return 'cancelado';
   const retirada = p.metadata?.entrega === 'retirada';
+  if (e?.cancelado) return 'cancelado';
   if (e?.entregueEm || e?.retiradoEm) return 'concluido';
   if (e?.erro && !erroDeConfiguracao(e)) return 'problema';
   if (retirada) return e?.prontoEm ? 'retirar' : 'separar';

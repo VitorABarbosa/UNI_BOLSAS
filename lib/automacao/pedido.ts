@@ -5,10 +5,12 @@ import { emitirNotaDoPedido, podeEmitir } from '@/lib/automacao/nota';
 import { cancelarNotaFocus } from '@/lib/automacao/focus';
 import { gerarEtiqueta, situacaoEnvios } from '@/lib/automacao/etiqueta';
 import { linkDeRastreio } from '@/lib/automacao/rastreio-link';
+import { lembrarPagamentosPendentes } from '@/lib/automacao/lembretes';
 import { melhorEnvioConfigurado } from '@/lib/frete/melhorenvio';
 import { enviarEmail } from '@/lib/contas/email';
 import { SITE_URL } from '@/lib/seo';
-import { pagamentosDoPedido, type Pagamento } from '@/lib/checkout/mercadopago';
+import { estornarPagamento, formaDePagamento, pagamentosDoPedido, type Pagamento } from '@/lib/checkout/mercadopago';
+import { formatPriceBRL } from '@/lib/format';
 import { STORE } from '@/lib/content/store';
 import type { Volume } from '@/lib/frete/caixas';
 
@@ -44,6 +46,10 @@ export type EstadoPedido = {
   retiradoEm?: string;
   /** E-mails de atualização já mandados (cada um uma vez só). */
   avisos?: { postado?: boolean; entregue?: boolean; pronto?: boolean };
+  /** Último problema já avisado à loja por e-mail (pra não repetir a cada hora). */
+  problemaAvisado?: string;
+  /** Pedido cancelado pela loja, com o dinheiro devolvido. */
+  cancelado?: { em: string; motivo: string; valor: number };
   atualizadoEm: string;
 };
 
@@ -93,6 +99,7 @@ async function processar(p: Pagamento): Promise<EstadoPedido | null> {
     const pode = await podeEmitir();
     if (!pode.ok) {
       estado.erro = { etapa: 'nota', mensagem: pode.motivo, em: new Date().toISOString() };
+      await avisarLojaDoProblema(estado);
       await salvar(estado);
       return estado;
     }
@@ -129,6 +136,7 @@ async function processar(p: Pagamento): Promise<EstadoPedido | null> {
   if (m.entrega === 'envio' && estado.nota && !estado.etiqueta && !estado.postadoEm) {
     if (!melhorEnvioConfigurado() || !m.frete_servico_id) {
       estado.erro = { etapa: 'etiqueta', mensagem: 'Melhor Envio não configurado ou pedido sem serviço de frete.', em: new Date().toISOString() };
+      await avisarLojaDoProblema(estado);
       await salvar(estado);
       return estado;
     }
@@ -148,8 +156,44 @@ async function falhou(estado: EstadoPedido, etapa: 'nota' | 'etiqueta', e: unkno
   const mensagem = e instanceof ErroAutomacao ? e.message : e instanceof Error ? `Erro inesperado: ${e.message}` : 'Erro inesperado';
   console.error(`[automacao] ${estado.ref} ${etapa}:`, mensagem);
   estado.erro = { etapa, mensagem, em: new Date().toISOString() };
+  await avisarLojaDoProblema(estado);
   await salvar(estado);
   return estado;
+}
+
+/** E-mails da loja (PEDIDOS_EMAIL), separados por vírgula. */
+export function emailsDaLoja(): string[] {
+  return (process.env.PEDIDOS_EMAIL ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Avisa a loja por e-mail que um pedido travou (nota ou etiqueta). Um e-mail
+ * por problema: a checagem de hora em hora não repete o mesmo aviso.
+ */
+async function avisarLojaDoProblema(estado: EstadoPedido): Promise<void> {
+  const erro = estado.erro;
+  const loja = emailsDaLoja();
+  if (!erro || !loja.length || estado.problemaAvisado === erro.mensagem) return;
+  const oQueFazer =
+    erro.etapa === 'etiqueta'
+      ? /saldo/i.test(erro.mensagem)
+        ? 'Coloque saldo na carteira do Melhor Envio e clique em "Tentar de novo" no pedido. Ou envie por fora e informe o código de rastreio no painel.'
+        : 'Abra o pedido no painel e clique em "Tentar de novo". Se continuar, envie por fora e informe o código de rastreio no painel.'
+      : /não está configurad/i.test(erro.mensagem)
+        ? 'Confira em Integrações o que falta configurar. Depois, clique em "Tentar de novo" no pedido.'
+        : 'Abra o pedido no painel, confira o motivo e clique em "Tentar de novo". Se a SEFAZ recusou a nota, mande o motivo para o contador.';
+  const ok = await enviarEmail({
+    para: loja,
+    assunto: `⚠ Pedido ${estado.ref} travou: ${erro.etapa === 'nota' ? 'nota fiscal' : 'etiqueta'}`,
+    titulo: `Pedido ${estado.ref} precisa de atenção`,
+    paragrafos: [`Etapa: ${erro.etapa === 'nota' ? 'nota fiscal' : 'etiqueta de envio'}.`, `Motivo: ${erro.mensagem}`, oQueFazer],
+    botao: { texto: 'Abrir o pedido no painel', url: `${SITE_URL}/admin/pedidos/${estado.ref}` },
+    rodape: 'Você recebe este aviso uma vez por problema.',
+  }).catch(() => false);
+  if (ok) estado.problemaAvisado = erro.mensagem;
 }
 
 /** Primeiro nome, pra saudação do e-mail. */
@@ -314,7 +358,7 @@ async function estadoOuNovo(ref: string): Promise<EstadoPedido> {
  * ainda não entregues, e tenta de novo nota/etiqueta que tinham falhado (ex.:
  * saldo do Melhor Envio que acabou e foi recarregado).
  */
-export async function checarPedidos(): Promise<{ vistos: number; rastreados: number; refeitos: number }> {
+export async function checarPedidos(): Promise<{ vistos: number; rastreados: number; refeitos: number; lembretes: number }> {
   const LIMITE_DIAS = 45;
   const arquivos = await listarJson('pedidos');
   const recentes = arquivos.filter((a) => Date.now() - Date.parse(a.atualizadoEm) < LIMITE_DIAS * 24 * 60 * 60 * 1000);
@@ -325,7 +369,7 @@ export async function checarPedidos(): Promise<{ vistos: number; rastreados: num
   for (const a of recentes) {
     const ref = a.nome.replace(/\.json$/, '');
     const e = await lerEstado(ref).catch(() => null);
-    if (!e) continue;
+    if (!e || e.cancelado) continue;
     try {
       const soConfiguracao = e.erro?.etapa === 'nota' && /não está configurad|não está conectad/i.test(e.erro.mensagem);
       if (e.erro && refeitos < 10 && (!soConfiguracao || notaLigada)) {
@@ -344,7 +388,12 @@ export async function checarPedidos(): Promise<{ vistos: number; rastreados: num
       console.error(`[checagem] ${ref}:`, err instanceof Error ? err.message : err);
     }
   }
-  return { vistos: recentes.length, rastreados, refeitos };
+  // Pix e boletos gerados e não pagos: um lembrete por pedido.
+  const lembretes = await lembrarPagamentosPendentes().catch((err) => {
+    console.error('[checagem] lembretes:', err instanceof Error ? err.message : err);
+    return 0;
+  });
+  return { vistos: recentes.length, rastreados, refeitos, lembretes };
 }
 
 /** Cancela a nota do pedido (Focus NFe; a SEFAZ aceita em até 24 h). */
@@ -357,4 +406,76 @@ export async function cancelarNota(ref: string, justificativa: string): Promise<
   estado.nota = { ...estado.nota, cancelada: new Date().toISOString() };
   await salvar(estado);
   return estado;
+}
+
+/**
+ * Cancela o pedido de uma vez: devolve o dinheiro pelo Mercado Pago, cancela a
+ * nota (se ainda der: a SEFAZ aceita até 24 h) e avisa a cliente. Devolve os
+ * avisos do que a loja ainda precisa fazer à mão.
+ */
+export async function cancelarPedido(ref: string, motivo: string): Promise<{ estado: EstadoPedido; avisos: string[] }> {
+  const pagamentos = await pagamentosDoPedido(ref);
+  const pago = pagamentos.find((p) => p.status === 'approved' || p.status === 'authorized');
+  const salvo = await lerEstado(ref);
+  if (!pago) {
+    if (salvo?.cancelado) return { estado: salvo, avisos: [] };
+    throw new ErroAutomacao('Este pedido não tem pagamento aprovado para devolver.');
+  }
+  const estado = await estadoOuNovo(ref);
+  const avisos: string[] = [];
+
+  // 1. O dinheiro de volta (se falhar, nada mais é feito).
+  try {
+    await estornarPagamento(pago.id);
+  } catch (e) {
+    throw new ErroAutomacao(`O Mercado Pago não aceitou a devolução: ${e instanceof Error ? e.message : 'erro desconhecido'}`);
+  }
+  estado.cancelado = { em: new Date().toISOString(), motivo, valor: pago.transaction_amount };
+  estado.erro = undefined;
+  await salvar(estado);
+
+  // 2. A nota fiscal.
+  if (estado.nota && !estado.nota.cancelada) {
+    if (estado.nota.provedor !== 'focus') {
+      avisos.push('A nota foi emitida pelo Bling: cancele por lá.');
+    } else {
+      try {
+        const justificativa = `Pedido cancelado e valor devolvido: ${motivo}`.slice(0, 255);
+        await cancelarNotaFocus(ref, justificativa.padEnd(15, '.'));
+        estado.nota = { ...estado.nota, cancelada: new Date().toISOString() };
+        await salvar(estado);
+      } catch (e) {
+        avisos.push(
+          `A nota nº ${estado.nota.numero} não pôde ser cancelada (${e instanceof Error ? e.message : 'erro'}). Depois de 24 h a SEFAZ não aceita cancelamento: peça ao contador uma nota de devolução.`,
+        );
+      }
+    }
+  }
+
+  // 3. A etiqueta (o Melhor Envio devolve o valor à carteira quando cancelada lá).
+  if (estado.etiqueta && !estado.postadoEm) {
+    avisos.push('A etiqueta já tinha sido comprada: cancele no site do Melhor Envio para o valor voltar à carteira.');
+  }
+
+  // 4. A cliente.
+  if (estado.cliente?.email) {
+    const nome = (estado.cliente.nome ?? '').trim().split(/\s+/)[0];
+    const pix = pago.payment_type_id === 'bank_transfer' || pago.payment_type_id === 'account_money';
+    await enviarEmail({
+      para: estado.cliente.email,
+      assunto: `Pedido ${ref} cancelado · Uni Bolsas`,
+      titulo: 'Pedido cancelado',
+      paragrafos: [
+        nome ? `Olá, ${nome}!` : 'Olá!',
+        `Cancelamos o pedido ${ref} e devolvemos ${formatPriceBRL(pago.transaction_amount)} (${formaDePagamento(pago)}).`,
+        pix
+          ? 'O valor volta para a conta de origem do pagamento, normalmente em poucos minutos.'
+          : 'No cartão, a devolução aparece na fatura em até 2 ciclos, dependendo do banco.',
+        `Motivo: ${motivo}`,
+      ],
+      botao: { texto: 'Ver o pedido', url: `${SITE_URL}/pedido/${ref}` },
+      rodape: 'Dúvidas? Responda este e-mail ou fale com a gente no WhatsApp.',
+    }).catch(() => false);
+  }
+  return { estado, avisos };
 }
