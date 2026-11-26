@@ -159,9 +159,17 @@ export async function buscarPagamento(id: string | number): Promise<Pagamento | 
 
 /** Os pagamentos mais recentes, do mais novo pro mais antigo. */
 export async function listarPagamentos(limite = 50): Promise<Pagamento[]> {
-  const q = new URLSearchParams({ sort: 'date_created', criteria: 'desc', limit: String(limite) });
-  const r = await mp<{ results: Pagamento[] }>(`/v1/payments/search?${q}`);
-  return r.results ?? [];
+  // De 100 em 100 (o máximo seguro por consulta), até o limite pedido.
+  const todos = new Map<number, Pagamento>();
+  for (let offset = 0; offset < limite; offset += 100) {
+    const q = new URLSearchParams({ sort: 'date_created', criteria: 'desc', limit: String(Math.min(100, limite - offset)), offset: String(offset) });
+    const r = await mp<{ results: Pagamento[] }>(`/v1/payments/search?${q}`);
+    const pagina = r.results ?? [];
+    const antes = todos.size;
+    for (const p of pagina) todos.set(p.id, p);
+    if (pagina.length < 100 || todos.size === antes) break;
+  }
+  return [...todos.values()];
 }
 
 /** Os pagamentos de um pedido (pode haver mais de um: Pix recusado, depois cartão). */

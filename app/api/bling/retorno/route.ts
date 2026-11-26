@@ -9,14 +9,14 @@ export async function GET(req: NextRequest) {
   const codigo = req.nextUrl.searchParams.get('code');
   const estado = req.nextUrl.searchParams.get('state');
   const esperado = req.cookies.get('bling-estado')?.value;
-  if (!codigo || !estado || !esperado || estado !== esperado) return redirectToSite('/admin/pedidos?bling=recusado');
+  if (!codigo || !estado || !esperado || estado !== esperado) return redirectToSite('/admin/integracoes?bling=recusado');
   try {
     await concluirConexao(codigo);
   } catch (e) {
     console.error('[bling] conexão falhou:', e instanceof Error ? e.message : e);
-    return redirectToSite('/admin/pedidos?bling=erro');
+    return redirectToSite('/admin/integracoes?bling=erro');
   }
-  const r = redirectToSite('/admin/pedidos?bling=ok');
+  const r = redirectToSite('/admin/integracoes?bling=ok');
   r.cookies.delete({ name: 'bling-estado', path: '/api/bling' });
   return r;
 }

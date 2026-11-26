@@ -33,8 +33,8 @@ export const STORE = {
     cidade: 'São Paulo — SP',
     cep: '04257-145',
   },
-  /* Inscrição Estadual: vai no remetente da etiqueta. Vazio até sair. */
-  inscricaoEstadual: '',
+  /* Inscrição Estadual (SP): vai no remetente da etiqueta, na nota e no rodapé. */
+  inscricaoEstadual: '116.234.381.114',
   transport: [
     { mode: 'Metrô Brás', time: '8 min' },
     { mode: 'CPTM Brás', time: '5 min' },
