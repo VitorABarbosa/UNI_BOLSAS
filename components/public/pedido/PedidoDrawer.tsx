@@ -131,9 +131,15 @@ export function PedidoDrawer() {
             · {pecas} no total
             {faltam > 0 ? `, faltam ${faltam} pro mínimo` : ''}
           </span>
-          <button type="button" onClick={abrirPedido}>
-            Ver pedido
-          </button>
+          {compraNoSite && faltam === 0 ? (
+            <Link href="/finalizar" className="uni-pedido-aviso-finalizar">
+              Finalizar compra
+            </Link>
+          ) : (
+            <button type="button" onClick={abrirPedido}>
+              Ver pedido
+            </button>
+          )}
         </div>
       )}
       {aberto && (
