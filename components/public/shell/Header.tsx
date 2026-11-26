@@ -18,6 +18,7 @@ import { ContaBotao } from '@/components/public/conta/ContaBotao';
  */
 export const NAV_LINKS = [
   { id: 'catalogo', label: 'Catálogo' },
+  { id: 'lookbook', label: 'Lookbook' },
   { id: 'atacado', label: 'Como comprar' },
   { id: 'faq', label: 'Dúvidas' },
   { id: 'visite', label: 'Visite' },

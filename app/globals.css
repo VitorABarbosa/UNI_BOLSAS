@@ -4705,3 +4705,85 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
   text-transform: uppercase;
   text-decoration: none;
 }
+
+/* ─── Lookbook (só no computador) ─────────────────────────────────────────── */
+.uni-lb {
+  --lb-u: min(calc(100vw / 1600), calc(100vh / 900));
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr clamp(300px, calc(380 * var(--lb-u)), 400px);
+  /* Cabe inteira na tela, abaixo do cabeçalho fixo. O pulo até aqui já
+     desconta o cabeçalho (scroll-padding-top do html). */
+  height: clamp(600px, calc(100vh - 84px), 900px);
+  border-top: 1px solid var(--color-whisper);
+  border-bottom: 1px solid var(--color-whisper);
+}
+.uni-lb-palco {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+  outline: none;
+  background:
+    radial-gradient(120% 70% at 78% 92%, rgba(255, 255, 255, 0.75), transparent 60%),
+    linear-gradient(90deg, #E6DCCB 0%, #EEE6D9 40%, #F3EDE3 70%, #F8F4EE 100%);
+}
+.uni-lb-palco:focus-visible { box-shadow: inset 0 0 0 2px var(--color-ink); }
+.uni-lb-palco.is-drag { cursor: grabbing; }
+.uni-lb-fila { position: absolute; inset: 0; }
+.uni-lb-m { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform, filter; visibility: hidden; }
+.uni-lb-m img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
+.uni-lb-m::before {
+  content: '';
+  position: absolute;
+  left: 10%; right: 10%; bottom: -1.4%; height: 3.2%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(74, 52, 30, 0.26), transparent);
+}
+.uni-lb-intro { position: absolute; z-index: 2; left: 48px; top: 40px; width: min(400px, 34%); pointer-events: none; }
+.uni-lb-sobre { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-leather); }
+.uni-lb-titulo { margin: 10px 0 0; font-family: var(--font-serif); font-weight: 300; font-size: clamp(34px, calc(52 * var(--lb-u)), 54px); line-height: 1.02; letter-spacing: -0.02em; color: var(--color-ink); text-wrap: balance; }
+.uni-lb-titulo em, .uni-lb-chamada-titulo em { color: var(--color-leather); }
+.uni-lb-intro p { margin: 14px 0 0; font-family: var(--font-sans); font-size: 15px; line-height: 1.6; color: var(--color-stone); }
+.uni-lb-tag { position: absolute; z-index: 2; left: 48px; bottom: 40px; pointer-events: none; }
+.uni-lb-look { display: flex; align-items: flex-end; gap: 0.45em; font-family: var(--font-serif); font-weight: 300; font-size: 40px; line-height: 1; color: var(--color-ink); }
+.uni-lb-rotulo { font-family: var(--font-mono); font-size: 0.32em; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-stone); padding-bottom: 0.45em; }
+.uni-lb-janela { height: 1em; overflow: hidden; font-variant-numeric: tabular-nums; }
+.uni-lb-rolo { display: block; will-change: transform; }
+.uni-lb-rolo span { display: block; height: 1em; }
+.uni-lb-tema { display: block; margin-top: 8px; min-height: 1.3em; font-family: var(--font-serif); font-style: italic; font-size: 20px; color: var(--color-leather); }
+.uni-lb-dica { display: block; margin-top: 14px; font-family: var(--font-sans); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-stone); }
+.uni-lb-setas { position: absolute; z-index: 3; right: 26px; top: 50%; display: flex; flex-direction: column; gap: 10px; transform: translateY(-50%); }
+.uni-lb-setas button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 99px; background: rgba(251, 248, 243, 0.88); border: 1px solid var(--color-whisper); cursor: pointer; transition: background 0.2s; }
+.uni-lb-setas button:hover { background: var(--color-pearl); }
+.uni-lb-setas svg { width: 16px; height: 16px; fill: none; stroke: var(--color-ink); stroke-width: 1.6; }
+.uni-lb-trilho { position: relative; overflow: hidden; min-height: 0; background: var(--color-pearl); border-left: 1px solid var(--color-whisper); }
+.uni-lb-card { position: absolute; left: 0; top: 0; width: 100%; display: flex; flex-direction: column; padding: 18px 26px; background: var(--color-pearl); border-bottom: 1px solid var(--color-whisper); will-change: transform; }
+.uni-lb-card.is-alt { background: #fff; }
+.uni-lb-n { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-stone); }
+.uni-lb-foto { position: relative; flex: 1; min-height: 0; margin: 10px 0; background: var(--color-bone); overflow: hidden; }
+.uni-lb-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.uni-lb-meta { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: end; }
+.uni-lb-nome { font-family: var(--font-serif); font-size: 15.5px; line-height: 1.25; color: var(--color-ink); text-decoration: none; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.uni-lb-nome:hover { text-decoration: underline; text-underline-offset: 3px; }
+.uni-lb-preco { grid-column: 1; font-family: var(--font-mono); font-size: 13.5px; color: var(--color-ink); }
+.uni-lb-preco small { font-family: var(--font-sans); font-size: 0.82em; color: var(--color-stone); }
+.uni-lb-comprar { grid-column: 2; grid-row: 1 / 3; align-self: center; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border: 0; background: var(--color-ink); color: var(--color-pearl); font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+.uni-lb-comprar:hover { background: var(--color-leather); }
+.uni-lb-comprar:focus-visible, .uni-lb-setas button:focus-visible { outline: 2px solid var(--color-caramel); outline-offset: 2px; }
+
+.uni-lb-chamada { padding: 28px 0; background: linear-gradient(90deg, #E6DCCB, #F3EDE3 60%, #F8F4EE); border-top: 1px solid var(--color-whisper); border-bottom: 1px solid var(--color-whisper); }
+.uni-lb-chamada-in { display: grid; grid-template-columns: auto 1fr auto; gap: 40px; align-items: center; }
+.uni-lb-chamada-fotos { display: flex; align-items: flex-end; height: 150px; }
+.uni-lb-chamada-fotos img { height: 100%; width: auto; margin-left: -18px; filter: drop-shadow(0 6px 8px rgba(74, 52, 30, 0.15)); }
+.uni-lb-chamada-fotos img:first-child { margin-left: 0; }
+.uni-lb-chamada-titulo { margin: 6px 0 0; font-family: var(--font-serif); font-weight: 300; font-size: 34px; line-height: 1.05; color: var(--color-ink); }
+.uni-lb-chamada-texto p { margin: 8px 0 0; font-family: var(--font-sans); font-size: 14.5px; color: var(--color-stone); max-width: 52ch; }
+
+/* No celular (e tablet em pé) a passarela e a chamada não aparecem. */
+@media (max-width: 900px) {
+  .uni-lb, .uni-lb-chamada { display: none; }
+  .uni-header-link[href='/#lookbook'] { display: none; }
+}

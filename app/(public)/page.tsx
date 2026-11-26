@@ -7,6 +7,8 @@ import { FAQSection } from '@/components/public/home/FAQSection';
 import { Location } from '@/components/public/home/Location';
 import { Newsletter } from '@/components/public/home/Newsletter';
 import { HomeContent } from '@/components/public/home/HomeContent';
+import { Lookbook, type LookDaVitrine } from '@/components/public/home/Lookbook';
+import { LOOKS } from '@/lib/content/lookbook';
 import { listActiveProducts, listFeaturedProducts } from '@/lib/queries/products';
 import { listCategories } from '@/lib/queries/categories';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
@@ -47,6 +49,13 @@ export default async function HomePage() {
     ...categoriesFromDb.map((c) => ({ id: c.slug, label: c.label })),
   ];
 
+  // Lookbook: só os looks cuja bolsa está à venda agora.
+  const porId = new Map(products.map((p) => [p.id, p]));
+  const looks: LookDaVitrine[] = LOOKS.flatMap((cfg) => {
+    const product = porId.get(cfg.produtoId);
+    return product ? [{ cfg, product }] : [];
+  });
+
   return (
     <>
       <JsonLd data={[dadosLoja(), dadosSite(), dadosPerguntas()]} />
@@ -57,7 +66,9 @@ export default async function HomePage() {
         featured={featured}
         categories={categoriesWithTodos}
         newIds={novidadesIds(products)}
+        lookbook={looks}
       />
+      <Lookbook looks={looks} />
       <ComoComprar />
       <CredibilityStrip />
       <Reels />
