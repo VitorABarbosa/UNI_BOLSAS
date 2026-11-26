@@ -71,7 +71,20 @@ export default async function ContaPage({ searchParams }: { searchParams: Promis
 
       <section className="uni-conta-bloco">
         <h2>Senha</h2>
-        <FormTrocarSenha />
+        {/* Fechado de propósito: trocar a senha é raro e não pode ficar à
+            mão de quem só abriu a conta pra ver um pedido. Quem esqueceu a
+            senha usa o "Esqueci minha senha" (pelo e-mail), não este. */}
+        <details className="uni-conta-senha">
+          <summary>
+            <span className="uni-conta-senha-pontos" aria-hidden="true">••••••••</span>
+            <span className="uni-conta-senha-link">Trocar senha</span>
+          </summary>
+          <p className="uni-conta-pequeno">Para trocar, confirme a senha atual. As outras sessões abertas serão encerradas.</p>
+          <FormTrocarSenha />
+        </details>
+        <p className="uni-conta-pequeno uni-conta-senha-dica">
+          Esqueceu a senha? Saia da conta e use “Esqueci minha senha” na tela de entrar.
+        </p>
       </section>
 
       <form action={sair} className="uni-conta-bloco">

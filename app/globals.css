@@ -4544,3 +4544,12 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
 .uni-pedido-docs { padding: 14px 16px !important; background: var(--color-pearl); border: 1px solid var(--color-whisper) !important; }
 .uni-pedido-docs p { margin: 0 0 4px; font-size: 14px; }
 .uni-pedido-docs a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+.uni-conta-senha { margin-top: 10px; }
+.uni-conta-senha summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid var(--color-whisper); background: var(--color-pearl); cursor: pointer; list-style: none; font-family: var(--font-sans); }
+.uni-conta-senha summary::-webkit-details-marker { display: none; }
+.uni-conta-senha-pontos { letter-spacing: 0.2em; color: var(--color-charcoal); }
+.uni-conta-senha-link { font-size: 13px; color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+.uni-conta-senha[open] summary { border-bottom-color: transparent; }
+.uni-conta-senha[open] .uni-conta-senha-link { color: var(--color-stone); }
+.uni-conta-senha > .uni-conta-pequeno { margin: 14px 0 10px; }
+.uni-conta-senha-dica { margin: 10px 0 0; }
