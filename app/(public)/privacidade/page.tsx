@@ -323,9 +323,11 @@ export default function PrivacidadePage() {
               embaralhada); o <strong>Mercado Pago</strong> processa o
               pagamento e guarda os dados do pedido (peças, valores, dados da
               loja e entrega), sob a política de privacidade dele; o{' '}
-              <strong>Resend</strong> entrega os e-mails da conta e do pedido.
-              Se o pedido for enviado, a transportadora recebe o nome, o
-              telefone e o endereço de entrega, só para entregar.
+              <strong>Resend</strong> entrega os e-mails da conta e do pedido; o{' '}
+              <strong>Bling</strong> emite a nota fiscal (recebe os dados da loja,
+              o endereço e as peças); o <strong>Melhor Envio</strong> gera a
+              etiqueta. Se o pedido for enviado, a transportadora recebe o nome,
+              o telefone e o endereço de entrega, só para entregar.
             </p>
             <p>
               Quando você toca no botão do WhatsApp, a conversa passa a

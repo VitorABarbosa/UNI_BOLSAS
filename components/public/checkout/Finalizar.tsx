@@ -11,7 +11,7 @@ import { STORE } from '@/lib/content/store';
 import { waGeneral } from '@/lib/whatsapp';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { cotar, cotarEnvio, iniciarPagamento } from '@/app/(public)/finalizar/_acoes';
-import { soDigitos, type Perfil } from '@/lib/contas/regras';
+import { perfilCompleto, soDigitos, type Perfil } from '@/lib/contas/regras';
 import type { Cotacao } from '@/lib/checkout/tipos';
 import { FormPerfil } from '@/components/public/conta/Formularios';
 
@@ -46,7 +46,17 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
   const [fretes, setFretes] = useState<{ cep: string; chave: string; opcoes: OpcaoFrete[] } | null>(null);
   const [freteMsg, setFreteMsg] = useState<string | null>(null);
   const [calculando, startCalcular] = useTransition();
-  const [end, setEnd] = useState<EnderecoForm>(ENDERECO_VAZIO);
+  // O envio já vem com o endereço da loja; dá pra trocar.
+  const [end, setEnd] = useState<EnderecoForm>(() => ({
+    ...ENDERECO_VAZIO,
+    cep: perfil.cep ?? '',
+    rua: perfil.rua ?? '',
+    numero: perfil.numero ?? '',
+    complemento: perfil.complemento ?? '',
+    bairro: perfil.bairro ?? '',
+    cidade: perfil.cidade ?? '',
+    uf: perfil.uf ?? '',
+  }));
   const [erro, setErro] = useState<{ msg: string; campos?: Record<string, string> } | null>(null);
   const [pagando, startPagar] = useTransition();
   const [indo, setIndo] = useState(false);
@@ -69,7 +79,7 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chave]);
 
-  const dadosOk = !!(perfil.nome && perfil.empresa && perfil.cnpj && perfil.telefone);
+  const dadosOk = perfilCompleto(perfil);
 
   if (itens.length === 0) {
     return (
@@ -247,6 +257,9 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
                 <strong>{perfil.empresa}</strong> · CNPJ {perfil.cnpj}
                 <br />
                 {perfil.nome} · {perfil.telefone} · {email}
+                <br />
+                {perfil.rua}, {perfil.numero}
+                {perfil.complemento ? ` (${perfil.complemento})` : ''} · {perfil.bairro} · {perfil.cidade}/{perfil.uf} · CEP {perfil.cep}
                 <br />
                 <button type="button" className="uni-checkout-link" onClick={() => setEditandoDados(true)}>
                   Alterar dados

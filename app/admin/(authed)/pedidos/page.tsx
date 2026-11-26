@@ -11,6 +11,9 @@ import {
 } from '@/lib/checkout/mercadopago';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
 import { formatPriceBRL } from '@/lib/format';
+import { blingConectado, blingConfigurado } from '@/lib/automacao/bling';
+import { lerEstado, type EstadoPedido } from '@/lib/automacao/pedido';
+import { PedidoAcoes } from '@/components/admin/PedidoAcoes';
 
 export const metadata = { title: 'Pedidos · Uni Bolsas Admin' };
 export const dynamic = 'force-dynamic';
@@ -30,8 +33,10 @@ const dataHora = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyl
  * Pedidos pagos pelo site. A fonte é o próprio Mercado Pago: cada pagamento
  * leva o código do pedido e os dados da cliente. Nada disso fica no Supabase.
  */
-export default async function PedidosPage() {
+export default async function PedidosPage({ searchParams }: { searchParams: Promise<{ bling?: string }> }) {
   const { user } = await requireAdmin();
+  const { bling: avisoBling } = await searchParams;
+  const bling = blingConfigurado() ? await blingConectado() : null;
 
   let pagamentos: Pagamento[] = [];
   let erro: string | null = null;
@@ -47,6 +52,10 @@ export default async function PedidosPage() {
   }
 
   const aprovados = pagamentos.filter((p) => p.status === 'approved');
+  // Andamento da nota/etiqueta de cada pedido pago.
+  const estados = new Map<string, EstadoPedido | null>(
+    await Promise.all(aprovados.map(async (p) => [p.external_reference!, await lerEstado(p.external_reference!).catch(() => null)] as const)),
+  );
 
   return (
     <AdminShell user={{ email: user.email ?? '' }} title="Pedidos">
@@ -62,6 +71,26 @@ export default async function PedidosPage() {
               {formatPriceBRL(aprovados.reduce((s, p) => s + p.transaction_amount, 0))}
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-white px-5 py-4 text-sm">
+          <div>
+            <div className="font-medium">Nota fiscal automática (Bling)</div>
+            <div className="text-stone-500">
+              {!bling
+                ? 'Falta configurar BLING_CLIENT_ID e BLING_CLIENT_SECRET nas variáveis da Hostinger.'
+                : bling.conectado
+                  ? `Conectado desde ${new Date(bling.desde!).toLocaleDateString('pt-BR')}. Cada venda aprovada gera a NF-e e, se for envio, a etiqueta.`
+                  : 'Ainda não conectado: as vendas entram, mas sem nota e etiqueta automáticas.'}
+            </div>
+            {avisoBling === 'ok' && <div className="mt-1 text-green-700">Bling conectado com sucesso.</div>}
+            {avisoBling && avisoBling !== 'ok' && <div className="mt-1 text-red-700">Não deu certo conectar o Bling ({avisoBling}). Tente de novo.</div>}
+          </div>
+          {bling && (
+            <a href="/api/bling/conectar" className="rounded bg-stone-900 px-4 py-2 text-xs font-medium text-white">
+              {bling.conectado ? 'Reconectar Bling' : 'Conectar Bling'}
+            </a>
+          )}
         </div>
 
         {erro && <p className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">{erro}</p>}
@@ -86,6 +115,7 @@ export default async function PedidosPage() {
                   <span className="text-stone-500">
                     {m.entrega === 'retirada' ? 'Retirada' : m.entrega === 'envio' ? `Envio · ${m.caixas || ''}` : 'Envio · frete a combinar'}
                   </span>
+                  {p.status === 'approved' && <Andamento e={estados.get(p.external_reference!) ?? null} envio={m.entrega === 'envio'} />}
                 </summary>
                 <div className="grid gap-4 border-t px-4 py-4 text-sm md:grid-cols-3">
                   <div>
@@ -113,6 +143,29 @@ export default async function PedidosPage() {
                     ) : null}
                     <div className="mt-2 text-xs text-stone-500">Mercado Pago nº {p.id}</div>
                   </div>
+                  {p.status === 'approved' && (() => {
+                    const e = estados.get(p.external_reference!) ?? null;
+                    return (
+                      <div className="md:col-span-3 space-y-2 border-t pt-3">
+                        {e?.nota && (
+                          <div>
+                            NF-e nº {e.nota.numero} ·{' '}
+                            {e.nota.danfe ? (
+                              <a className="underline" href={e.nota.danfe} target="_blank" rel="noopener noreferrer">
+                                ver DANFE
+                              </a>
+                            ) : (
+                              'autorizada'
+                            )}
+                            <span className="ml-2 font-mono text-xs text-stone-500">{e.nota.chave}</span>
+                          </div>
+                        )}
+                        {e?.rastreio?.length ? <div>Rastreio: {e.rastreio.join(', ')}</div> : null}
+                        {e?.erro && <div className="text-red-700">⚠ {e.erro.mensagem}</div>}
+                        <PedidoAcoes refPedido={p.external_reference!} temEtiqueta={!!e?.etiqueta} temErro={!!e?.erro || !e} />
+                      </div>
+                    );
+                  })()}
                 </div>
               </details>
             );
@@ -120,5 +173,20 @@ export default async function PedidosPage() {
         </div>
       </div>
     </AdminShell>
+  );
+}
+
+function Andamento({ e, envio }: { e: EstadoPedido | null; envio: boolean }) {
+  const chip = (ok: boolean, texto: string) => (
+    <span className={`rounded px-2 py-0.5 text-xs ${ok ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-500'}`}>
+      {ok ? '✓' : '·'} {texto}
+    </span>
+  );
+  return (
+    <span className="flex gap-1">
+      {chip(!!e?.nota, 'NF')}
+      {envio && chip(!!e?.etiqueta, 'Etiqueta')}
+      {e?.erro && <span className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-800">⚠ {e.erro.etapa}</span>}
+    </span>
   );
 }

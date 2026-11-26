@@ -33,9 +33,11 @@ type CampoProps = {
   mascara?: (v: string) => string;
   modo?: 'numeric' | 'tel' | 'email' | 'text';
   max?: number;
+  /** Campo que pode ficar vazio. */
+  opcional?: boolean;
 };
 
-function Campo({ nome, rotulo, r, tipo = 'text', auto, valor, dica, mascara, modo, max }: CampoProps) {
+function Campo({ nome, rotulo, r, tipo = 'text', auto, valor, dica, mascara, modo, max, opcional }: CampoProps) {
   const id = useId();
   const erro = r && !r.ok ? r.campos?.[nome] : undefined;
   const [v, setV] = useState(valor ?? '');
@@ -56,7 +58,7 @@ function Campo({ nome, rotulo, r, tipo = 'text', auto, valor, dica, mascara, mod
           onChange={(e) => setV(mascara ? mascara(e.target.value) : e.target.value)}
           aria-invalid={erro ? true : undefined}
           aria-describedby={erro || dica ? `${id}-d` : undefined}
-          required
+          required={!opcional}
         />
         {senha && (
           <button type="button" className="uni-conta-ver" onClick={() => setVer((x) => !x)} aria-label={ver ? 'Esconder senha' : 'Mostrar senha'}>
@@ -228,6 +230,22 @@ export function FormPerfil({ perfil, aoSalvar }: { perfil: Partial<Perfil>; aoSa
         <Campo nome="empresa" rotulo="Loja ou razão social" auto="organization" valor={perfil.empresa} r={r} max={120} />
         <Campo nome="cnpj" rotulo="CNPJ" modo="numeric" mascara={formatarCnpj} valor={perfil.cnpj} r={r} max={18} />
         <Campo nome="telefone" rotulo="WhatsApp com DDD" tipo="tel" auto="tel-national" modo="tel" mascara={formatarTelefone} valor={perfil.telefone} r={r} max={16} />
+      </div>
+      <p className="uni-conta-pequeno" style={{ margin: '4px 0 -4px' }}>
+        Endereço da loja (vai na nota fiscal):
+      </p>
+      <div className="uni-conta-grade">
+        <Campo nome="cep" rotulo="CEP" modo="numeric" auto="postal-code" valor={perfil.cep} r={r} max={9} />
+        <Campo nome="numero" rotulo="Número" auto="address-line2" valor={perfil.numero} r={r} max={20} />
+      </div>
+      <Campo nome="rua" rotulo="Rua" auto="address-line1" valor={perfil.rua} r={r} max={120} />
+      <div className="uni-conta-grade">
+        <Campo nome="complemento" rotulo="Complemento (opcional)" valor={perfil.complemento} r={r} max={60} opcional />
+        <Campo nome="bairro" rotulo="Bairro" valor={perfil.bairro} r={r} max={80} />
+      </div>
+      <div className="uni-conta-grade is-cidade">
+        <Campo nome="cidade" rotulo="Cidade" auto="address-level2" valor={perfil.cidade} r={r} max={80} />
+        <Campo nome="uf" rotulo="UF" auto="address-level1" valor={perfil.uf} r={r} max={2} mascara={(v) => v.toUpperCase().slice(0, 2)} />
       </div>
       <Enviar pendente={pendente}>Salvar dados</Enviar>
     </form>

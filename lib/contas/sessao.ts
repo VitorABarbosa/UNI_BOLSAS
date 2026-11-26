@@ -27,7 +27,24 @@ export async function clienteAtual(): Promise<Cliente | null> {
   // consegue pendurar o pedido de outra pessoa na própria conta.
   const lista = (u.app_metadata as Record<string, unknown> | undefined)?.pedidos;
   const pedidos = Array.isArray(lista) ? lista.filter((r): r is string => typeof r === 'string' && REF_PEDIDO.test(r)) : [];
-  return { id: u.id, email: u.email, perfil: { nome: s('nome'), empresa: s('empresa'), cnpj: s('cnpj'), telefone: s('telefone') }, pedidos };
+  return {
+    id: u.id,
+    email: u.email,
+    perfil: {
+      nome: s('nome'),
+      empresa: s('empresa'),
+      cnpj: s('cnpj'),
+      telefone: s('telefone'),
+      cep: s('cep'),
+      rua: s('rua'),
+      numero: s('numero'),
+      complemento: s('complemento'),
+      bairro: s('bairro'),
+      cidade: s('cidade'),
+      uf: s('uf'),
+    },
+    pedidos,
+  };
 }
 
 /**

@@ -15,7 +15,7 @@ import {
   entrarSchema,
   esqueciSchema,
   novaSenhaSchema,
-  perfilSchema,
+  perfilComEnderecoSchema,
   trocarSenhaSchema,
 } from '@/lib/contas/regras';
 
@@ -246,11 +246,18 @@ export async function salvarPerfil(_: Resultado | null, fd: FormData): Promise<R
   if (!(await contasLiberadas())) return FECHADO;
   const cliente = await clienteAtual();
   if (!cliente) return { ok: false, erro: 'Sua sessão terminou. Entre de novo.' };
-  const p = perfilSchema.safeParse({
+  const p = perfilComEnderecoSchema.safeParse({
     nome: str(fd, 'nome'),
     empresa: str(fd, 'empresa'),
     cnpj: str(fd, 'cnpj'),
     telefone: str(fd, 'telefone'),
+    cep: str(fd, 'cep'),
+    rua: str(fd, 'rua'),
+    numero: str(fd, 'numero'),
+    complemento: str(fd, 'complemento'),
+    bairro: str(fd, 'bairro'),
+    cidade: str(fd, 'cidade'),
+    uf: str(fd, 'uf'),
   });
   if (!p.success) return invalido(p.error.issues);
   const { error } = await (await createClient()).auth.updateUser({ data: p.data });

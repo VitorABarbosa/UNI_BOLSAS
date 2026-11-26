@@ -11,7 +11,7 @@ import { criarPreferencia, mercadoPagoConfigurado } from '@/lib/checkout/mercado
 import { registrarPedido } from '@/lib/checkout/meus-pedidos';
 import { embalar, resumoCaixas, type Volume } from '@/lib/frete/caixas';
 import { cotarFrete, melhorEnvioConfigurado, prazoEmTexto, type OpcaoFrete } from '@/lib/frete/melhorenvio';
-import { soDigitos } from '@/lib/contas/regras';
+import { perfilCompleto, soDigitos } from '@/lib/contas/regras';
 import {
   enderecoEmLinha,
   enderecoSchema,
@@ -96,9 +96,10 @@ export async function iniciarPagamento(entrada: {
   }
   const cliente = await clienteAtual();
   if (!cliente) return { ok: false, erro: 'Sua sessão terminou. Entre de novo na sua conta.' };
-  const { nome, empresa, cnpj, telefone } = cliente.perfil;
-  if (!nome || !empresa || !cnpj || !telefone) {
-    return { ok: false, erro: 'Complete os dados da sua loja em "Minha conta" antes de pagar.' };
+  const perfil = cliente.perfil;
+  const { nome, empresa, cnpj, telefone } = perfil;
+  if (!perfilCompleto(perfil) || !nome || !empresa || !cnpj || !telefone) {
+    return { ok: false, erro: 'Complete os dados e o endereço da sua loja antes de pagar.' };
   }
   if (!dentroDoLimite(`pagar:${cliente.id}`, 10, 10 * MINUTO)) {
     return { ok: false, erro: 'Muitas tentativas seguidas. Espere alguns minutos.' };
@@ -113,6 +114,7 @@ export async function iniciarPagamento(entrada: {
   }
   let endereco = '';
   let cepEnvio = '';
+  let entregaEm: import('@/lib/checkout/tipos').Endereco | null = null;
   if (entrada.entrega !== 'retirada') {
     const e = enderecoSchema.safeParse(entrada.endereco);
     if (!e.success) {
@@ -122,6 +124,7 @@ export async function iniciarPagamento(entrada: {
     }
     endereco = enderecoEmLinha(e.data);
     cepEnvio = e.data.cep;
+    entregaEm = e.data;
   }
 
   let cotacao: Cotacao;
@@ -139,14 +142,14 @@ export async function iniciarPagamento(entrada: {
   }
 
   // Frete calculado: cota de novo AQUI. O preço do frete nunca vem do navegador.
-  let frete: { opcao: OpcaoFrete; caixas: string } | null = null;
+  let frete: { opcao: OpcaoFrete; caixas: string; volumes: Volume[] } | null = null;
   if (entrada.entrega === 'envio') {
     if (!melhorEnvioConfigurado()) return { ok: false, erro: 'Envio indisponível no momento. Escolha retirar na loja.' };
     try {
       const { volumes, opcoes } = await freteDoPedido(cotacao, cepEnvio);
       const opcao = opcoes.find((o) => o.id === entrada.servicoFrete);
       if (!opcao) return { ok: false, erro: 'O frete escolhido mudou. Calcule o frete de novo.' };
-      frete = { opcao, caixas: resumoCaixas(volumes) };
+      frete = { opcao, caixas: resumoCaixas(volumes), volumes };
     } catch (e) {
       console.error('[frete] recotação falhou:', e instanceof Error ? e.message : e);
       return { ok: false, erro: 'Não conseguimos confirmar o frete agora. Tente de novo em instantes.' };
@@ -185,6 +188,24 @@ export async function iniciarPagamento(entrada: {
         frete: frete ? `${frete.opcao.transportadora} ${frete.opcao.nome} · ${prazoEmTexto(frete.opcao)}` : '',
         frete_valor: frete ? frete.opcao.preco : 0,
         caixas: frete?.caixas ?? '',
+        frete_servico_id: frete?.opcao.id ?? 0,
+        volumes: frete ? frete.volumes.map((v) => `${v.comprimento}x${v.largura}x${v.altura}:${v.peso}`).join(';') : '',
+        // Endereço da loja (nota fiscal) e de entrega (etiqueta), separados
+        // em campos: a automação de NF e etiqueta precisa deles assim.
+        nf_cep: perfil.cep ?? '',
+        nf_rua: perfil.rua ?? '',
+        nf_numero: perfil.numero ?? '',
+        nf_complemento: perfil.complemento ?? '',
+        nf_bairro: perfil.bairro ?? '',
+        nf_cidade: perfil.cidade ?? '',
+        nf_uf: perfil.uf ?? '',
+        ent_cep: entregaEm?.cep ?? '',
+        ent_rua: entregaEm?.rua ?? '',
+        ent_numero: entregaEm?.numero ?? '',
+        ent_complemento: entregaEm?.complemento ?? '',
+        ent_bairro: entregaEm?.bairro ?? '',
+        ent_cidade: entregaEm?.cidade ?? '',
+        ent_uf: entregaEm?.uf ?? '',
       },
       urlRetorno: `${SITE_URL}/pedido/${ref}`,
       urlAviso: `${SITE_URL}/api/mercadopago/aviso`,

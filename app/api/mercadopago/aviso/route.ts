@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { after, NextResponse, type NextRequest } from 'next/server';
+import { processarPedido } from '@/lib/automacao/pedido';
 import { assinaturaValida, buscarPagamento, entregaEmTexto, formaDePagamento, pecasDoPagamento, type Pagamento } from '@/lib/checkout/mercadopago';
 import { enviarEmail } from '@/lib/contas/email';
 import { formatPriceBRL } from '@/lib/format';
@@ -58,6 +59,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
   if (pagamento.status !== 'approved') return NextResponse.json({ ok: true });
+
+  // Nota fiscal e etiqueta, depois de responder (o Mercado Pago não espera a
+  // SEFAZ). É seguro repetir: cada passo só roda se ainda não deu certo.
+  const aprovado = pagamento;
+  after(() => processarPedido(aprovado).then(() => undefined));
 
   const id = String(pagamento.id);
   const aprovadoEm = pagamento.date_approved ? Date.parse(pagamento.date_approved) : Date.now();

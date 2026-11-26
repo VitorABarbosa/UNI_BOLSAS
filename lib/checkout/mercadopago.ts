@@ -62,6 +62,23 @@ export type MetadataPedido = {
   frete?: string;
   frete_valor?: number;
   caixas?: string;
+  /** id do serviço no Melhor Envio e as caixas cotadas ("40x30x25:2.14;…") */
+  frete_servico_id?: number;
+  volumes?: string;
+  nf_cep?: string;
+  nf_rua?: string;
+  nf_numero?: string;
+  nf_complemento?: string;
+  nf_bairro?: string;
+  nf_cidade?: string;
+  nf_uf?: string;
+  ent_cep?: string;
+  ent_rua?: string;
+  ent_numero?: string;
+  ent_complemento?: string;
+  ent_bairro?: string;
+  ent_cidade?: string;
+  ent_uf?: string;
 };
 
 /** Itens do pagamento sem a linha do frete (as peças a separar). */

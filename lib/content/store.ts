@@ -22,7 +22,19 @@ export const STORE = {
   razaoSocial: 'UNI BOLSAS CONFECCOES LTDA',
   cnpj: '04.639.428/0001-30',
   /* De onde os pedidos enviados saem (ponto de coleta da transportadora). */
-  coleta: { rua: 'Rua Epiacaba, 229', cidade: 'São Paulo — SP', cep: '04257-145' },
+  coleta: {
+    rua: 'Rua Epiacaba, 229',
+    logradouro: 'Rua Epiacaba',
+    numero: '229',
+    complemento: '',
+    bairro: 'Parque Fongaro',
+    municipio: 'São Paulo',
+    uf: 'SP',
+    cidade: 'São Paulo — SP',
+    cep: '04257-145',
+  },
+  /* Inscrição Estadual: vai no remetente da etiqueta. Vazio até sair. */
+  inscricaoEstadual: '',
   transport: [
     { mode: 'Metrô Brás', time: '8 min' },
     { mode: 'CPTM Brás', time: '5 min' },

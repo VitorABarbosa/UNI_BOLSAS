@@ -4541,3 +4541,6 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
   .uni-checkout-linha-total { grid-column: 2; }
   .uni-checkout-resumo { padding: 18px 16px; margin-left: -4px; margin-right: -4px; }
 }
+.uni-pedido-docs { padding: 14px 16px !important; background: var(--color-pearl); border: 1px solid var(--color-whisper) !important; }
+.uni-pedido-docs p { margin: 0 0 4px; font-size: 14px; }
+.uni-pedido-docs a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }

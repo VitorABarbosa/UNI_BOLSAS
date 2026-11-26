@@ -11,9 +11,20 @@ import type { Volume } from '@/lib/frete/caixas';
  * `MELHORENVIO_AMBIENTE=sandbox` usa o ambiente de testes deles.
  */
 
-function base(): string {
+export function base(): string {
   if (process.env.MELHORENVIO_API_URL) return process.env.MELHORENVIO_API_URL.replace(/\/+$/, '');
   return process.env.MELHORENVIO_AMBIENTE === 'sandbox' ? 'https://sandbox.melhorenvio.com.br' : 'https://melhorenvio.com.br';
+}
+
+/** Cabeçalhos de toda chamada ao Melhor Envio. */
+export function cabecalhosME(): Record<string, string> {
+  return {
+    Authorization: `Bearer ${process.env.MELHORENVIO_TOKEN}`,
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    // O Melhor Envio pede nome da aplicação e um contato técnico.
+    'User-Agent': `Uni Bolsas (${process.env.MELHORENVIO_CONTATO || 'contato@unibolsas.store'})`,
+  };
 }
 
 export function melhorEnvioConfigurado(): boolean {
