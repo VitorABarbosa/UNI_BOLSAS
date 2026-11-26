@@ -1,6 +1,6 @@
 import 'server-only';
 import { lerJson, gravarJson } from '@/lib/automacao/armazem';
-import { soDigitos } from '@/lib/contas/regras';
+import { ehCpf, soDigitos } from '@/lib/contas/regras';
 import type { Pagamento } from '@/lib/checkout/mercadopago';
 import { pecasDoPagamento } from '@/lib/checkout/mercadopago';
 import { SITE_URL } from '@/lib/seo';
@@ -146,8 +146,8 @@ async function contatoId(p: Pagamento): Promise<number> {
   const criado = await bling<{ data: { id: number } }>('/contatos', {
     method: 'POST',
     body: JSON.stringify({
-      nome: m.empresa,
-      tipo: 'J',
+      nome: m.empresa || m.cliente_nome,
+      tipo: ehCpf(doc) ? 'F' : 'J',
       situacao: 'A',
       numeroDocumento: doc,
       email: m.cliente_email,

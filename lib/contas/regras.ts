@@ -37,6 +37,48 @@ export function cnpjValido(v: string): boolean {
   return d.endsWith(`${d1}${d2}`);
 }
 
+/** CPF válido pelos dígitos verificadores. */
+export function cpfValido(v: string): boolean {
+  const d = soDigitos(v);
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+  const calc = (base: string) => {
+    let soma = 0;
+    for (let i = 0; i < base.length; i++) soma += Number(base[i]) * (base.length + 1 - i);
+    const resto = (soma * 10) % 11;
+    return resto === 10 ? 0 : resto;
+  };
+  const d1 = calc(d.slice(0, 9));
+  const d2 = calc(d.slice(0, 9) + d1);
+  return d.endsWith(`${d1}${d2}`);
+}
+
+/** O documento da conta é um CPF (pessoa física)? Senão, é CNPJ. */
+export function ehCpf(v: string | null | undefined): boolean {
+  return soDigitos(v ?? '').length === 11;
+}
+
+/** "CPF" ou "CNPJ", conforme o número. */
+export function rotuloDocumento(v: string | null | undefined): 'CPF' | 'CNPJ' {
+  return ehCpf(v) ? 'CPF' : 'CNPJ';
+}
+
+/** CPF ou CNPJ válido. */
+export function documentoValido(v: string): boolean {
+  return ehCpf(v) ? cpfValido(v) : cnpjValido(v);
+}
+
+/** Máscara que serve aos dois: até 11 números vira CPF, depois CNPJ. */
+export function formatarDocumento(v: string): string {
+  const d = soDigitos(v).slice(0, 14);
+  if (d.length <= 11) {
+    return d
+      .replace(/^(\d{3})(\d)/, '$1.$2')
+      .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1-$2');
+  }
+  return formatarCnpj(d);
+}
+
 export function formatarCnpj(v: string): string {
   const d = soDigitos(v).slice(0, 14);
   return d
@@ -84,12 +126,15 @@ const texto = (min: number, max: number, msg: string) =>
 
 export const perfilSchema = z.object({
   nome: texto(2, 80, 'Diga seu nome'),
-  empresa: texto(2, 120, 'Nome da loja ou razão social'),
+  /** Nome da loja ou razão social. Opcional: quem compra com CPF pode não ter. */
+  empresa: z.string().trim().max(120, 'Texto longo demais').optional().default(''),
+  /** CPF ou CNPJ (o nome do campo ficou "cnpj" por compatibilidade com as contas já criadas). */
   cnpj: z
     .string()
     .trim()
-    .refine(cnpjValido, 'CNPJ inválido, confira os números')
-    .transform(formatarCnpj),
+    .refine((v) => [11, 14].includes(soDigitos(v).length), 'Digite o CPF (11 números) ou o CNPJ (14 números)')
+    .refine(documentoValido, 'Número inválido, confira os dígitos')
+    .transform(formatarDocumento),
   telefone: z
     .string()
     .trim()
@@ -140,11 +185,15 @@ export const ieSchema = z
   .default('');
 
 /** Perfil completo, com o endereço: é o que o checkout salva. */
-export const perfilComEnderecoSchema = perfilSchema.extend(enderecoLojaSchema.shape).extend({ ie: ieSchema });
+export const perfilComEnderecoSchema = perfilSchema
+  .extend(enderecoLojaSchema.shape)
+  .extend({ ie: ieSchema })
+  // Inscrição Estadual é de empresa: com CPF, fica vazia.
+  .transform((p) => (ehCpf(p.cnpj) ? { ...p, ie: '' } : p));
 
 /** Os dados da loja estão completos pra emitir nota? */
 export function perfilCompleto(p: Partial<Perfil>): boolean {
-  return !!(p.nome && p.empresa && p.cnpj && p.telefone && p.cep && p.rua && p.numero && p.bairro && p.cidade && p.uf);
+  return !!(p.nome && p.cnpj && p.telefone && p.cep && p.rua && p.numero && p.bairro && p.cidade && p.uf);
 }
 
 export const cadastroSchema = perfilSchema.extend({

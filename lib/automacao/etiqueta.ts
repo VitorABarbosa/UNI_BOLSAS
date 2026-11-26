@@ -1,7 +1,7 @@
 import 'server-only';
 import { STORE } from '@/lib/content/store';
 import { WHATSAPP_NUMBER } from '@/lib/tokens';
-import { soDigitos } from '@/lib/contas/regras';
+import { ehCpf, soDigitos } from '@/lib/contas/regras';
 import { base, cabecalhosME } from '@/lib/frete/melhorenvio';
 import { embalar, fisicoDaPeca, type Volume } from '@/lib/frete/caixas';
 import { pecasDoPagamento, type Pagamento } from '@/lib/checkout/mercadopago';
@@ -88,10 +88,11 @@ export async function gerarEtiqueta(p: Pagamento, chaveNota: string, servicoId: 
 
   if (ids.length === 0) {
     const destinatario = {
-      name: m.empresa,
+      name: m.empresa || m.cliente_nome,
       phone: soDigitos(m.telefone ?? ''),
       email: m.cliente_email,
-      company_document: soDigitos(m.cnpj ?? ''),
+      // Melhor Envio: CPF vai em `document`, CNPJ em `company_document`.
+      ...(ehCpf(m.cnpj) ? { document: soDigitos(m.cnpj ?? '') } : { company_document: soDigitos(m.cnpj ?? '') }),
       address: m.ent_rua,
       number: m.ent_numero,
       complement: m.ent_complemento ?? '',

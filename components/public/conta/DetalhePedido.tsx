@@ -1,3 +1,4 @@
+import { rotuloDocumento } from '@/lib/contas/regras';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formaDePagamento, pecasDoPagamento, type Pagamento } from '@/lib/checkout/mercadopago';
@@ -149,9 +150,9 @@ export function DetalhePedido({ p, andamento, fotos }: { p: Pagamento; andamento
           <p>{retirada ? `Retirada na loja · ${STORE.name}, ${STORE.unitText}, ${STORE.street}, ${STORE.district}` : `${m.frete ? `${m.frete} · ` : ''}${m.endereco || '—'}`}</p>
         </div>
         <div>
-          <h3>Dados da loja</h3>
+          <h3>Seus dados</h3>
           <p>
-            {m.empresa} · CNPJ {m.cnpj}
+            {[m.empresa, `${rotuloDocumento(m.cnpj)} ${m.cnpj}`].filter(Boolean).join(' · ')}
             <br />
             {m.cliente_nome} · {m.telefone}
           </p>

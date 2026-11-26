@@ -98,7 +98,7 @@ export async function iniciarPagamento(entrada: {
   if (!cliente) return { ok: false, erro: 'Sua sessão terminou. Entre de novo na sua conta.' };
   const perfil = cliente.perfil;
   const { nome, empresa, cnpj, telefone } = perfil;
-  if (!perfilCompleto(perfil) || !nome || !empresa || !cnpj || !telefone) {
+  if (!perfilCompleto(perfil) || !nome || !cnpj || !telefone) {
     return { ok: false, erro: 'Complete os dados e o endereço da sua loja antes de pagar.' };
   }
   if (!dentroDoLimite(`pagar:${cliente.id}`, 10, 10 * MINUTO)) {
@@ -180,7 +180,7 @@ export async function iniciarPagamento(entrada: {
         cliente_id: cliente.id,
         cliente_email: cliente.email,
         cliente_nome: nome,
-        empresa,
+        empresa: empresa ?? '',
         cnpj,
         telefone,
         entrega: entrada.entrega,

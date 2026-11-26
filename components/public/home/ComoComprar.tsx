@@ -23,7 +23,7 @@ const PASSOS_SITE = [
   {
     titulo: 'Finalize aqui no site',
     texto:
-      'Crie sua conta de lojista com o CNPJ e escolha: retirar grátis no Brás ou receber pelo correio, com o frete calculado pelo CEP.',
+      'Crie sua conta com CPF ou CNPJ e escolha: retirar grátis no Brás ou receber pelo correio, com o frete calculado pelo CEP.',
   },
   {
     titulo: 'Pague e acompanhe',
@@ -34,7 +34,7 @@ const PASSOS_SITE = [
 
 const CONDICOES_SITE = [
   ['Pedido mínimo', `${PEDIDO_MINIMO} peças`],
-  ['Compra', 'Pelo site, com conta de lojista (CNPJ)'],
+  ['Compra', 'Pelo site, com CPF ou CNPJ'],
   ['Pagamento', 'Pix, cartão ou boleto'],
   ['Entrega', 'Correio/transportadora ou retirada no Brás'],
 ] as const;

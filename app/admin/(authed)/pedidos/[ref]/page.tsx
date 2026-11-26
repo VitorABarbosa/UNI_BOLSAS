@@ -1,3 +1,4 @@
+import { rotuloDocumento } from '@/lib/contas/regras';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -220,8 +221,8 @@ export default async function PedidoAdminPage({ params }: { params: Promise<{ re
           </Bloco>
 
           <Bloco titulo="Cliente">
-            <div className="font-medium">{m.empresa}</div>
-            <div>CNPJ {m.cnpj}</div>
+            {m.empresa && <div className="font-medium">{m.empresa}</div>}
+            <div>{rotuloDocumento(m.cnpj)} {m.cnpj}</div>
             <div>{m.cliente_nome}</div>
             <div>{m.telefone}</div>
             <div className="break-all">{m.cliente_email}</div>

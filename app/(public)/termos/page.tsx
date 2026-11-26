@@ -54,7 +54,7 @@ export default function TermosPage() {
                 O pedido mínimo é de <strong>{PEDIDO_MINIMO} peças</strong>, que podem ser de modelos e cores diferentes.
               </li>
               <li>
-                Para comprar pelo site é preciso ter uma conta com os dados da sua loja (razão social, CNPJ e WhatsApp).
+                Para comprar pelo site é preciso ter uma conta com seus dados (nome, CPF ou CNPJ, WhatsApp e, se tiver loja, a razão social).
                 Esses dados vão no pedido e na nota fiscal.
               </li>
             </ul>
@@ -121,7 +121,7 @@ export default function TermosPage() {
 
           <section>
             <h2>7. Nota fiscal</h2>
-            <p>A nota fiscal sai com os dados da loja cadastrados na sua conta. Confira razão social e CNPJ antes de pagar.</p>
+            <p>A nota fiscal sai com os dados cadastrados na sua conta. Confira nome, CPF ou CNPJ e endereço antes de pagar.</p>
           </section>
 
           <section>

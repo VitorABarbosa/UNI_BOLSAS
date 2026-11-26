@@ -14,7 +14,7 @@ export default async function CadastroPage() {
       largo
       rotulo="Atacado"
       titulo={<>Criar conta</>}
-      sub={`Conta para lojistas: compras a partir de ${PEDIDO_MINIMO} peças, com seus dados salvos para os próximos pedidos.`}
+      sub={`Com CPF ou CNPJ: compras a partir de ${PEDIDO_MINIMO} peças, com seus dados salvos para os próximos pedidos.`}
     >
       <FormCadastro />
     </Caixa>
