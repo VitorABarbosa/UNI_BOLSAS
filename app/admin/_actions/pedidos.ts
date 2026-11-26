@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { pagamentosDoPedido } from '@/lib/checkout/mercadopago';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
-import { cancelarNota, lerEstado, marcarEntregue, marcarEnviado, marcarProntoParaRetirar, marcarRetirado, processarPedido } from '@/lib/automacao/pedido';
+import { cancelarNota, cancelarPedido, lerEstado, marcarEntregue, marcarEnviado, marcarProntoParaRetirar, marcarRetirado, processarPedido } from '@/lib/automacao/pedido';
 import { linkDeImpressao } from '@/lib/automacao/etiqueta';
 
 export type RespostaAdmin = { ok: true; url?: string } | { ok: false; erro: string };
@@ -105,4 +105,21 @@ export async function cancelarNotaDoPedido(ref: string, justificativa: string): 
   }
   revalidatePath('/admin/pedidos', 'layout');
   return { ok: true };
+}
+
+export type RespostaCancelamento = { ok: true; avisos: string[] } | { ok: false; erro: string };
+
+/** Cancela o pedido: devolve o dinheiro, cancela a nota e avisa a cliente. */
+export async function cancelarPedidoAdmin(ref: string, motivo: string): Promise<RespostaCancelamento> {
+  await requireAdmin();
+  if (!REF_PEDIDO.test(ref)) return { ok: false, erro: 'Pedido inválido.' };
+  const m = String(motivo ?? '').trim();
+  if (m.length < 5 || m.length > 200) return { ok: false, erro: 'Escreva o motivo (vai no e-mail para a cliente).' };
+  try {
+    const { avisos } = await cancelarPedido(ref, m);
+    revalidatePath('/admin/pedidos', 'layout');
+    return { ok: true, avisos };
+  } catch (err) {
+    return { ok: false, erro: err instanceof Error ? err.message : 'Não deu certo.' };
+  }
 }

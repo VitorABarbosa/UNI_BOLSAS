@@ -99,6 +99,18 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
     );
   }
 
+  if (status === 'refunded' || status === 'charged_back') {
+    return (
+      <Caixa largo rotulo={`Pedido ${ref}`} titulo={<>Pedido cancelado</>} sub={`${formatPriceBRL(pagamento!.transaction_amount)} devolvido`}>
+        <div className="uni-conta-feito">
+          <p>Este pedido foi cancelado e o valor foi devolvido pelo Mercado Pago. No Pix, volta em minutos; no cartão, aparece na fatura em até 2 ciclos.</p>
+          <Link className="uni-conta-btn is-linha" href="/#catalogo">Voltar ao catálogo</Link>
+          <p className="uni-conta-pequeno">Dúvidas? <a href={ajuda} target="_blank" rel="noopener noreferrer">Fale com a gente no WhatsApp</a></p>
+        </div>
+      </Caixa>
+    );
+  }
+
   return (
     <Caixa rotulo={`Pedido ${ref}`} titulo={<>Pagamento não concluído</>}>
       <div className="uni-conta-feito">

@@ -147,6 +147,11 @@ export type Pagamento = {
   installments?: number;
   metadata?: Partial<MetadataPedido> | null;
   additional_info?: { items?: { id?: string; title: string; quantity: string | number; unit_price: string | number }[] } | null;
+  /** Pix: página com o QR code e o "copia e cola". */
+  point_of_interaction?: { transaction_data?: { ticket_url?: string | null } | null } | null;
+  /** Boleto: link do boleto. */
+  transaction_details?: { external_resource_url?: string | null } | null;
+  date_of_expiration?: string | null;
 };
 
 export async function buscarPagamento(id: string | number): Promise<Pagamento | null> {
@@ -157,6 +162,15 @@ export async function buscarPagamento(id: string | number): Promise<Pagamento | 
     if (e instanceof ErroMercadoPago && e.status === 404) return null;
     throw e;
   }
+}
+
+/**
+ * Devolve o valor integral do pagamento à cliente (estorno). Pix volta na
+ * hora; cartão aparece na fatura em até 2 ciclos. Seguro repetir: a chave de
+ * idempotência impede devolver duas vezes.
+ */
+export async function estornarPagamento(id: number): Promise<void> {
+  await mp(`/v1/payments/${id}/refunds`, { method: 'POST', body: '{}', idempotencia: `estorno-${id}` });
 }
 
 /** Os pagamentos mais recentes, do mais novo pro mais antigo. */
@@ -182,7 +196,7 @@ export async function pagamentosDoPedido(ref: string): Promise<Pagamento[]> {
 }
 
 /** Ordem de importância: um pagamento aprovado vale mais que um recusado antes dele. */
-const PESO: Record<string, number> = { approved: 5, authorized: 4, in_process: 3, pending: 3, in_mediation: 2, rejected: 1, cancelled: 1 };
+const PESO: Record<string, number> = { approved: 5, authorized: 4, in_process: 3, pending: 3, in_mediation: 2, refunded: 2, charged_back: 2, rejected: 1, cancelled: 1 };
 
 /** O pagamento que representa o pedido, entre os desta cliente. */
 export function melhorPagamento(pagamentos: Pagamento[], clienteId: string): Pagamento | null {
