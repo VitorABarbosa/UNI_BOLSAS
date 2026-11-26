@@ -9,6 +9,24 @@ import { publicImageUrl } from '@/lib/supabase/image-url';
 import { INSTAGRAM_HANDLE, WHATSAPP_NUMBER } from '@/lib/tokens';
 import { truncate } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
+import { COMPRA_NO_SITE } from '@/lib/contas/ligado';
+
+/**
+ * Política de troca (a mesma da página /trocas): peça com defeito, avisada em
+ * até 7 dias, troca pelo correio com o frete por nossa conta.
+ */
+function politicaDeTroca() {
+  return {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: 'BR',
+    returnPolicyCountry: 'BR',
+    returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+    merchantReturnDays: 7,
+    returnMethod: 'https://schema.org/ReturnByMail',
+    itemDefectReturnFees: 'https://schema.org/FreeReturn',
+    merchantReturnLink: `${SITE_URL}/trocas`,
+  };
+}
 
 /**
  * Dados estruturados (schema.org) — o que o Google lê pra entender a página
@@ -26,12 +44,24 @@ const LOJA_ID = `${SITE_URL}/#loja`;
 export function dadosLoja() {
   return {
     '@context': 'https://schema.org',
-    '@type': 'WholesaleStore',
+    // Loja física de atacado e, com a compra pelo site, também loja online.
+    '@type': COMPRA_NO_SITE ? ['WholesaleStore', 'OnlineStore'] : 'WholesaleStore',
     '@id': LOJA_ID,
     name: SITE_NAME,
     legalName: STORE.razaoSocial,
     taxID: STORE.cnpj,
-    description: `Bolsas, mochilas e malas no atacado, a partir de ${PEDIDO_MINIMO} peças, direto do nosso stand no ${STORE.name}, Brás, São Paulo.`,
+    vatID: STORE.cnpj,
+    description: COMPRA_NO_SITE
+      ? `Loja online de bolsas, mochilas e malas no atacado, a partir de ${PEDIDO_MINIMO} peças. Compra pelo site com Pix, cartão ou boleto, envio para todo o Brasil com nota fiscal, e stand no ${STORE.name}, Brás, São Paulo.`
+      : `Bolsas, mochilas e malas no atacado, a partir de ${PEDIDO_MINIMO} peças, direto do nosso stand no ${STORE.name}, Brás, São Paulo.`,
+    ...(COMPRA_NO_SITE
+      ? {
+          paymentAccepted: 'Pix, Cartão de crédito, Cartão de débito, Boleto',
+          currenciesAccepted: 'BRL',
+          priceRange: 'R$',
+          hasMerchantReturnPolicy: politicaDeTroca(),
+        }
+      : {}),
     url: SITE_URL,
     logo: `${SITE_URL}/LOGO_UNI_BOLSAS_PNG.png`,
     image: [`${SITE_URL}/hero/slide-1.jpg`, `${SITE_URL}/hero/slide-2.jpg`],
@@ -120,6 +150,14 @@ export function dadosPeca(product: ProductWithRelations) {
       availability: 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/NewCondition',
       seller: { '@type': 'Organization', '@id': LOJA_ID, name: SITE_NAME },
+      ...(COMPRA_NO_SITE
+        ? {
+            // Venda para lojistas (atacado), comprável direto no site.
+            businessFunction: 'https://purl.org/goodrelations/v1#Sell',
+            eligibleCustomerType: 'https://purl.org/goodrelations/v1#Business',
+            hasMerchantReturnPolicy: politicaDeTroca(),
+          }
+        : {}),
     },
   };
 }

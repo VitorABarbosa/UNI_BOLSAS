@@ -7,7 +7,8 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: '/admin/',
+        // Páginas pessoais (conta, pedido, pagamento) e internas: nada a buscar.
+        disallow: ['/admin/', '/api/', '/conta/', '/finalizar', '/pedido/'],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

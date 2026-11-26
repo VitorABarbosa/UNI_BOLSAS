@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { Logo } from '@/components/public/primitives/Logo';
 import { WhatsAppButton } from '@/components/public/primitives/WhatsAppButton';
+import { COMPRA_NO_SITE } from '@/lib/contas/ligado';
 import { CloseIcon } from '@/components/public/icons';
-import { waWholesale } from '@/lib/whatsapp';
+import { waGeneral, waWholesale } from '@/lib/whatsapp';
 import { PEDIDO_MINIMO_FRASE } from '@/lib/content/atacado';
 import { useContasVisiveis } from '@/components/public/conta/ContaBotao';
 
@@ -63,11 +64,22 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
       </div>
       <div className="uni-mobile-menu-foot">
         <p className="uni-mobile-menu-note">
-          Venda só no atacado, {PEDIDO_MINIMO_FRASE}.
+          {COMPRA_NO_SITE ? `Compra pelo site, ${PEDIDO_MINIMO_FRASE}.` : `Venda só no atacado, ${PEDIDO_MINIMO_FRASE}.`}
         </p>
-        <WhatsAppButton href={waWholesale} variant="dark" full>
-          Pedir no atacado
-        </WhatsAppButton>
+        {COMPRA_NO_SITE ? (
+          <>
+            <Link href="/#catalogo" onClick={close} className="uni-hero-buy is-full">
+              Comprar agora
+            </Link>
+            <WhatsAppButton href={waGeneral} variant="outline" full>
+              Tirar dúvidas
+            </WhatsAppButton>
+          </>
+        ) : (
+          <WhatsAppButton href={waWholesale} variant="dark" full>
+            Pedir no atacado
+          </WhatsAppButton>
+        )}
       </div>
     </div>
   );

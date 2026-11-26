@@ -11,6 +11,7 @@ import { listActiveProducts, listFeaturedProducts } from '@/lib/queries/products
 import { listCategories } from '@/lib/queries/categories';
 import { SITE_NAME, SITE_URL } from '@/lib/seo';
 import { novidadesIds } from '@/lib/novidades';
+import { DESCRICAO_INICIO, PALAVRAS_CHAVE, TITULO_INICIO } from '@/lib/content/vitrine';
 import { JsonLd } from '@/components/public/primitives/JsonLd';
 import {
   dadosLoja,
@@ -21,14 +22,13 @@ import {
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: `${SITE_NAME} — Bolsas no atacado · Brás SP`,
-  description:
-    'Bolsas, mochilas e malas no atacado, a partir de 3 peças, direto do nosso stand no Shopping 900, Brás · São Paulo. Pedido pelo WhatsApp.',
+  title: TITULO_INICIO,
+  description: DESCRICAO_INICIO,
+  keywords: PALAVRAS_CHAVE,
   alternates: { canonical: SITE_URL },
   openGraph: {
-    title: `${SITE_NAME} — Bolsas no atacado · Brás SP`,
-    description:
-      'Bolsas, mochilas e malas no atacado, a partir de 3 peças, direto do Shopping 900, Brás · SP.',
+    title: TITULO_INICIO,
+    description: DESCRICAO_INICIO,
     url: SITE_URL,
     siteName: SITE_NAME,
     locale: 'pt_BR',
