@@ -191,10 +191,25 @@ export const perfilComEnderecoSchema = perfilSchema
   // Inscrição Estadual é de empresa: com CPF, fica vazia.
   .transform((p) => (ehCpf(p.cnpj) ? { ...p, ie: '' } : p));
 
-/** Os dados da loja estão completos pra emitir nota? */
-export function perfilCompleto(p: Partial<Perfil>): boolean {
-  return !!(p.nome && p.cnpj && p.telefone && p.cep && p.rua && p.numero && p.bairro && p.cidade && p.uf);
+/** Nome, CPF/CNPJ e WhatsApp: o que o cadastro já pede. */
+export function identidadeCompleta(p: Partial<Perfil>): boolean {
+  return !!(p.nome && p.cnpj && p.telefone);
 }
+
+/** Endereço guardado na conta (vem da última compra ou de "Minha conta"). */
+export function enderecoCompleto(p: Partial<Perfil>): boolean {
+  return !!(p.cep && p.rua && p.numero && p.bairro && p.cidade && p.uf);
+}
+
+/** Os dados estão completos pra emitir nota? */
+export function perfilCompleto(p: Partial<Perfil>): boolean {
+  return identidadeCompleta(p) && enderecoCompleto(p);
+}
+
+/** Perfil sem endereço (Minha conta, quando a cliente ainda não comprou). */
+export const perfilSemEnderecoSchema = perfilSchema
+  .extend({ ie: ieSchema })
+  .transform((p) => (ehCpf(p.cnpj) ? { ...p, ie: '' } : p));
 
 export const cadastroSchema = perfilSchema.extend({
   email,

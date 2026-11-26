@@ -3,7 +3,7 @@
 import { rotuloDocumento } from '@/lib/contas/regras';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { usePedido } from '@/hooks/usePedido';
 import { mudarQuantidade, QTD_MAXIMA, removerDoPedido } from '@/lib/pedido';
 import { formatPriceBRL } from '@/lib/format';
@@ -12,7 +12,8 @@ import { STORE } from '@/lib/content/store';
 import { waGeneral } from '@/lib/whatsapp';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { cotar, cotarEnvio, iniciarPagamento } from '@/app/(public)/finalizar/_acoes';
-import { perfilCompleto, soDigitos, type Perfil } from '@/lib/contas/regras';
+import { enderecoCompleto, identidadeCompleta, soDigitos, type Perfil } from '@/lib/contas/regras';
+import { buscarCep } from '@/lib/frete/cep';
 import type { Cotacao } from '@/lib/checkout/tipos';
 import { FormPerfil } from '@/components/public/conta/Formularios';
 
@@ -47,7 +48,7 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
   const [fretes, setFretes] = useState<{ cep: string; chave: string; opcoes: OpcaoFrete[] } | null>(null);
   const [freteMsg, setFreteMsg] = useState<string | null>(null);
   const [calculando, startCalcular] = useTransition();
-  // O envio já vem com o endereço da loja; dá pra trocar.
+  // O endereço vem da conta (salvo na última compra); dá pra trocar.
   const [end, setEnd] = useState<EnderecoForm>(() => ({
     ...ENDERECO_VAZIO,
     cep: perfil.cep ?? '',
@@ -62,6 +63,13 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
   const [pagando, startPagar] = useTransition();
   const [indo, setIndo] = useState(false);
   const [editandoDados, setEditandoDados] = useState(false);
+  const temEnderecoSalvo = enderecoCompleto(perfil);
+  // Na retirada, o endereço só aparece se a conta ainda não tem um (a nota
+  // fiscal precisa dele) ou se a cliente pedir pra trocar.
+  const [trocandoEndereco, setTrocandoEndereco] = useState(false);
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const cepBuscado = useRef(soDigitos(perfil.cep ?? ''));
+  const numeroRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (enviados.length === 0) return;
@@ -80,7 +88,7 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chave]);
 
-  const dadosOk = perfilCompleto(perfil);
+  const dadosOk = identidadeCompleta(perfil);
 
   if (itens.length === 0) {
     return (
@@ -109,9 +117,9 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
   const freteEscolhido = modo === 'retirada' || !!opcaoSel;
   const totalAgora = c.total + (modo === 'enviar' && opcaoSel ? opcaoSel.preco : 0);
 
-  const calcularFrete = () => {
+  const calcularFrete = (cepDigitado = end.cep) => {
     setFreteMsg(null);
-    const cep = soDigitos(end.cep);
+    const cep = soDigitos(cepDigitado);
     if (cep.length !== 8) {
       setFreteMsg('Digite o CEP com 8 números.');
       return;
@@ -129,13 +137,38 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
     });
   };
 
+  /** CEP completo: busca rua/bairro/cidade e, no envio, já calcula o frete. */
+  const mudouCep = (valor: string) => {
+    const d = soDigitos(valor);
+    if (d.length !== 8 || d === cepBuscado.current) return;
+    cepBuscado.current = d;
+    if (modo === 'enviar') calcularFrete(d);
+    setBuscandoCep(true);
+    buscarCep(d)
+      .then((a) => {
+        if (!a || cepBuscado.current !== d) return;
+        setEnd((x) => ({ ...x, rua: a.rua || x.rua, bairro: a.bairro || x.bairro, cidade: a.cidade, uf: a.uf }));
+        setErro((er) => (er?.campos ? { ...er, campos: { ...er.campos, rua: '', bairro: '', cidade: '', uf: '' } } : er));
+        numeroRef.current?.focus();
+      })
+      .finally(() => setBuscandoCep(false));
+  };
+
+  const escolherEnvio = () => {
+    setModo('enviar');
+    // Já tem CEP (da conta ou digitado): calcula sem precisar de clique.
+    if (soDigitos(end.cep).length === 8 && !fretesValidos) calcularFrete();
+  };
+
+  const mostraEndereco = modo === 'enviar' || !temEnderecoSalvo || trocandoEndereco;
+
   const pagar = () => {
     setErro(null);
     startPagar(async () => {
       const r = await iniciarPagamento({
         itens: enviados,
         entrega: modo === 'retirada' ? 'retirada' : 'envio',
-        endereco: modo === 'enviar' ? end : undefined,
+        endereco: mostraEndereco ? end : undefined,
         servicoFrete: modo === 'enviar' && opcaoSel ? opcaoSel.id : undefined,
       });
       if (!r.ok) {
@@ -156,8 +189,11 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
           <input
             name={k}
             value={end[k]}
+            ref={k === 'numero' ? numeroRef : undefined}
             onChange={(e) => {
-              setEnd((x) => ({ ...x, [k]: k === 'uf' ? e.target.value.toUpperCase().slice(0, 2) : e.target.value }));
+              const v = k === 'uf' ? e.target.value.toUpperCase().slice(0, 2) : e.target.value;
+              setEnd((x) => ({ ...x, [k]: v }));
+              if (k === 'cep') mudouCep(v);
               // Corrigiu o campo: o aviso vermelho dele sai.
               if (msg) setErro((er) => (er ? { ...er, campos: { ...er.campos, [k]: '' } } : er));
             }}
@@ -257,10 +293,8 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
               <p className="uni-checkout-dados">
                 <strong>{perfil.empresa || perfil.nome}</strong> · {rotuloDocumento(perfil.cnpj)} {perfil.cnpj}
                 <br />
-                {perfil.nome} · {perfil.telefone} · {email}
-                <br />
-                {perfil.rua}, {perfil.numero}
-                {perfil.complemento ? ` (${perfil.complemento})` : ''} · {perfil.bairro} · {perfil.cidade}/{perfil.uf} · CEP {perfil.cep}
+                {perfil.empresa ? `${perfil.nome} · ` : ''}
+                {perfil.telefone} · {email}
                 <br />
                 <button type="button" className="uni-checkout-link" onClick={() => setEditandoDados(true)}>
                   Alterar dados
@@ -268,12 +302,7 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
               </p>
             ) : (
               <div className="uni-checkout-perfil">
-                {!dadosOk && (
-                  <p className="uni-conta-pequeno">
-                    Preencha uma vez: os dados ficam salvos na sua conta e vão no pedido e na nota fiscal.
-                  </p>
-                )}
-                <FormPerfil perfil={perfil} aoSalvar={() => setEditandoDados(false)} />
+                <FormPerfil perfil={perfil} semEndereco aoSalvar={() => setEditandoDados(false)} />
               </div>
             )}
           </section>
@@ -298,7 +327,7 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
                   type="radio"
                   name="entrega"
                   checked={modo === 'enviar'}
-                  onChange={() => setModo('enviar')}
+                  onChange={escolherEnvio}
                   disabled={!freteDisponivel}
                 />
                 <span>
@@ -313,20 +342,41 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
               </label>
             </div>
 
-            {modo === 'enviar' && (
+            {modo === 'retirada' && temEnderecoSalvo && !trocandoEndereco && (
+              <p className="uni-conta-pequeno uni-checkout-nf">
+                Nota fiscal no seu endereço: {perfil.rua}, {perfil.numero} · {perfil.cidade}/{perfil.uf}.{' '}
+                <button type="button" className="uni-checkout-link" onClick={() => setTrocandoEndereco(true)}>
+                  Trocar
+                </button>
+              </p>
+            )}
+
+            {mostraEndereco && (
               <div className="uni-checkout-endereco">
+                <h3 className="uni-checkout-subtitulo">
+                  {modo === 'enviar' ? 'Endereço de entrega' : 'Seu endereço'}
+                  <small>
+                    {modo === 'enviar'
+                      ? 'Vai na etiqueta e na nota fiscal, e fica salvo para as próximas compras.'
+                      : 'Vai na nota fiscal e fica salvo para as próximas compras.'}
+                  </small>
+                </h3>
                 <div className="uni-checkout-cep">
                   {campo('cep', 'CEP', { inputMode: 'numeric', autoComplete: 'postal-code', maxLength: 9 })}
-                  <button type="button" className="uni-conta-btn is-linha" onClick={calcularFrete} disabled={calculando}>
-                    {calculando ? 'Calculando…' : fretesValidos ? 'Recalcular' : 'Calcular frete'}
-                  </button>
+                  {modo === 'enviar' ? (
+                    <button type="button" className="uni-conta-btn is-linha" onClick={() => calcularFrete()} disabled={calculando}>
+                      {calculando ? 'Calculando…' : fretesValidos ? 'Recalcular' : 'Calcular frete'}
+                    </button>
+                  ) : (
+                    <span className="uni-conta-pequeno uni-checkout-cep-dica">{buscandoCep ? 'Buscando…' : ''}</span>
+                  )}
                 </div>
-                {freteMsg && (
+                {modo === 'enviar' && freteMsg && (
                   <p className="uni-conta-aviso is-erro" role="alert">
                     {freteMsg}
                   </p>
                 )}
-                {fretesValidos && (
+                {modo === 'enviar' && fretesValidos && (
                   <div className="uni-checkout-opcoes is-fretes" role="radiogroup" aria-label="Opções de frete">
                     {fretesValidos.opcoes.map((o) => (
                       <label key={o.id} className={'uni-checkout-opcao' + (servico === o.id ? ' is-sel' : '')}>
@@ -342,11 +392,11 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
                     ))}
                   </div>
                 )}
+                {campo('rua', 'Rua', { autoComplete: 'address-line1', maxLength: 120 })}
                 <div className="uni-conta-grade">
                   {campo('numero', 'Número', { autoComplete: 'address-line2', maxLength: 20 })}
                   {campo('complemento', 'Complemento (opcional)', { maxLength: 60 })}
                 </div>
-                {campo('rua', 'Rua', { autoComplete: 'address-line1', maxLength: 120 })}
                 {campo('bairro', 'Bairro', { maxLength: 80 })}
                 <div className="uni-conta-grade is-cidade">
                   {campo('cidade', 'Cidade', { autoComplete: 'address-level2', maxLength: 80 })}

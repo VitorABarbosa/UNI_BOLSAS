@@ -216,7 +216,7 @@ export function FormNovaSenha() {
   );
 }
 
-export function FormPerfil({ perfil, aoSalvar }: { perfil: Partial<Perfil>; aoSalvar?: () => void }) {
+export function FormPerfil({ perfil, aoSalvar, semEndereco }: { perfil: Partial<Perfil>; aoSalvar?: () => void; semEndereco?: boolean }) {
   const [r, acao, pendente] = useActionState(async (prev: Resultado | null, fd: FormData) => {
     const res = await salvarPerfil(prev, fd);
     if (res.ok) aoSalvar?.();
@@ -231,22 +231,26 @@ export function FormPerfil({ perfil, aoSalvar }: { perfil: Partial<Perfil>; aoSa
         <Campo nome="cnpj" rotulo="CPF ou CNPJ" modo="numeric" mascara={formatarDocumento} valor={perfil.cnpj} r={r} max={18} />
         <Campo nome="telefone" rotulo="WhatsApp com DDD" tipo="tel" auto="tel-national" modo="tel" mascara={formatarTelefone} valor={perfil.telefone} r={r} max={16} />
       </div>
-      <p className="uni-conta-pequeno" style={{ margin: '4px 0 -4px' }}>
-        Endereço da loja (vai na nota fiscal):
-      </p>
-      <div className="uni-conta-grade">
-        <Campo nome="cep" rotulo="CEP" modo="numeric" auto="postal-code" valor={perfil.cep} r={r} max={9} />
-        <Campo nome="numero" rotulo="Número" auto="address-line2" valor={perfil.numero} r={r} max={20} />
-      </div>
-      <Campo nome="rua" rotulo="Rua" auto="address-line1" valor={perfil.rua} r={r} max={120} />
-      <div className="uni-conta-grade">
-        <Campo nome="complemento" rotulo="Complemento (opcional)" valor={perfil.complemento} r={r} max={60} opcional />
-        <Campo nome="bairro" rotulo="Bairro" valor={perfil.bairro} r={r} max={80} />
-      </div>
-      <div className="uni-conta-grade is-cidade">
-        <Campo nome="cidade" rotulo="Cidade" auto="address-level2" valor={perfil.cidade} r={r} max={80} />
-        <Campo nome="uf" rotulo="UF" auto="address-level1" valor={perfil.uf} r={r} max={2} mascara={(v) => v.toUpperCase().slice(0, 2)} />
-      </div>
+      {!semEndereco && (
+        <>
+          <p className="uni-conta-pequeno" style={{ margin: '4px 0 -4px' }}>
+            Endereço (vai na nota fiscal). Se ficar em branco, ele é salvo na sua primeira compra:
+          </p>
+          <div className="uni-conta-grade">
+            <Campo nome="cep" rotulo="CEP" modo="numeric" auto="postal-code" valor={perfil.cep} r={r} max={9} opcional />
+            <Campo nome="numero" rotulo="Número" auto="address-line2" valor={perfil.numero} r={r} max={20} opcional />
+          </div>
+          <Campo nome="rua" rotulo="Rua" auto="address-line1" valor={perfil.rua} r={r} max={120} opcional />
+          <div className="uni-conta-grade">
+            <Campo nome="complemento" rotulo="Complemento (opcional)" valor={perfil.complemento} r={r} max={60} opcional />
+            <Campo nome="bairro" rotulo="Bairro" valor={perfil.bairro} r={r} max={80} opcional />
+          </div>
+          <div className="uni-conta-grade is-cidade">
+            <Campo nome="cidade" rotulo="Cidade" auto="address-level2" valor={perfil.cidade} r={r} max={80} opcional />
+            <Campo nome="uf" rotulo="UF" auto="address-level1" valor={perfil.uf} r={r} max={2} mascara={(v) => v.toUpperCase().slice(0, 2)} opcional />
+          </div>
+        </>
+      )}
       <Campo nome="ie" rotulo="Inscrição Estadual (só CNPJ, se tiver)" valor={perfil.ie} r={r} max={20} opcional />
       <p className="uni-conta-pequeno" style={{ margin: '-6px 0 2px' }}>
         Com a Inscrição Estadual, a nota sai como compra para revenda. Se a loja não tiver, deixe em branco.
