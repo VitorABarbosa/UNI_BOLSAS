@@ -1,7 +1,7 @@
 import 'server-only';
 import { ErroAutomacao, type NotaEmitida } from '@/lib/automacao/bling';
 import { pecasDoPagamento, type Pagamento } from '@/lib/checkout/mercadopago';
-import { soDigitos } from '@/lib/contas/regras';
+import { ehCpf, soDigitos } from '@/lib/contas/regras';
 import { STORE } from '@/lib/content/store';
 import { SITE_URL } from '@/lib/seo';
 import { categoriasSemNcm, ncmDosProdutos } from '@/lib/automacao/ncm';
@@ -129,15 +129,23 @@ export function montarNota(p: Pagamento, ncms: Map<string, string>, opcoes: { te
   const pecas = pecasDoPagamento(p);
   const ufDestino = (m.nf_uf || 'SP').toUpperCase();
   const interestadual = ufDestino !== STORE.coleta.uf;
-  const cfop = interestadual ? process.env.NFE_CFOP_INTERESTADUAL || '6102' : process.env.NFE_CFOP_ESTADUAL || '5102';
   const csosn = process.env.NFE_CSOSN || '102';
   const pisCofins = process.env.NFE_PIS_COFINS || '49';
 
   // Inscrição Estadual da cliente: com ela, é venda para revenda (contribuinte).
-  const ie = (m.nf_ie ?? '').toUpperCase();
+  // Comprador com CPF não tem IE (é sempre não contribuinte).
+  const cpf = ehCpf(m.cnpj);
+  const ie = cpf ? '' : (m.nf_ie ?? '').toUpperCase();
   const indicadorIE = ie === 'ISENTO' ? '2' : ie ? '1' : '9';
   // Não contribuinte (sem IE) é sempre consumidor final para a SEFAZ.
   const consumidorFinal = indicadorIE === '1' ? '0' : '1';
+  // CFOP: dentro de SP 5102; para outro estado, 6102 se o comprador é
+  // contribuinte (tem IE) e 6108 se não é (CPF, ou CNPJ sem IE).
+  const cfop = !interestadual
+    ? process.env.NFE_CFOP_ESTADUAL || '5102'
+    : indicadorIE === '1'
+      ? process.env.NFE_CFOP_INTERESTADUAL || '6102'
+      : process.env.NFE_CFOP_INTERESTADUAL_NAO_CONTRIBUINTE || '6108';
 
   // Frete rateado entre os itens (na nota, o frete é por item).
   const frete = m.entrega === 'envio' ? Number(m.frete_valor ?? 0) : 0;
@@ -151,7 +159,7 @@ export function montarNota(p: Pagamento, ncms: Map<string, string>, opcoes: { te
     return parte / 100;
   });
 
-  const nomeDestinatario = opcoes.teste ? 'NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL' : String(m.empresa ?? '').slice(0, 60);
+  const nomeDestinatario = opcoes.teste ? 'NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL' : String(m.empresa || m.cliente_nome || '').slice(0, 60);
 
   return {
     natureza_operacao: process.env.NFE_NATUREZA || 'Venda de mercadoria',
@@ -165,7 +173,7 @@ export function montarNota(p: Pagamento, ncms: Map<string, string>, opcoes: { te
     cnpj_emitente: soDigitos(STORE.cnpj),
     inscricao_estadual_emitente: soDigitos(STORE.inscricaoEstadual),
     nome_destinatario: nomeDestinatario,
-    cnpj_destinatario: soDigitos(m.cnpj ?? ''),
+    ...(cpf ? { cpf_destinatario: soDigitos(m.cnpj ?? '') } : { cnpj_destinatario: soDigitos(m.cnpj ?? '') }),
     indicador_inscricao_estadual_destinatario: indicadorIE,
     ...(indicadorIE === '1' ? { inscricao_estadual_destinatario: ie } : {}),
     logradouro_destinatario: m.nf_rua,

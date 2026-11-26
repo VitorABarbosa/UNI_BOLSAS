@@ -44,7 +44,7 @@ const FAQ_SITE = [
   },
   {
     q: 'Como eu compro?',
-    a: `Aqui no site: coloque no mínimo ${PEDIDO_MINIMO} peças na sacola, crie sua conta de lojista com o CNPJ e pague com Pix, cartão ou boleto pelo Mercado Pago. Você acompanha o pedido na sua conta.`,
+    a: `Aqui no site: coloque no mínimo ${PEDIDO_MINIMO} peças na sacola, crie sua conta (com CPF ou CNPJ) e pague com Pix, cartão ou boleto pelo Mercado Pago. Você acompanha o pedido na sua conta.`,
   },
   {
     q: 'Qual o pedido mínimo?',

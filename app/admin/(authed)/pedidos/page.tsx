@@ -66,7 +66,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
           <input
             name="q"
             defaultValue={q}
-            placeholder="Buscar por código, empresa, CNPJ, nome, e-mail ou telefone"
+            placeholder="Buscar por código, empresa, CPF/CNPJ, nome, e-mail ou telefone"
             className="min-w-0 flex-1 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm"
           />
           <button className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white">Buscar</button>

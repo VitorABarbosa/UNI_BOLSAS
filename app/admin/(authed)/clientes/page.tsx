@@ -1,3 +1,4 @@
+import { rotuloDocumento } from '@/lib/contas/regras';
 import Link from 'next/link';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { AdminShell } from '@/components/admin/shell/AdminShell';
@@ -66,7 +67,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
           <input
             name="q"
             defaultValue={q}
-            placeholder="Buscar por empresa, nome, e-mail, CNPJ, telefone ou cidade"
+            placeholder="Buscar por empresa, nome, e-mail, CPF/CNPJ, telefone ou cidade"
             className="min-w-0 flex-1 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm"
           />
           <select name="ordem" defaultValue={ordem} className="rounded-md border border-stone-300 bg-white px-2 py-2 text-sm">
@@ -92,7 +93,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
                     {!c.cnpj && c.confirmado && <span className="rounded bg-stone-100 px-2 py-0.5 text-xs text-stone-600">cadastro incompleto</span>}
                   </div>
                   <div className="mt-0.5 text-xs text-stone-500">
-                    {[c.nome, c.cnpj && `CNPJ ${c.cnpj}`, c.telefone, c.cidade && `${c.cidade}/${c.uf}`].filter(Boolean).join(' · ')}
+                    {[c.nome, c.cnpj && `${rotuloDocumento(c.cnpj)} ${c.cnpj}`, c.telefone, c.cidade && `${c.cidade}/${c.uf}`].filter(Boolean).join(' · ')}
                   </div>
                   <div className="break-all text-xs text-stone-500">
                     {c.email} · conta desde {data.format(new Date(c.criadoEm))}

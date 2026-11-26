@@ -1,3 +1,4 @@
+import { rotuloDocumento } from '@/lib/contas/regras';
 import { after, NextResponse, type NextRequest } from 'next/server';
 import { processarPedido } from '@/lib/automacao/pedido';
 import { assinaturaValida, buscarPagamento, entregaEmTexto, formaDePagamento, pecasDoPagamento, type Pagamento } from '@/lib/checkout/mercadopago';
@@ -90,11 +91,11 @@ async function avisarVenda(p: Pagamento) {
   if (loja.length > 0) {
     await enviarEmail({
       para: loja,
-      assunto: `Nova venda ${ref} · ${formatPriceBRL(p.transaction_amount)} · ${m.empresa ?? ''}`,
+      assunto: `Nova venda ${ref} · ${formatPriceBRL(p.transaction_amount)} · ${m.empresa || m.cliente_nome || ''}`,
       titulo: `Nova venda · ${ref}`,
       paragrafos: [
         `Pagamento aprovado: ${total}.`,
-        `Cliente: ${m.empresa ?? '—'} · CNPJ ${m.cnpj ?? '—'}`,
+        `Cliente: ${m.empresa || m.cliente_nome || '—'} · ${rotuloDocumento(m.cnpj)} ${m.cnpj ?? '—'}`,
         `Contato: ${m.cliente_nome ?? '—'} · ${m.telefone ?? '—'} · ${m.cliente_email ?? '—'}`,
         entrega,
         'Separar:',

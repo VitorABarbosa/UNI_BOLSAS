@@ -1,5 +1,6 @@
 'use client';
 
+import { rotuloDocumento } from '@/lib/contas/regras';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, useTransition } from 'react';
@@ -254,7 +255,7 @@ export function Finalizar({ perfil, email, freteDisponivel }: { perfil: Partial<
             <h2>Seus dados</h2>
             {dadosOk && !editandoDados ? (
               <p className="uni-checkout-dados">
-                <strong>{perfil.empresa}</strong> · CNPJ {perfil.cnpj}
+                <strong>{perfil.empresa || perfil.nome}</strong> · {rotuloDocumento(perfil.cnpj)} {perfil.cnpj}
                 <br />
                 {perfil.nome} · {perfil.telefone} · {email}
                 <br />

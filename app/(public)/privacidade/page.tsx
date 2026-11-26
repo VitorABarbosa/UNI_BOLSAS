@@ -89,7 +89,7 @@ export default function PrivacidadePage() {
             </ul>
             <p>
               <strong>De quem cria conta e compra pelo site</strong>: nome, nome
-              da loja ou razão social, CNPJ, WhatsApp, e-mail e senha; e, em
+              da loja ou razão social (se houver), CPF ou CNPJ, WhatsApp, e-mail e senha; e, em
               cada pedido, as peças, os valores, a forma de entrega e, se for
               envio, o endereço. A senha é guardada embaralhada (criptografia
               de mão única): nem nós conseguimos lê-la. Os dados do cartão são

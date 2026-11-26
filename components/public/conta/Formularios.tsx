@@ -12,7 +12,7 @@ import {
   trocarSenha,
   type Resultado,
 } from '@/app/(public)/conta/_acoes';
-import { formatarCnpj, formatarTelefone, SENHA_MIN, type Perfil } from '@/lib/contas/regras';
+import { formatarDocumento, formatarTelefone, SENHA_MIN, type Perfil } from '@/lib/contas/regras';
 
 /* ─── Peças ─────────────────────────────────────────────────────────────── */
 
@@ -129,8 +129,8 @@ export function FormCadastro() {
       <Aviso r={r} />
       <div className="uni-conta-grade">
         <Campo nome="nome" rotulo="Seu nome" auto="name" r={r} max={80} />
-        <Campo nome="empresa" rotulo="Loja ou razão social" auto="organization" r={r} max={120} />
-        <Campo nome="cnpj" rotulo="CNPJ" modo="numeric" mascara={formatarCnpj} r={r} max={18} />
+        <Campo nome="empresa" rotulo="Loja ou razão social (se tiver)" auto="organization" r={r} max={120} opcional />
+        <Campo nome="cnpj" rotulo="CPF ou CNPJ" modo="numeric" mascara={formatarDocumento} r={r} max={18} />
         <Campo nome="telefone" rotulo="WhatsApp com DDD" tipo="tel" auto="tel-national" modo="tel" mascara={formatarTelefone} r={r} max={16} />
       </div>
       <Campo nome="email" rotulo="E-mail" tipo="email" auto="email" modo="email" r={r} max={254} />
@@ -227,8 +227,8 @@ export function FormPerfil({ perfil, aoSalvar }: { perfil: Partial<Perfil>; aoSa
       <Aviso r={r} />
       <div className="uni-conta-grade">
         <Campo nome="nome" rotulo="Seu nome" auto="name" valor={perfil.nome} r={r} max={80} />
-        <Campo nome="empresa" rotulo="Loja ou razão social" auto="organization" valor={perfil.empresa} r={r} max={120} />
-        <Campo nome="cnpj" rotulo="CNPJ" modo="numeric" mascara={formatarCnpj} valor={perfil.cnpj} r={r} max={18} />
+        <Campo nome="empresa" rotulo="Loja ou razão social (se tiver)" auto="organization" valor={perfil.empresa} r={r} max={120} opcional />
+        <Campo nome="cnpj" rotulo="CPF ou CNPJ" modo="numeric" mascara={formatarDocumento} valor={perfil.cnpj} r={r} max={18} />
         <Campo nome="telefone" rotulo="WhatsApp com DDD" tipo="tel" auto="tel-national" modo="tel" mascara={formatarTelefone} valor={perfil.telefone} r={r} max={16} />
       </div>
       <p className="uni-conta-pequeno" style={{ margin: '4px 0 -4px' }}>
@@ -247,7 +247,7 @@ export function FormPerfil({ perfil, aoSalvar }: { perfil: Partial<Perfil>; aoSa
         <Campo nome="cidade" rotulo="Cidade" auto="address-level2" valor={perfil.cidade} r={r} max={80} />
         <Campo nome="uf" rotulo="UF" auto="address-level1" valor={perfil.uf} r={r} max={2} mascara={(v) => v.toUpperCase().slice(0, 2)} />
       </div>
-      <Campo nome="ie" rotulo="Inscrição Estadual da loja (se tiver)" valor={perfil.ie} r={r} max={20} opcional />
+      <Campo nome="ie" rotulo="Inscrição Estadual (só CNPJ, se tiver)" valor={perfil.ie} r={r} max={20} opcional />
       <p className="uni-conta-pequeno" style={{ margin: '-6px 0 2px' }}>
         Com a Inscrição Estadual, a nota sai como compra para revenda. Se a loja não tiver, deixe em branco.
       </p>
