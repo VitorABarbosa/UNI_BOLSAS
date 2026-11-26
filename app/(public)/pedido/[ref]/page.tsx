@@ -11,6 +11,8 @@ import { atualizarRastreio, lerEstado } from '@/lib/automacao/pedido';
 import { formatPriceBRL } from '@/lib/format';
 import { STORE } from '@/lib/content/store';
 import { waLink } from '@/lib/whatsapp';
+import { DetalhePedido } from '@/components/public/conta/DetalhePedido';
+import { fotosDosPedidos } from '@/lib/checkout/meus-pedidos';
 
 export const metadata: Metadata = {
   title: 'Seu pedido · Uni Bolsas',
@@ -55,8 +57,9 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
   if (status === 'approved' || status === 'authorized') {
     const bruto = await lerEstado(ref).catch(() => null);
     const andamento = bruto ? await atualizarRastreio(bruto) : null;
+    const fotos = await fotosDosPedidos([pagamento!]);
     return (
-      <Caixa rotulo={`Pedido ${ref}`} titulo={<>Pedido <em>confirmado.</em></>} sub={`${formaDePagamento(pagamento!)} aprovado · ${formatPriceBRL(pagamento!.transaction_amount)}`}>
+      <Caixa largo rotulo={`Pedido ${ref}`} titulo={<>Pedido <em>confirmado.</em></>} sub={`${formaDePagamento(pagamento!)} aprovado · ${formatPriceBRL(pagamento!.transaction_amount)}`}>
         <LimparSacola />
         <div className="uni-conta-feito">
           <p>Recebemos seu pagamento. Mandamos o comprovante para <strong>{cliente.email}</strong>.</p>
@@ -70,35 +73,17 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
               <li>Chamamos você no WhatsApp para combinar o frete e mandar o código de rastreio.</li>
             )}
           </ol>
-          {(andamento?.nota || andamento?.rastreio?.length) && (
-            <div className="uni-conta-bloco is-primeiro uni-pedido-docs">
-              {andamento?.nota && (
-                <p>
-                  Nota fiscal nº {andamento.nota.numero}
-                  {andamento.nota.danfe && (
-                    <>
-                      {' · '}
-                      <a href={andamento.nota.danfe} target="_blank" rel="noopener noreferrer">
-                        ver a nota (DANFE)
-                      </a>
-                    </>
-                  )}
-                </p>
-              )}
-              {andamento?.rastreio?.length ? <p>Código de rastreio: <strong>{andamento.rastreio.join(', ')}</strong></p> : null}
-            </div>
-          )}
-          <Link className="uni-conta-btn" href="/conta#pedidos">Ver meus pedidos</Link>
           <Link className="uni-conta-btn is-linha" href="/#catalogo">Voltar ao catálogo</Link>
           <p className="uni-conta-pequeno">Dúvidas? <a href={ajuda} target="_blank" rel="noopener noreferrer">Fale com a gente no WhatsApp</a></p>
         </div>
+        <DetalhePedido p={pagamento!} andamento={andamento} fotos={fotos} />
       </Caixa>
     );
   }
 
   if (status === 'pending' || status === 'in_process') {
     return (
-      <Caixa rotulo={`Pedido ${ref}`} titulo={<>Aguardando pagamento</>} sub={pagamento ? `${formaDePagamento(pagamento)} · ${formatPriceBRL(pagamento.transaction_amount)}` : undefined}>
+      <Caixa largo rotulo={`Pedido ${ref}`} titulo={<>Aguardando pagamento</>} sub={pagamento ? `${formaDePagamento(pagamento)} · ${formatPriceBRL(pagamento.transaction_amount)}` : undefined}>
         <LimparSacola />
         <div className="uni-conta-feito">
           <p>
@@ -106,10 +91,10 @@ export default async function PedidoPage({ params }: { params: Promise<{ ref: st
               ? 'Assim que o boleto compensar (até 2 dias úteis), seu pedido entra em separação.'
               : 'Assim que o pagamento for confirmado, seu pedido entra em separação. Avisamos por e-mail.'}
           </p>
-          <Link className="uni-conta-btn" href="/conta#pedidos">Ver meus pedidos</Link>
           <Link className="uni-conta-btn is-linha" href="/#catalogo">Voltar ao catálogo</Link>
           <p className="uni-conta-pequeno">Dúvidas? <a href={ajuda} target="_blank" rel="noopener noreferrer">Fale com a gente no WhatsApp</a></p>
         </div>
+        <DetalhePedido p={pagamento!} andamento={null} fotos={await fotosDosPedidos([pagamento!])} />
       </Caixa>
     );
   }
