@@ -158,11 +158,26 @@ export async function linkDeImpressao(envios: string[]): Promise<string> {
   return r.url;
 }
 
+/** Situação de cada envio no Melhor Envio (status, código e datas). */
+export type SituacaoEnvio = { id: string; status: string; codigo: string; postadoEm: string | null; entregueEm: string | null };
+
+export async function situacaoEnvios(envios: string[]): Promise<SituacaoEnvio[]> {
+  const r = await me<
+    Record<string, { status?: string; tracking?: string | null; melhorenvio_tracking?: string | null; posted_at?: string | null; delivered_at?: string | null }>
+  >('/api/v2/me/shipment/tracking', { method: 'POST', body: JSON.stringify({ orders: envios }) });
+  return envios.map((id) => {
+    const o = r[id] ?? {};
+    return {
+      id,
+      status: o.status ?? '',
+      codigo: o.tracking || o.melhorenvio_tracking || '',
+      postadoEm: o.posted_at ?? null,
+      entregueEm: o.delivered_at ?? null,
+    };
+  });
+}
+
 /** Códigos de rastreio, quando a transportadora já liberou. */
 export async function rastreios(envios: string[]): Promise<string[]> {
-  const r = await me<Record<string, { tracking?: string | null; melhorenvio_tracking?: string | null }>>(
-    '/api/v2/me/shipment/tracking',
-    { method: 'POST', body: JSON.stringify({ orders: envios }) },
-  );
-  return envios.map((id) => r[id]?.tracking || r[id]?.melhorenvio_tracking || '').filter(Boolean);
+  return (await situacaoEnvios(envios)).map((s) => s.codigo).filter(Boolean);
 }

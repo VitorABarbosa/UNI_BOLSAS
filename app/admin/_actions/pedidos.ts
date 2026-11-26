@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { pagamentosDoPedido } from '@/lib/checkout/mercadopago';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
-import { lerEstado, processarPedido } from '@/lib/automacao/pedido';
+import { lerEstado, marcarProntoParaRetirar, marcarRetirado, processarPedido } from '@/lib/automacao/pedido';
 import { linkDeImpressao } from '@/lib/automacao/etiqueta';
 
 export type RespostaAdmin = { ok: true; url?: string } | { ok: false; erro: string };
@@ -31,4 +31,30 @@ export async function imprimirEtiqueta(ref: string): Promise<RespostaAdmin> {
   } catch (err) {
     return { ok: false, erro: err instanceof Error ? err.message : 'Falha ao gerar o PDF.' };
   }
+}
+
+/** Retirada: avisa a cliente (e-mail) que o pedido está separado. */
+export async function avisarPronto(ref: string): Promise<RespostaAdmin> {
+  await requireAdmin();
+  if (!REF_PEDIDO.test(ref)) return { ok: false, erro: 'Pedido inválido.' };
+  try {
+    await marcarProntoParaRetirar(ref);
+  } catch (err) {
+    return { ok: false, erro: err instanceof Error ? err.message : 'Não deu certo.' };
+  }
+  revalidatePath('/admin/pedidos');
+  return { ok: true };
+}
+
+/** Retirada: a cliente buscou as peças. */
+export async function confirmarRetirada(ref: string): Promise<RespostaAdmin> {
+  await requireAdmin();
+  if (!REF_PEDIDO.test(ref)) return { ok: false, erro: 'Pedido inválido.' };
+  try {
+    await marcarRetirado(ref);
+  } catch (err) {
+    return { ok: false, erro: err instanceof Error ? err.message : 'Não deu certo.' };
+  }
+  revalidatePath('/admin/pedidos');
+  return { ok: true };
 }

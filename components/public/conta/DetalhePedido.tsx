@@ -5,6 +5,7 @@ import type { EstadoPedido } from '@/lib/automacao/pedido';
 import { formatPriceBRL } from '@/lib/format';
 import { publicImageUrl } from '@/lib/supabase/image-url';
 import { STORE } from '@/lib/content/store';
+import { linkDeRastreio } from '@/lib/automacao/rastreio-link';
 
 const quando = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
 
@@ -38,13 +39,37 @@ export function DetalhePedido({ p, andamento, fotos }: { p: Pagamento; andamento
       titulo: 'Nota fiscal',
       detalhe: andamento?.nota ? `NF-e nº ${andamento.nota.numero}` : 'Emitida depois do pagamento',
     },
-    retirada
-      ? { feito: false, titulo: 'Pronto para retirar', detalhe: `Avisamos no seu WhatsApp · ${STORE.name}, ${STORE.unitText}` }
-      : {
-          feito: !!andamento?.rastreio?.length,
-          titulo: andamento?.rastreio?.length ? 'Enviado' : 'Envio',
-          detalhe: andamento?.rastreio?.length ? `Rastreio: ${andamento.rastreio.join(', ')}` : 'Separamos em até 1 dia útil e postamos',
-        },
+    ...(retirada
+      ? [
+          {
+            feito: !!andamento?.prontoEm,
+            titulo: 'Pronto para retirar',
+            detalhe: andamento?.prontoEm
+              ? `${STORE.name}, ${STORE.unitText} · desde ${quando.format(new Date(andamento.prontoEm))}`
+              : `Avisamos por e-mail quando estiver separado · ${STORE.name}, ${STORE.unitText}`,
+          },
+          {
+            feito: !!andamento?.retiradoEm,
+            titulo: 'Retirado',
+            detalhe: andamento?.retiradoEm ? quando.format(new Date(andamento.retiradoEm)) : 'Informe o número do pedido na loja',
+          },
+        ]
+      : [
+          {
+            feito: !!andamento?.postadoEm,
+            titulo: andamento?.postadoEm ? 'Enviado' : 'Envio',
+            detalhe: andamento?.postadoEm
+              ? `${m.frete ? `${String(m.frete).split(' · ')[0]} · ` : ''}${quando.format(new Date(andamento.postadoEm))}`
+              : andamento?.rastreio?.length
+                ? 'Etiqueta pronta · postamos em breve'
+                : 'Separamos em até 1 dia útil e postamos',
+          },
+          {
+            feito: !!andamento?.entregueEm,
+            titulo: 'Entregue',
+            detalhe: andamento?.entregueEm ? quando.format(new Date(andamento.entregueEm)) : 'Avisamos por e-mail a cada etapa',
+          },
+        ]),
   ];
 
   return (
@@ -68,7 +93,14 @@ export function DetalhePedido({ p, andamento, fotos }: { p: Pagamento; andamento
               Ver nota fiscal (DANFE)
             </a>
           )}
-          {andamento?.rastreio?.length ? <span>Código de rastreio: <strong>{andamento.rastreio.join(', ')}</strong></span> : null}
+          {andamento?.rastreio?.length ? (
+            <span>
+              Código de rastreio: <strong>{andamento.rastreio.join(', ')}</strong> ·{' '}
+              <a href={linkDeRastreio(andamento.rastreio[0]!)} target="_blank" rel="noopener noreferrer">
+                Rastrear entrega
+              </a>
+            </span>
+          ) : null}
         </div>
       )}
 
