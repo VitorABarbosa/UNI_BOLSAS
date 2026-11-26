@@ -16,6 +16,7 @@ import {
   esqueciSchema,
   novaSenhaSchema,
   perfilComEnderecoSchema,
+  perfilSemEnderecoSchema,
   trocarSenhaSchema,
 } from '@/lib/contas/regras';
 
@@ -246,7 +247,10 @@ export async function salvarPerfil(_: Resultado | null, fd: FormData): Promise<R
   if (!(await contasLiberadas())) return FECHADO;
   const cliente = await clienteAtual();
   if (!cliente) return { ok: false, erro: 'Sua sessão terminou. Entre de novo.' };
-  const p = perfilComEnderecoSchema.safeParse({
+  // Endereço é opcional aqui: quem ainda não comprou preenche no checkout,
+  // junto com o frete. Começou a preencher? Aí precisa estar completo.
+  const temEndereco = ['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'].some((k) => str(fd, k));
+  const p = (temEndereco ? perfilComEnderecoSchema : perfilSemEnderecoSchema).safeParse({
     nome: str(fd, 'nome'),
     empresa: str(fd, 'empresa'),
     cnpj: str(fd, 'cnpj'),

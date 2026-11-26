@@ -11,7 +11,9 @@ import { criarPreferencia, mercadoPagoConfigurado } from '@/lib/checkout/mercado
 import { registrarPedido } from '@/lib/checkout/meus-pedidos';
 import { embalar, resumoCaixas, type Volume } from '@/lib/frete/caixas';
 import { cotarFrete, melhorEnvioConfigurado, prazoEmTexto, type OpcaoFrete } from '@/lib/frete/melhorenvio';
-import { perfilCompleto, soDigitos } from '@/lib/contas/regras';
+import { enderecoCompleto, identidadeCompleta, soDigitos } from '@/lib/contas/regras';
+import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 import {
   enderecoEmLinha,
   enderecoSchema,
@@ -98,8 +100,8 @@ export async function iniciarPagamento(entrada: {
   if (!cliente) return { ok: false, erro: 'Sua sessão terminou. Entre de novo na sua conta.' };
   const perfil = cliente.perfil;
   const { nome, empresa, cnpj, telefone } = perfil;
-  if (!perfilCompleto(perfil) || !nome || !cnpj || !telefone) {
-    return { ok: false, erro: 'Complete os dados e o endereço da sua loja antes de pagar.' };
+  if (!identidadeCompleta(perfil) || !nome || !cnpj || !telefone) {
+    return { ok: false, erro: 'Complete seu nome, CPF ou CNPJ e WhatsApp antes de pagar.' };
   }
   if (!dentroDoLimite(`pagar:${cliente.id}`, 10, 10 * MINUTO)) {
     return { ok: false, erro: 'Muitas tentativas seguidas. Espere alguns minutos.' };
@@ -112,19 +114,35 @@ export async function iniciarPagamento(entrada: {
   if (entrada.entrega !== 'retirada' && entrada.entrega !== 'envio') {
     return { ok: false, erro: 'Escolha como quer receber.' };
   }
-  let endereco = '';
-  let cepEnvio = '';
-  let entregaEm: import('@/lib/checkout/tipos').Endereco | null = null;
-  if (entrada.entrega !== 'retirada') {
+  // Endereço: o que a cliente digitou agora (obrigatório no envio) ou o
+  // guardado na conta. Ele vai na nota e, se veio digitado, fica salvo na
+  // conta pra próxima compra — não existe mais um passo "salvar dados".
+  type Endereco = import('@/lib/checkout/tipos').Endereco;
+  let informado: Endereco | null = null;
+  if (entrada.endereco !== undefined || entrada.entrega === 'envio') {
     const e = enderecoSchema.safeParse(entrada.endereco);
     if (!e.success) {
       const campos: Record<string, string> = {};
       for (const i of e.error.issues) campos[String(i.path[0])] ??= i.message;
-      return { ok: false, erro: 'Confira o endereço de entrega.', campos };
+      return { ok: false, erro: entrada.entrega === 'envio' ? 'Confira o endereço de entrega.' : 'Confira o seu endereço.', campos };
     }
-    endereco = enderecoEmLinha(e.data);
-    cepEnvio = e.data.cep;
-    entregaEm = e.data;
+    informado = e.data;
+  }
+  const salvo: Endereco | null = enderecoCompleto(perfil)
+    ? {
+        cep: perfil.cep!, rua: perfil.rua!, numero: perfil.numero!, complemento: perfil.complemento ?? '',
+        bairro: perfil.bairro!, cidade: perfil.cidade!, uf: perfil.uf as Endereco['uf'],
+      }
+    : null;
+  const enderecoNota = informado ?? salvo;
+  if (!enderecoNota) return { ok: false, erro: 'Preencha seu endereço: ele vai na nota fiscal.' };
+  let endereco = '';
+  let cepEnvio = '';
+  let entregaEm: Endereco | null = null;
+  if (entrada.entrega === 'envio' && informado) {
+    endereco = enderecoEmLinha(informado);
+    cepEnvio = informado.cep;
+    entregaEm = informado;
   }
 
   let cotacao: Cotacao;
@@ -192,13 +210,13 @@ export async function iniciarPagamento(entrada: {
         volumes: frete ? frete.volumes.map((v) => `${v.comprimento}x${v.largura}x${v.altura}:${v.peso}`).join(';') : '',
         // Endereço da loja (nota fiscal) e de entrega (etiqueta), separados
         // em campos: a automação de NF e etiqueta precisa deles assim.
-        nf_cep: perfil.cep ?? '',
-        nf_rua: perfil.rua ?? '',
-        nf_numero: perfil.numero ?? '',
-        nf_complemento: perfil.complemento ?? '',
-        nf_bairro: perfil.bairro ?? '',
-        nf_cidade: perfil.cidade ?? '',
-        nf_uf: perfil.uf ?? '',
+        nf_cep: enderecoNota.cep,
+        nf_rua: enderecoNota.rua,
+        nf_numero: enderecoNota.numero,
+        nf_complemento: enderecoNota.complemento ?? '',
+        nf_bairro: enderecoNota.bairro,
+        nf_cidade: enderecoNota.cidade,
+        nf_uf: enderecoNota.uf,
         nf_ie: perfil.ie ?? '',
         ent_cep: entregaEm?.cep ?? '',
         ent_rua: entregaEm?.rua ?? '',
@@ -217,9 +235,26 @@ export async function iniciarPagamento(entrada: {
       throw new Error(`link de pagamento inesperado: ${destino.hostname}`);
     }
     await registrarPedido(cliente.id, ref);
+    if (informado) await guardarEndereco(informado);
     return { ok: true, url: destino.toString() };
   } catch (e) {
     console.error('[checkout] criar preferência falhou:', e instanceof Error ? e.message : e);
     return { ok: false, erro: 'Não conseguimos abrir o pagamento agora. Tente de novo em alguns minutos.' };
+  }
+}
+
+/**
+ * Guarda na conta o endereço usado na compra: na próxima, ele já vem
+ * preenchido. Falhar aqui não atrapalha o pagamento.
+ */
+async function guardarEndereco(e: import('@/lib/checkout/tipos').Endereco) {
+  try {
+    const { error } = await (await createClient()).auth.updateUser({
+      data: { cep: e.cep, rua: e.rua, numero: e.numero, complemento: e.complemento ?? '', bairro: e.bairro, cidade: e.cidade, uf: e.uf },
+    });
+    if (error) console.error('[checkout] guardar endereço falhou:', error.code, error.message);
+    revalidatePath('/conta');
+  } catch (err) {
+    console.error('[checkout] guardar endereço falhou:', err instanceof Error ? err.message : err);
   }
 }
