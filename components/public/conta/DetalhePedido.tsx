@@ -35,9 +35,11 @@ export function DetalhePedido({ p, andamento, fotos }: { p: Pagamento; andamento
       detalhe: pago && p.date_approved ? `${formaDePagamento(p)} · ${quando.format(new Date(p.date_approved))}` : formaDePagamento(p),
     },
     {
-      feito: !!andamento?.nota,
+      feito: !!andamento?.nota && !andamento.nota.cancelada,
       titulo: 'Nota fiscal',
-      detalhe: andamento?.nota ? `NF-e nº ${andamento.nota.numero}` : 'Emitida depois do pagamento',
+      detalhe: andamento?.nota
+        ? `NF-e nº ${andamento.nota.numero}${andamento.nota.cancelada ? ' (cancelada)' : ''}`
+        : 'Emitida depois do pagamento',
     },
     ...(retirada
       ? [
@@ -88,11 +90,12 @@ export function DetalhePedido({ p, andamento, fotos }: { p: Pagamento; andamento
 
       {(andamento?.nota?.danfe || andamento?.rastreio?.length) && (
         <div className="uni-detalhe-docs">
-          {andamento?.nota?.danfe && (
+          {andamento?.nota?.danfe && !andamento.nota.cancelada && (
             <a href={andamento.nota.danfe} target="_blank" rel="noopener noreferrer">
-              Ver nota fiscal (DANFE)
+              Ver nota fiscal (PDF)
             </a>
           )}
+          {andamento?.nota?.xml && !andamento.nota.cancelada && <a href={andamento.nota.xml}>Baixar XML da nota</a>}
           {andamento?.rastreio?.length ? (
             <span>
               Código de rastreio: <strong>{andamento.rastreio.join(', ')}</strong> ·{' '}

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { pagamentosDoPedido } from '@/lib/checkout/mercadopago';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
-import { lerEstado, marcarEntregue, marcarEnviado, marcarProntoParaRetirar, marcarRetirado, processarPedido } from '@/lib/automacao/pedido';
+import { cancelarNota, lerEstado, marcarEntregue, marcarEnviado, marcarProntoParaRetirar, marcarRetirado, processarPedido } from '@/lib/automacao/pedido';
 import { linkDeImpressao } from '@/lib/automacao/etiqueta';
 
 export type RespostaAdmin = { ok: true; url?: string } | { ok: false; erro: string };
@@ -85,6 +85,21 @@ export async function confirmarEntrega(ref: string): Promise<RespostaAdmin> {
   if (!REF_PEDIDO.test(ref)) return { ok: false, erro: 'Pedido inválido.' };
   try {
     await marcarEntregue(ref);
+  } catch (err) {
+    return { ok: false, erro: err instanceof Error ? err.message : 'Não deu certo.' };
+  }
+  revalidatePath('/admin/pedidos', 'layout');
+  return { ok: true };
+}
+
+/** Cancela a nota fiscal do pedido. */
+export async function cancelarNotaDoPedido(ref: string, justificativa: string): Promise<RespostaAdmin> {
+  await requireAdmin();
+  if (!REF_PEDIDO.test(ref)) return { ok: false, erro: 'Pedido inválido.' };
+  const j = String(justificativa ?? '').trim();
+  if (j.length < 15 || j.length > 255) return { ok: false, erro: 'Escreva o motivo do cancelamento (de 15 a 255 letras).' };
+  try {
+    await cancelarNota(ref, j);
   } catch (err) {
     return { ok: false, erro: err instanceof Error ? err.message : 'Não deu certo.' };
   }

@@ -247,6 +247,10 @@ export function FormPerfil({ perfil, aoSalvar }: { perfil: Partial<Perfil>; aoSa
         <Campo nome="cidade" rotulo="Cidade" auto="address-level2" valor={perfil.cidade} r={r} max={80} />
         <Campo nome="uf" rotulo="UF" auto="address-level1" valor={perfil.uf} r={r} max={2} mascara={(v) => v.toUpperCase().slice(0, 2)} />
       </div>
+      <Campo nome="ie" rotulo="Inscrição Estadual da loja (se tiver)" valor={perfil.ie} r={r} max={20} opcional />
+      <p className="uni-conta-pequeno" style={{ margin: '-6px 0 2px' }}>
+        Com a Inscrição Estadual, a nota sai como compra para revenda. Se a loja não tiver, deixe em branco.
+      </p>
       <Enviar pendente={pendente}>Salvar dados</Enviar>
     </form>
   );

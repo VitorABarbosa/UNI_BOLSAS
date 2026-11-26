@@ -258,6 +258,7 @@ export async function salvarPerfil(_: Resultado | null, fd: FormData): Promise<R
     bairro: str(fd, 'bairro'),
     cidade: str(fd, 'cidade'),
     uf: str(fd, 'uf'),
+    ie: str(fd, 'ie'),
   });
   if (!p.success) return invalido(p.error.issues);
   const { error } = await (await createClient()).auth.updateUser({ data: p.data });

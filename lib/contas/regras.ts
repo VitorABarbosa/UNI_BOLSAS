@@ -96,7 +96,7 @@ export const perfilSchema = z.object({
     .refine((v) => [10, 11].includes(soDigitos(v).length), 'Telefone com DDD')
     .transform(formatarTelefone),
 });
-export type Perfil = z.output<typeof perfilSchema> & Partial<Omit<EnderecoLoja, 'uf'> & { uf: string }>;
+export type Perfil = z.output<typeof perfilSchema> & Partial<Omit<EnderecoLoja, 'uf'> & { uf: string; ie: string }>;
 
 const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'] as const;
 const parte = (max: number, msg: string) => z.string().trim().min(1, msg).max(max, 'Texto longo demais');
@@ -125,8 +125,22 @@ export const enderecoLojaSchema = z.object({
 });
 export type EnderecoLoja = z.output<typeof enderecoLojaSchema>;
 
+/**
+ * Inscrição Estadual da loja da cliente (opcional). Vai na nota fiscal: com
+ * ela, a nota sai como venda para revenda (contribuinte do ICMS). Aceita só
+ * números ou "ISENTO".
+ */
+export const ieSchema = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .transform((v) => (/^ISENT/.test(v) ? 'ISENTO' : soDigitos(v)))
+  .refine((v) => v === '' || v === 'ISENTO' || (v.length >= 8 && v.length <= 14), 'Inscrição Estadual: só números (ou ISENTO)')
+  .optional()
+  .default('');
+
 /** Perfil completo, com o endereço: é o que o checkout salva. */
-export const perfilComEnderecoSchema = perfilSchema.extend(enderecoLojaSchema.shape);
+export const perfilComEnderecoSchema = perfilSchema.extend(enderecoLojaSchema.shape).extend({ ie: ieSchema });
 
 /** Os dados da loja estão completos pra emitir nota? */
 export function perfilCompleto(p: Partial<Perfil>): boolean {

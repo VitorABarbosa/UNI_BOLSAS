@@ -72,6 +72,8 @@ export type MetadataPedido = {
   nf_bairro?: string;
   nf_cidade?: string;
   nf_uf?: string;
+  /** Inscrição Estadual da cliente (números ou ISENTO), se ela informou. */
+  nf_ie?: string;
   ent_cep?: string;
   ent_rua?: string;
   ent_numero?: string;

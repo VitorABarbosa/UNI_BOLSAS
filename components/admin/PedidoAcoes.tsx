@@ -37,9 +37,11 @@ export function PedidoAcoes({ refPedido, s }: { refPedido: string; s: SituacaoAc
       setMsg(r.ok ? { ok: true, texto: sucesso } : { ok: false, texto: r.erro });
     });
 
+  const concluido = s.entrega === 'retirada' ? s.retirado : s.entregue;
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
+      {concluido && !s.temErro && <p className="text-sm text-stone-600">Pedido concluído. Nada a fazer.</p>}
+      <div className="flex flex-wrap items-center gap-2 empty:hidden">
         {s.temEtiqueta && !s.entregue && (
           <button
             type="button"

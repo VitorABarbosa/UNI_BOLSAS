@@ -42,6 +42,7 @@ export async function clienteAtual(): Promise<Cliente | null> {
       bairro: s('bairro'),
       cidade: s('cidade'),
       uf: s('uf'),
+      ie: s('ie'),
     },
     pedidos,
   };
