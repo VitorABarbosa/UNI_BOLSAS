@@ -117,7 +117,20 @@ function mensagemDoBling(texto: string): string {
 
 // ─── Nota fiscal ───────────────────────────────────────────────────────────
 
-export type NotaEmitida = { id: number; numero: string; chave: string; danfe: string | null; xml: string | null };
+export type NotaEmitida = {
+  id: number;
+  numero: string;
+  chave: string;
+  danfe: string | null;
+  xml: string | null;
+  /** Focus NFe: caminhos dos arquivos lá (baixados pelo nosso /api/nota/…). */
+  caminhoDanfe?: string | null;
+  caminhoXml?: string | null;
+  provedor?: 'bling' | 'focus';
+  /** Emitida em homologação (sem valor fiscal). */
+  teste?: boolean;
+  cancelada?: string;
+};
 
 /** Situações do Bling em que a NF-e está autorizada pela SEFAZ. */
 const AUTORIZADA = new Set([5, 6, 7]);

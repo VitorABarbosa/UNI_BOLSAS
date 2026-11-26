@@ -30,7 +30,8 @@ export type PedidoAdmin = { ref: string; pagamento: Pagamento; estado: EstadoPed
 const PESO: Record<string, number> = { approved: 5, authorized: 4, in_process: 3, pending: 3, in_mediation: 2, refunded: 2, charged_back: 2, rejected: 1, cancelled: 1 };
 
 /** O erro "Bling ainda não conectado" não é problema do pedido: é configuração pendente. */
-export const erroDeConfiguracao = (e: EstadoPedido | null) => !!e?.erro && /ainda não está conectado|não configurado/i.test(e.erro.mensagem);
+export const erroDeConfiguracao = (e: EstadoPedido | null) =>
+  !!e?.erro && /ainda não está conectado|não está configurad|não configurad/i.test(e.erro.mensagem);
 
 export function filaDo(p: Pagamento, e: EstadoPedido | null): Fila {
   if (p.status === 'pending' || p.status === 'in_process' || p.status === 'in_mediation') return 'aguardando';

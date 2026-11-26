@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { AdminShell } from '@/components/admin/shell/AdminShell';
 import { BotaoImprimir, PedidoAcoes } from '@/components/admin/PedidoAcoes';
+import { CancelarNota } from '@/components/admin/CancelarNota';
 import { formaDePagamento, pagamentosDoPedido, pecasDoPagamento, statusEmPortugues, type Pagamento } from '@/lib/checkout/mercadopago';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
 import { fotosDosPedidos } from '@/lib/checkout/meus-pedidos';
@@ -68,7 +69,11 @@ export default async function PedidoAdminPage({ params }: { params: Promise<{ re
   const etapas: { feito: boolean; titulo: string; quando?: string }[] = [
     { feito: true, titulo: 'Pedido feito', quando: dataHora.format(new Date(p.date_created)) },
     { feito: pago, titulo: pago ? `Pago · ${formaDePagamento(p)}` : statusEmPortugues(p.status), quando: p.date_approved ? dataHora.format(new Date(p.date_approved)) : undefined },
-    { feito: !!e?.nota, titulo: e?.nota ? `Nota fiscal nº ${e.nota.numero}` : 'Nota fiscal' },
+    {
+      feito: !!e?.nota && !e.nota.cancelada,
+      titulo: e?.nota ? `Nota fiscal nº ${e.nota.numero}${e.nota.cancelada ? ' (CANCELADA)' : ''}` : 'Nota fiscal',
+      quando: e?.nota?.cancelada ? `cancelada em ${dataHora.format(new Date(e.nota.cancelada))}` : undefined,
+    },
     ...(retirada
       ? [
           { feito: !!e?.prontoEm, titulo: 'Pronto para retirar (cliente avisada)', quando: e?.prontoEm ? dataHora.format(new Date(e.prontoEm)) : undefined },
@@ -109,7 +114,7 @@ export default async function PedidoAdminPage({ params }: { params: Promise<{ re
           </p>
         )}
 
-        {pago && fila.id !== 'concluido' && (
+        {pago && (
           <Bloco titulo="O que fazer" className="print:hidden">
             <PedidoAcoes
               refPedido={ref}
@@ -184,10 +189,20 @@ export default async function PedidoAdminPage({ params }: { params: Promise<{ re
               <div className="mt-3 space-y-1 border-t pt-3 text-xs">
                 {e?.nota?.danfe && (
                   <a className="block underline" href={e.nota.danfe} target="_blank" rel="noopener noreferrer">
-                    Ver nota (DANFE)
+                    Ver nota (PDF)
+                  </a>
+                )}
+                {e?.nota?.xml && (
+                  <a className="block underline" href={e.nota.xml}>
+                    Baixar XML
                   </a>
                 )}
                 {e?.nota && <div className="break-all font-mono text-stone-500">{e.nota.chave}</div>}
+                {e?.nota?.provedor === 'focus' && (
+                  <div className="pt-1 print:hidden">
+                    <CancelarNota refPedido={ref} cancelada={!!e.nota.cancelada} />
+                  </div>
+                )}
                 {e?.rastreio?.map((c) => (
                   <a key={c} className="block underline" href={linkDeRastreio(c)} target="_blank" rel="noopener noreferrer">
                     Rastreio {c}

@@ -1,6 +1,8 @@
 import 'server-only';
 import { lerJson, gravarJson, listarJson } from '@/lib/automacao/armazem';
-import { blingConectado, blingConfigurado, emitirNota, ErroAutomacao, type NotaEmitida } from '@/lib/automacao/bling';
+import { ErroAutomacao, type NotaEmitida } from '@/lib/automacao/bling';
+import { emitirNotaDoPedido, podeEmitir } from '@/lib/automacao/nota';
+import { cancelarNotaFocus } from '@/lib/automacao/focus';
 import { gerarEtiqueta, situacaoEnvios } from '@/lib/automacao/etiqueta';
 import { linkDeRastreio } from '@/lib/automacao/rastreio-link';
 import { melhorEnvioConfigurado } from '@/lib/frete/melhorenvio';
@@ -88,13 +90,14 @@ async function processar(p: Pagamento): Promise<EstadoPedido | null> {
 
   // 1. Nota fiscal.
   if (!estado.nota) {
-    if (!blingConfigurado() || !(await blingConectado()).conectado) {
-      estado.erro = { etapa: 'nota', mensagem: 'O Bling ainda não está conectado: a nota não foi emitida.', em: new Date().toISOString() };
+    const pode = await podeEmitir();
+    if (!pode.ok) {
+      estado.erro = { etapa: 'nota', mensagem: pode.motivo, em: new Date().toISOString() };
       await salvar(estado);
       return estado;
     }
     try {
-      estado.nota = await emitirNota(p);
+      estado.nota = await emitirNotaDoPedido(p);
       estado.erro = undefined;
       await salvar(estado);
     } catch (e) {
@@ -111,6 +114,7 @@ async function processar(p: Pagamento): Promise<EstadoPedido | null> {
       paragrafos: [
         `A NF-e nº ${estado.nota.numero} do pedido ${ref} foi emitida.`,
         `Chave de acesso: ${estado.nota.chave}`,
+        ...(estado.nota.xml ? [`Arquivo XML (para dar entrada no seu estoque): ${estado.nota.xml}`] : []),
       ],
       botao: estado.nota.danfe ? { texto: 'Ver a nota (DANFE)', url: estado.nota.danfe } : { texto: 'Ver meu pedido', url: `${SITE_URL}/pedido/${ref}` },
       rodape: 'Guarde este e-mail: é o documento fiscal da sua compra.',
@@ -316,12 +320,15 @@ export async function checarPedidos(): Promise<{ vistos: number; rastreados: num
   const recentes = arquivos.filter((a) => Date.now() - Date.parse(a.atualizadoEm) < LIMITE_DIAS * 24 * 60 * 60 * 1000);
   let rastreados = 0;
   let refeitos = 0;
+  // Pendência de configuração (nota não ligada): só vale tentar quando ligar.
+  const notaLigada = (await podeEmitir()).ok;
   for (const a of recentes) {
     const ref = a.nome.replace(/\.json$/, '');
     const e = await lerEstado(ref).catch(() => null);
     if (!e) continue;
     try {
-      if (e.erro && refeitos < 10) {
+      const soConfiguracao = e.erro?.etapa === 'nota' && /não está configurad|não está conectad/i.test(e.erro.mensagem);
+      if (e.erro && refeitos < 10 && (!soConfiguracao || notaLigada)) {
         const pago = (await pagamentosDoPedido(ref)).find((p) => p.status === 'approved');
         if (pago) {
           refeitos++;
@@ -338,4 +345,16 @@ export async function checarPedidos(): Promise<{ vistos: number; rastreados: num
     }
   }
   return { vistos: recentes.length, rastreados, refeitos };
+}
+
+/** Cancela a nota do pedido (Focus NFe; a SEFAZ aceita em até 24 h). */
+export async function cancelarNota(ref: string, justificativa: string): Promise<EstadoPedido> {
+  const estado = await lerEstado(ref);
+  if (!estado?.nota) throw new ErroAutomacao('Este pedido não tem nota emitida.');
+  if (estado.nota.provedor !== 'focus') throw new ErroAutomacao('Esta nota foi emitida pelo Bling: cancele por lá.');
+  if (estado.nota.cancelada) return estado;
+  await cancelarNotaFocus(ref, justificativa);
+  estado.nota = { ...estado.nota, cancelada: new Date().toISOString() };
+  await salvar(estado);
+  return estado;
 }

@@ -41,3 +41,14 @@ export async function requireAdmin() {
 
   return { user, supabase };
 }
+
+/** Sem redirecionar: diz se quem está logado é administrador. */
+export async function ehAdmin(): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data } = await supabase.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
+  return !!data;
+}

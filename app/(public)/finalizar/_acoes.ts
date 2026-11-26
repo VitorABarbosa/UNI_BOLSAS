@@ -199,6 +199,7 @@ export async function iniciarPagamento(entrada: {
         nf_bairro: perfil.bairro ?? '',
         nf_cidade: perfil.cidade ?? '',
         nf_uf: perfil.uf ?? '',
+        nf_ie: perfil.ie ?? '',
         ent_cep: entregaEm?.cep ?? '',
         ent_rua: entregaEm?.rua ?? '',
         ent_numero: entregaEm?.numero ?? '',
