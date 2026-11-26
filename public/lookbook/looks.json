@@ -1,0 +1,92 @@
+[
+  {
+    "look": 1,
+    "tema": "Festa/noite",
+    "produto": "92f4444c-4fce-4324-90fa-fbe476368997",
+    "imagem": "/lookbook/look-01.webp",
+    "foto": "/lookbook/bolsa-01.webp",
+    "largura": 424,
+    "altura": 1400
+  },
+  {
+    "look": 2,
+    "tema": "Passeio elegante",
+    "produto": "b77440c0-ec5e-4861-99a0-5fb4345817a4",
+    "imagem": "/lookbook/look-02.webp",
+    "foto": "/lookbook/bolsa-02.webp",
+    "largura": 411,
+    "altura": 1400
+  },
+  {
+    "look": 3,
+    "tema": "Verão",
+    "produto": "f835f55a-682a-4bbb-95fe-d6c3bb92c610",
+    "imagem": "/lookbook/look-03.webp",
+    "foto": "/lookbook/bolsa-03.webp",
+    "largura": 523,
+    "altura": 1400
+  },
+  {
+    "look": 4,
+    "tema": "Trabalho",
+    "produto": "4f548293-a2ef-467b-8be6-189c6bffd507",
+    "imagem": "/lookbook/look-04.webp",
+    "foto": "/lookbook/bolsa-04.webp",
+    "largura": 473,
+    "altura": 1400
+  },
+  {
+    "look": 5,
+    "tema": "Executiva",
+    "produto": "508d5011-7537-4c70-82ee-b473a4d70e10",
+    "imagem": "/lookbook/look-05.webp",
+    "foto": "/lookbook/bolsa-05.webp",
+    "largura": 408,
+    "altura": 1400
+  },
+  {
+    "look": 6,
+    "tema": "Casual",
+    "produto": "3e924cb0-927b-427a-bc44-067a468310dd",
+    "imagem": "/lookbook/look-06.webp",
+    "foto": "/lookbook/bolsa-06.webp",
+    "largura": 636,
+    "altura": 1400
+  },
+  {
+    "look": 7,
+    "tema": "Viagem",
+    "produto": "8799efc4-2bed-48d1-bf4f-6c9c946a5ff5",
+    "imagem": "/lookbook/look-07.webp",
+    "foto": "/lookbook/bolsa-07.webp",
+    "largura": 747,
+    "altura": 1400
+  },
+  {
+    "look": 8,
+    "tema": "Academia",
+    "produto": "608c07b9-7da3-4f46-96a6-7e6e2a8dee3d",
+    "imagem": "/lookbook/look-08.webp",
+    "foto": "/lookbook/bolsa-08.webp",
+    "largura": 477,
+    "altura": 1400
+  },
+  {
+    "look": 9,
+    "tema": "Praia",
+    "produto": "5fe0a6e9-385d-4386-a81e-ba1a9e65808b",
+    "imagem": "/lookbook/look-09.webp",
+    "foto": "/lookbook/bolsa-09.webp",
+    "largura": 635,
+    "altura": 1400
+  },
+  {
+    "look": 10,
+    "tema": "Faculdade",
+    "produto": "1af3fa33-f4b5-465c-8c72-fe648c6da40b",
+    "imagem": "/lookbook/look-10.webp",
+    "foto": "/lookbook/bolsa-10.webp",
+    "largura": 515,
+    "altura": 1400
+  }
+]
