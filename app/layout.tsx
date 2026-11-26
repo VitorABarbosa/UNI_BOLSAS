@@ -44,6 +44,11 @@ export const metadata: Metadata = {
   keywords: PALAVRAS_CHAVE,
   applicationName: 'Uni Bolsas',
   formatDetection: { telephone: false },
+  // Código de verificação do Google (Merchant Center / Search Console): a
+  // variável GOOGLE_SITE_VERIFICATION na Hostinger vira a meta tag.
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION.replace(/^.*content="([^"]+)".*$/s, '$1').trim() } }
+    : {}),
 };
 
 /**
