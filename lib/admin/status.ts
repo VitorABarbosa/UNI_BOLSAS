@@ -10,6 +10,7 @@ export type ItemStatus = { nome: string; ok: boolean; texto: string; falta?: str
 
 export async function statusDasIntegracoes(): Promise<ItemStatus[]> {
   const tem = (v: string) => !!process.env[v];
+  const faltaNota = focusConfigurada() ? await faltaParaEmitir() : null;
   const bling = blingConfigurado() ? await blingConectado().catch(() => ({ conectado: false as const, desde: undefined })) : null;
   return [
     {
@@ -33,11 +34,11 @@ export async function statusDasIntegracoes(): Promise<ItemStatus[]> {
     focusConfigurada() || !bling
       ? {
           nome: 'Nota fiscal (Focus NFe)',
-          ok: focusConfigurada() && !faltaParaEmitir() && emProducao(),
+          ok: focusConfigurada() && !faltaNota && emProducao(),
           texto: 'Emite a NF-e de cada venda paga, sozinha, logo depois do pagamento.',
           falta: !focusConfigurada()
             ? 'Falta FOCUSNFE_TOKEN na Hostinger.'
-            : (faltaParaEmitir() ??
+            : (faltaNota ??
               (emProducao() ? undefined : 'Em modo de TESTE (homologação). Emita uma nota de teste abaixo; quando der certo, mude FOCUSNFE_AMBIENTE para producao.')),
         }
       : {

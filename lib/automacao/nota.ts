@@ -11,7 +11,7 @@ import type { Pagamento } from '@/lib/checkout/mercadopago';
  */
 export async function podeEmitir(): Promise<{ ok: true } | { ok: false; motivo: string }> {
   if (focusConfigurada()) {
-    const falta = faltaParaEmitir();
+    const falta = await faltaParaEmitir();
     if (falta) return { ok: false, motivo: `A nota fiscal automática não está configurada: ${falta}` };
     if (!emProducao()) {
       return { ok: false, motivo: 'A nota fiscal automática não está configurada para produção (Focus NFe em modo de teste).' };

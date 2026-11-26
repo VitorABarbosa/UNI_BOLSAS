@@ -4,6 +4,7 @@ import { pecasDoPagamento, type Pagamento } from '@/lib/checkout/mercadopago';
 import { soDigitos } from '@/lib/contas/regras';
 import { STORE } from '@/lib/content/store';
 import { SITE_URL } from '@/lib/seo';
+import { categoriasSemNcm, ncmDosProdutos } from '@/lib/automacao/ncm';
 
 /**
  * Nota fiscal (NF-e modelo 55) pela API da Focus NFe.
@@ -19,7 +20,8 @@ import { SITE_URL } from '@/lib/seo';
  *                        e os pedidos reais NÃO emitem (só o botão de teste do
  *                        painel).
  * Dados fiscais (o contador define; os padrões abaixo são de Simples Nacional):
- *   NFE_NCM                   NCM das bolsas (obrigatório; ex.: 42022210)
+ *   (NCM: por categoria, no painel em Integrações; NFE_NCM vale para as
+ *    categorias sem NCM)
  *   NFE_CFOP_ESTADUAL         padrão 5102 (venda de mercadoria de terceiros, dentro de SP)
  *   NFE_CFOP_INTERESTADUAL    padrão 6102 (o mesmo, para outro estado)
  *   NFE_CSOSN                 padrão 102 (Simples sem permissão de crédito)
@@ -45,9 +47,10 @@ export function emProducao(): boolean {
 }
 
 /** O que falta para emitir (texto pro painel), ou null se está tudo certo. */
-export function faltaParaEmitir(): string | null {
+export async function faltaParaEmitir(): Promise<string | null> {
   if (!focusConfigurada()) return 'Falta FOCUSNFE_TOKEN na Hostinger.';
-  if (!soDigitos(process.env.NFE_NCM ?? process.env.BLING_NCM ?? '')) return 'Falta NFE_NCM (o NCM das bolsas, que o contador informa).';
+  const semNcm = await categoriasSemNcm().catch(() => []);
+  if (semNcm.length) return `Falta o NCM de: ${semNcm.join(', ')} (Integrações → NCM por categoria).`;
   if (!STORE.inscricaoEstadual) return 'Falta a Inscrição Estadual da loja.';
   return null;
 }
@@ -121,10 +124,9 @@ function formaDaNota(p: Pagamento): string {
 }
 
 /** Monta o JSON da NF-e a partir do pagamento aprovado. */
-export function montarNota(p: Pagamento, opcoes: { teste?: boolean } = {}) {
+export function montarNota(p: Pagamento, ncms: Map<string, string>, opcoes: { teste?: boolean } = {}) {
   const m = p.metadata ?? {};
   const pecas = pecasDoPagamento(p);
-  const ncm = soDigitos(process.env.NFE_NCM ?? process.env.BLING_NCM ?? '');
   const ufDestino = (m.nf_uf || 'SP').toUpperCase();
   const interestadual = ufDestino !== STORE.coleta.uf;
   const cfop = interestadual ? process.env.NFE_CFOP_INTERESTADUAL || '6102' : process.env.NFE_CFOP_ESTADUAL || '5102';
@@ -183,7 +185,7 @@ export function montarNota(p: Pagamento, opcoes: { teste?: boolean } = {}) {
       numero_item: String(k + 1),
       codigo_produto: String(i.id ?? `ITEM${k + 1}`).replace(/-/g, '').slice(0, 20).toUpperCase(),
       descricao: opcoes.teste && k === 0 ? 'NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL' : i.title.slice(0, 120),
-      codigo_ncm: ncm,
+      codigo_ncm: ncms.get(String(i.id ?? '')) ?? '',
       cfop,
       unidade_comercial: 'UN',
       quantidade_comercial: String(Number(i.quantity)),
@@ -239,12 +241,23 @@ export async function consultarNota(ref: string): Promise<RespostaFocus | null> 
  * Emite (ou recupera, se já existir) a NF-e do pedido. Lança ErroAutomacao
  * com a mensagem da SEFAZ quando é rejeitada — ela aparece no painel.
  */
-export async function emitirNotaFocus(p: Pagamento, opcoes: { teste?: boolean; ref?: string } = {}): Promise<NotaEmitida> {
+export async function emitirNotaFocus(
+  p: Pagamento,
+  opcoes: { teste?: boolean; ref?: string; ncms?: Map<string, string> } = {},
+): Promise<NotaEmitida> {
   const ref = opcoes.ref ?? p.external_reference!;
   let atual = await consultarNota(ref);
 
   if (!atual || atual.status === 'erro_autorizacao') {
-    const r = await focus(`/v2/nfe?ref=${encodeURIComponent(ref)}`, { method: 'POST', body: JSON.stringify(montarNota(p, opcoes)) });
+    let ncms = opcoes.ncms;
+    if (!ncms) {
+      try {
+        ncms = await ncmDosProdutos(pecasDoPagamento(p).map((i) => String(i.id ?? '')));
+      } catch (e) {
+        throw new ErroAutomacao(e instanceof Error ? e.message : 'Falta o NCM das peças.');
+      }
+    }
+    const r = await focus(`/v2/nfe?ref=${encodeURIComponent(ref)}`, { method: 'POST', body: JSON.stringify(montarNota(p, ncms, opcoes)) });
     if (r.http >= 400 && r.corpo.codigo !== 'already_processed' && r.corpo.codigo !== 'pending_operation') {
       throw new ErroAutomacao(`A Focus NFe recusou a nota: ${explicar(r.corpo)}`);
     }
