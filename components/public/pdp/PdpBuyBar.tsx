@@ -1,5 +1,6 @@
 'use client';
 
+import { COMPRA_NO_SITE } from '@/lib/contas/ligado';
 import { BagIcon } from '@/components/public/icons';
 import {
   itemDaPeca,
@@ -59,7 +60,7 @@ export function PdpBuyBar({ product, color, size, image }: PdpBuyBarProps) {
         onClick={() => adicionarAoPedido(itemDaPeca(product, color, size, image))}
       >
         <BagIcon size={16} />
-        Adicionar
+        {COMPRA_NO_SITE ? 'Comprar' : 'Adicionar'}
       </button>
     </div>
   );

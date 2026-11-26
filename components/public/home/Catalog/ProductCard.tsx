@@ -1,5 +1,6 @@
 'use client';
 
+import { COMPRA_NO_SITE } from '@/lib/contas/ligado';
 import { useState } from 'react';
 import { ArrowIcon, BagIcon } from '@/components/public/icons';
 import { ProductPhoto } from '@/components/public/primitives/ProductPhoto';
@@ -349,7 +350,7 @@ export function ProductCard({
             aria-label={`Adicionar ${product.name} ao pedido`}
           >
             <BagIcon size={13} />
-            {needsSize ? 'Escolher' : 'Adicionar'}
+            {needsSize ? 'Escolher' : COMPRA_NO_SITE ? 'Comprar' : 'Adicionar'}
             {naLista > 0 && <span className="uni-card-cta-n">{naLista}</span>}
           </button>
         </div>

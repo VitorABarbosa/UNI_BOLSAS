@@ -100,7 +100,7 @@ export function AdicionarAoPedido({
           }}
         >
           <BagIcon size={17} />
-          Adicionar ao pedido
+          {COMPRA_NO_SITE ? 'Comprar' : 'Adicionar ao pedido'}
           <span className="uni-add-btn-preco"> · {price.currentLabel}</span>
         </button>
       </div>
