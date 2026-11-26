@@ -38,7 +38,7 @@ export default function TermosPage() {
           <section>
             <h2>1. Quem vende</h2>
             <p>
-              <strong>{STORE.razaoSocial}</strong> (Uni Bolsas), CNPJ {STORE.cnpj}, com stand no {STORE.name} ({STORE.unitText}),{' '}
+              <strong>{STORE.razaoSocial}</strong> (Uni Bolsas), CNPJ {STORE.cnpj}, Inscrição Estadual {STORE.inscricaoEstadual}, com stand no {STORE.name} ({STORE.unitText}),{' '}
               {STORE.street}, {STORE.district}, {STORE.city}, CEP {STORE.cep}. Atendimento pelo{' '}
               <a href={waGeneral} target="_blank" rel="noopener noreferrer">
                 WhatsApp

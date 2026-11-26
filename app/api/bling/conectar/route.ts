@@ -7,7 +7,7 @@ import { redirectToSite } from '@/lib/public-redirect';
 /** "Conectar Bling" no painel: manda o admin autorizar no Bling. */
 export async function GET() {
   await requireAdmin();
-  if (!blingConfigurado()) return redirectToSite('/admin/pedidos?bling=sem-chaves');
+  if (!blingConfigurado()) return redirectToSite('/admin/integracoes?bling=sem-chaves');
   const estado = randomBytes(16).toString('hex');
   const r = NextResponse.redirect(urlDeAutorizacao(estado));
   // O "state" volta do Bling e é conferido: impede que alguém conecte a

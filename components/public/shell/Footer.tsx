@@ -94,7 +94,7 @@ export function Footer() {
         </div>
         <div className="uni-footer-bottom">
           <span>
-            © 2026 {STORE.razaoSocial} · CNPJ {STORE.cnpj}
+            © 2026 {STORE.razaoSocial} · CNPJ {STORE.cnpj}{STORE.inscricaoEstadual ? ` · IE ${STORE.inscricaoEstadual}` : ''}
           </span>
           {/* Privacidade e revogação ficam no rodapé de todas as páginas: a
               LGPD (art. 8º, §5º) pede que desfazer o aceite seja tão fácil

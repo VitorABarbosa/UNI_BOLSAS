@@ -122,7 +122,7 @@ async function processar(p: Pagamento): Promise<EstadoPedido | null> {
   }
 
   // 2. Etiqueta (só envio).
-  if (m.entrega === 'envio' && estado.nota && !estado.etiqueta) {
+  if (m.entrega === 'envio' && estado.nota && !estado.etiqueta && !estado.postadoEm) {
     if (!melhorEnvioConfigurado() || !m.frete_servico_id) {
       estado.erro = { etapa: 'etiqueta', mensagem: 'Melhor Envio não configurado ou pedido sem serviço de frete.', em: new Date().toISOString() };
       await salvar(estado);
@@ -180,6 +180,14 @@ export async function atualizarRastreio(estado: EstadoPedido): Promise<EstadoPed
     // Sem rastreio ainda (etiqueta não postada) ou Melhor Envio fora: tenta na próxima.
   }
 
+  if (await enviarAvisos(estado)) mudou = true;
+  if (mudou) await salvar(estado);
+  return estado;
+}
+
+/** E-mails de "a caminho" e "entregue", cada um uma vez. Diz se mandou algum. */
+async function enviarAvisos(estado: EstadoPedido): Promise<boolean> {
+  let enviou = false;
   const email = estado.cliente?.email;
   const ola = primeiroNome(estado) ? `Olá, ${primeiroNome(estado)}!` : 'Olá!';
   const verPedido = { texto: 'Acompanhar meu pedido', url: `${SITE_URL}/pedido/${estado.ref}` };
@@ -190,7 +198,7 @@ export async function atualizarRastreio(estado: EstadoPedido): Promise<EstadoPed
       titulo: 'Seu pedido está a caminho',
       paragrafos: [
         ola,
-        `Postamos o pedido ${estado.ref}${estado.etiqueta.servico ? ` (${estado.etiqueta.servico})` : ''}.`,
+        `Postamos o pedido ${estado.ref}${estado.etiqueta?.servico ? ` (${estado.etiqueta?.servico})` : ''}.`,
         `Código de rastreio: ${estado.rastreio.join(', ')}`,
         `Acompanhe a entrega: ${linkDeRastreio(estado.rastreio[0]!)}`,
       ],
@@ -199,7 +207,7 @@ export async function atualizarRastreio(estado: EstadoPedido): Promise<EstadoPed
     });
     if (ok) {
       estado.avisos = { ...estado.avisos, postado: true };
-      mudou = true;
+      enviou = true;
     }
   }
   if (email && estado.entregueEm && !estado.avisos?.entregue) {
@@ -209,7 +217,7 @@ export async function atualizarRastreio(estado: EstadoPedido): Promise<EstadoPed
       titulo: 'Pedido entregue!',
       paragrafos: [
         ola,
-        `A transportadora confirmou a entrega do pedido ${estado.ref}.`,
+        `A entrega do pedido ${estado.ref} foi concluída.`,
         'Confira as peças. Se alguma vier com defeito, fale com a gente em até 7 dias.',
       ],
       botao: verPedido,
@@ -218,10 +226,35 @@ export async function atualizarRastreio(estado: EstadoPedido): Promise<EstadoPed
     if (ok) {
       // O de "postado" não faz mais sentido depois de entregue.
       estado.avisos = { ...estado.avisos, entregue: true, postado: true };
-      mudou = true;
+      enviou = true;
     }
   }
-  if (mudou) await salvar(estado);
+  return enviou;
+}
+
+/**
+ * Envio feito por fora da automação (ex.: etiqueta comprada direto no site
+ * do Melhor Envio ou dos Correios): a loja informa o código de rastreio e a
+ * cliente recebe o e-mail "a caminho".
+ */
+export async function marcarEnviado(ref: string, codigos: string[]): Promise<EstadoPedido> {
+  const estado = await estadoOuNovo(ref);
+  estado.rastreio = codigos;
+  estado.postadoEm ??= new Date().toISOString();
+  // Enviado por fora: a etiqueta automática não é mais necessária.
+  if (estado.erro?.etapa === 'etiqueta') estado.erro = undefined;
+  await enviarAvisos(estado);
+  await salvar(estado);
+  return estado;
+}
+
+/** A loja confirma a entrega (quando não veio pelo Melhor Envio). */
+export async function marcarEntregue(ref: string): Promise<EstadoPedido> {
+  const estado = await estadoOuNovo(ref);
+  estado.postadoEm ??= new Date().toISOString();
+  estado.entregueEm ??= new Date().toISOString();
+  await enviarAvisos(estado);
+  await salvar(estado);
   return estado;
 }
 

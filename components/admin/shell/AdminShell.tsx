@@ -14,11 +14,11 @@ export function AdminShell({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-bone">
+    <div className="min-h-screen bg-bone md:flex">
       <AdminSidebar user={user} />
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <AdminTopbar title={title} actions={actions} />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="min-w-0 flex-1">{children}</main>
       </div>
     </div>
   );
