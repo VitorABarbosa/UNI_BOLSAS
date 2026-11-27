@@ -5,6 +5,9 @@ import { COMPRA_NO_SITE } from '@/lib/contas/ligado';
 import { Reveal } from '@/components/public/primitives/Reveal';
 import { CategoryFilter, type CategoryOption } from './CategoryFilter';
 import { ProductGrid } from './ProductGrid';
+import { CatalogFiltros, FAIXAS_PRECO, type Ordem } from './CatalogFiltros';
+import { familiasDaCor } from '@/lib/content/cores';
+import { productPrice } from '@/lib/product-price';
 import type { ProductWithRelations } from '@/lib/queries/products';
 
 /** Sem acento e em minúsculas: "matelasse" acha "Matelassê". */
@@ -77,6 +80,9 @@ export function Catalog({
 }: CatalogProps) {
   const [activeCat, setActiveCat] = useState('todos');
   const [query, setQuery] = useState('');
+  const [cor, setCor] = useState<string | null>(null);
+  const [faixa, setFaixa] = useState<string | null>(null);
+  const [ordem, setOrdem] = useState<Ordem>('relevancia');
   const gridTopRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedColors, setSelectedColors] = useState<Record<string, number>>(
@@ -113,7 +119,21 @@ export function Catalog({
     [products],
   );
 
-  const filtered = useMemo(() => {
+  // Preço por peça (com campanha/promoção) e famílias de cor de cada peça.
+  const precos = useMemo(() => new Map(products.map((p) => [p.id, productPrice(p).current])), [products]);
+  const familias = useMemo(
+    () => new Map(products.map((p) => [p.id, new Set(p.colors.flatMap((c) => familiasDaCor(c.name)))])),
+    [products],
+  );
+  const naFaixa = (id: string, f: string | null) => {
+    const fx = FAIXAS_PRECO.find((x) => x.id === f);
+    if (!fx) return true;
+    const v = precos.get(id) ?? 0;
+    return v >= fx.min && v < fx.max;
+  };
+
+  // Categoria + busca: a base sobre a qual cor e preço contam e filtram.
+  const base = useMemo(() => {
     // Todas as palavras precisam aparecer, em qualquer ordem.
     const terms = normalize(query).split(/\s+/).filter(Boolean);
     return products.filter((p) => {
@@ -126,6 +146,33 @@ export function Catalog({
       return terms.every((t) => hay.includes(t));
     });
   }, [products, activeCat, query, haystacks, newIds]);
+
+  const filtered = useMemo(() => {
+    const lista = base.filter((p) => (!cor || familias.get(p.id)?.has(cor)) && naFaixa(p.id, faixa));
+    if (ordem === 'relevancia') return lista;
+    const preco = (p: ProductWithRelations) => precos.get(p.id) ?? 0;
+    if (ordem === 'menor') return [...lista].sort((a, b) => preco(a) - preco(b));
+    if (ordem === 'maior') return [...lista].sort((a, b) => preco(b) - preco(a));
+    return [...lista].sort((a, b) => Number(newIds.includes(b.id)) - Number(newIds.includes(a.id)) || Date.parse(b.created_at) - Date.parse(a.created_at));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [base, cor, faixa, ordem, familias, precos, newIds]);
+
+  // Quantas peças cada cor/faixa traria, respeitando os outros filtros.
+  const contagemCor = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const p of base) if (naFaixa(p.id, faixa)) for (const f of familias.get(p.id) ?? []) m[f] = (m[f] ?? 0) + 1;
+    return m;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [base, faixa, familias, precos]);
+  const contagemFaixa = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const p of base) {
+      if (cor && !familias.get(p.id)?.has(cor)) continue;
+      for (const f of FAIXAS_PRECO) if (naFaixa(p.id, f.id)) m[f.id] = (m[f.id] ?? 0) + 1;
+    }
+    return m;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [base, cor, familias, precos]);
 
   /**
    * Quem filtra lá do meio da grade volta pro começo dela. Sem isso a lista
@@ -155,7 +202,9 @@ export function Catalog({
     const leaving = prev.filter((id) => !curr.includes(id));
     const entering = curr.filter((id) => !prev.includes(id));
     if (leaving.length === 0 && entering.length === 0) {
+      // Mesmas peças em outra ordem (mudou a ordenação): só reordena.
       prevFilteredRef.current = curr;
+      setRenderedIds(curr);
       return;
     }
     setLeavingIds(leaving);
@@ -176,7 +225,20 @@ export function Catalog({
   // Volta pro topo da paginação sempre que o filtro muda.
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [activeCat, query]);
+  }, [activeCat, query, cor, faixa, ordem]);
+
+  // Filtrou por cor: o cartão já mostra a peça nessa cor.
+  useEffect(() => {
+    if (!cor) return;
+    setSelectedColors((s) => {
+      const novo = { ...s };
+      for (const p of products) {
+        const i = p.colors.findIndex((c) => familiasDaCor(c.name).includes(cor));
+        if (i >= 0) novo[p.id] = i;
+      }
+      return novo;
+    });
+  }, [cor, products]);
 
   const displayedIds = leavingIds.length
     ? prevFilteredRef.current
@@ -207,22 +269,26 @@ export function Catalog({
   }, [products, categories, newIds]);
 
   // "Novidades" entra logo depois de "Todos", e só quando há alguma.
-  const categoriesWithNew = useMemo(
-    () =>
-      newIds.length > 0
-        ? [
-            ...categories.slice(0, 1),
-            { id: NOVIDADES, label: 'Novidades' },
-            ...categories.slice(1),
-          ]
-        : categories,
-    [categories, newIds.length],
-  );
+  // Categoria sem peça à venda (ex.: Kits com 0) não aparece.
+  const categoriesWithNew = useMemo(() => {
+    const comPeca = categories.filter((c, i) => i === 0 || (counts[c.id] ?? 0) > 0);
+    return newIds.length > 0
+      ? [comPeca[0]!, { id: NOVIDADES, label: 'Novidades' }, ...comPeca.slice(1)]
+      : comPeca;
+  }, [categories, counts, newIds.length]);
 
+  const limparFiltros = () => {
+    setCor(null);
+    setFaixa(null);
+    setOrdem('relevancia');
+    backToGridTop();
+  };
   const onClearFilters = () => {
     setActiveCat('todos');
     setQuery('');
+    limparFiltros();
   };
+  const comFiltroExtra = !!(cor || faixa);
 
   return (
     <section className="uni-catalog uni-section" id="catalogo">
@@ -268,12 +334,32 @@ export function Catalog({
             />
           </div>
         </div>
-        {query.trim() !== '' && (
+        <CatalogFiltros
+          cor={cor}
+          faixa={faixa}
+          ordem={ordem}
+          contagemCor={contagemCor}
+          contagemFaixa={contagemFaixa}
+          onCor={(v) => {
+            setCor(v);
+            backToGridTop();
+          }}
+          onFaixa={(v) => {
+            setFaixa(v);
+            backToGridTop();
+          }}
+          onOrdem={(v) => {
+            setOrdem(v);
+            backToGridTop();
+          }}
+          onLimpar={limparFiltros}
+        />
+        {(query.trim() !== '' || comFiltroExtra) && (
           <p className="uni-cat-result" role="status">
             {filtered.length === 0
               ? 'Nenhuma peça encontrada'
-              : `${filtered.length} ${filtered.length === 1 ? 'peça' : 'peças'}`}{' '}
-            para “{query.trim()}”
+              : `${filtered.length} ${filtered.length === 1 ? 'peça' : 'peças'}`}
+            {query.trim() !== '' ? ` para “${query.trim()}”` : ''}
           </p>
         )}
         <ProductGrid
