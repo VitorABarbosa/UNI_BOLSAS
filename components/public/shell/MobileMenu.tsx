@@ -47,6 +47,9 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
         <Link href="/#catalogo" onClick={close} className="uni-mobile-menu-link">
           Cat<em>á</em>logo
         </Link>
+        <Link href="/#looks" onClick={close} className="uni-mobile-menu-link">
+          Look<em>b</em>ook
+        </Link>
         <Link href="/#atacado" onClick={close} className="uni-mobile-menu-link">
           Como c<em>o</em>mprar
         </Link>
