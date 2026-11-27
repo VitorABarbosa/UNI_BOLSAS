@@ -2,8 +2,10 @@ import Link from 'next/link';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { AdminShell } from '@/components/admin/shell/AdminShell';
 import { A_FAZER, carregarPedidos, FILAS, type Fila, type PedidoAdmin } from '@/lib/admin/pedidos';
+import { pecasDoPagamento } from '@/lib/checkout/mercadopago';
 import { statusDasIntegracoes } from '@/lib/admin/status';
 import { formatPriceBRL } from '@/lib/format';
+import { NotificacoesCelular } from '@/components/admin/NotificacoesCelular';
 
 export const metadata = {
   title: 'Início · Uni Bolsas Admin',
@@ -29,6 +31,23 @@ function resumoDeVendas(pagos: PedidoAdmin[]) {
   ];
 }
 
+/** As peças que mais saíram nos últimos 30 dias (pagas), por quantidade. */
+function maisVendidas(pagos: PedidoAdmin[]) {
+  const desde = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const mapa = new Map<string, { nome: string; qtd: number; total: number }>();
+  for (const p of pagos) {
+    if (new Date(p.pagamento.date_approved ?? p.pagamento.date_created).getTime() < desde) continue;
+    for (const i of pecasDoPagamento(p.pagamento)) {
+      const nome = String(i.title ?? '').split(' · ')[0] || 'Peça';
+      const atual = mapa.get(nome) ?? { nome, qtd: 0, total: 0 };
+      atual.qtd += Number(i.quantity) || 0;
+      atual.total += (Number(i.quantity) || 0) * (Number(i.unit_price) || 0);
+      mapa.set(nome, atual);
+    }
+  }
+  return [...mapa.values()].sort((a, b) => b.qtd - a.qtd).slice(0, 5);
+}
+
 /** O dia da loja: o que vendeu, o que falta fazer e o que está pendente de configurar. */
 export default async function AdminInicioPage() {
   const { user, supabase } = await requireAdmin();
@@ -40,7 +59,12 @@ export default async function AdminInicioPage() {
     supabase.from('products').select('id', { count: 'exact', head: true }).eq('active', false),
   ]);
 
-  const vendas = resumoDeVendas(pedidos.filter((p) => p.pagamento.status === 'approved'));
+  const pagos = pedidos.filter((p) => p.pagamento.status === 'approved');
+  const vendas = resumoDeVendas(pagos);
+  const ultimas = [...pagos]
+    .sort((a, b) => +new Date(b.pagamento.date_approved ?? b.pagamento.date_created) - +new Date(a.pagamento.date_approved ?? a.pagamento.date_created))
+    .slice(0, 5);
+  const top = maisVendidas(pagos);
   const n = (f: Fila) => pedidos.filter((p) => p.fila === f).length;
   const proximos = pedidos.filter((p) => A_FAZER.includes(p.fila)).reverse().slice(0, 6);
   const pendencias = integracoes.filter((i) => !i.ok);
@@ -49,20 +73,46 @@ export default async function AdminInicioPage() {
     <AdminShell user={{ email: user.email ?? '' }} title="Início">
       <div className="space-y-6 p-4 md:p-6">
         {erro && <p className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">{erro}</p>}
+        <NotificacoesCelular compacto />
 
         <section>
           <h2 className="mb-2 font-serif text-lg text-ink">Vendas pelo site</h2>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {/* Três lado a lado até no celular: o resumo cabe numa olhada. */}
+          <div className="grid grid-cols-3 gap-2 md:gap-3">
             {vendas.map((v) => (
-              <div key={v.rotulo} className="rounded-lg border bg-white px-4 py-3">
-                <div className="text-xs text-stone-500">{v.rotulo}</div>
-                <div className="text-2xl font-semibold">{formatPriceBRL(v.total)}</div>
-                <div className="text-xs text-stone-500">
-                  {v.n} {v.n === 1 ? 'pedido pago' : 'pedidos pagos'}
+              <div key={v.rotulo} className="min-w-0 rounded-lg border bg-white px-2.5 py-2.5 md:px-4 md:py-3">
+                <div className="truncate text-[11px] text-stone-500 md:text-xs">{v.rotulo.replace('Últimos ', '')}</div>
+                <div className="truncate text-base font-semibold tabular-nums md:text-2xl">{formatPriceBRL(v.total)}</div>
+                <div className="text-[11px] text-stone-500 md:text-xs">
+                  {v.n} {v.n === 1 ? 'pedido' : 'pedidos'}
                 </div>
               </div>
             ))}
           </div>
+          {ultimas.length > 0 && (
+            <div className="mt-3 rounded-lg border bg-white">
+              <div className="border-b px-4 py-2 text-xs font-medium uppercase tracking-wide text-stone-500">Últimas vendas</div>
+              <ul className="divide-y">
+                {ultimas.map((p) => {
+                  const m = p.pagamento.metadata ?? {};
+                  return (
+                    <li key={p.ref}>
+                      <Link href={`/admin/pedidos/${p.ref}`} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-stone-50">
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium">{m.empresa || m.cliente_nome || p.ref}</span>
+                          <span className="block text-xs text-stone-500">
+                            {dataHora.format(new Date(p.pagamento.date_approved ?? p.pagamento.date_created))} ·{' '}
+                            {FILAS.find((f) => f.id === p.fila)?.rotulo ?? ''}
+                          </span>
+                        </span>
+                        <span className="shrink-0 font-semibold tabular-nums">{formatPriceBRL(p.pagamento.transaction_amount)}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </section>
 
         <section>
@@ -118,6 +168,22 @@ export default async function AdminInicioPage() {
             </span>
           </div>
         </section>
+
+        {top.length > 0 && (
+          <section>
+            <h2 className="mb-2 font-serif text-lg text-ink">Mais vendidas · 30 dias</h2>
+            <ol className="divide-y rounded-lg border bg-white">
+              {top.map((t, i) => (
+                <li key={t.nome} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                  <span className="w-5 shrink-0 text-xs font-semibold text-stone-400">{i + 1}</span>
+                  <span className="min-w-0 flex-1 truncate">{t.nome}</span>
+                  <span className="shrink-0 text-xs text-stone-500">{t.qtd} un.</span>
+                  <span className="w-24 shrink-0 text-right font-medium tabular-nums">{formatPriceBRL(t.total)}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
 
         {pendencias.length > 0 && (
           <section className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm">

@@ -71,7 +71,17 @@ const SEGURANCA = [
 const nextConfig: NextConfig = {
   typedRoutes: true,
   async headers() {
-    return [{ source: '/:path*', headers: SEGURANCA }];
+    return [
+      { source: '/:path*', headers: SEGURANCA },
+      // O service worker do painel fica na raiz, mas só controla /admin/.
+      {
+        source: '/admin-sw.js',
+        headers: [
+          { key: 'Service-Worker-Allowed', value: '/admin/' },
+          { key: 'Cache-Control', value: 'no-cache' },
+        ],
+      },
+    ];
   },
   experimental: {
     // The spreadsheet importer round-trips the parsed rows through Server

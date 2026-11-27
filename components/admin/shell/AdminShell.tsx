@@ -18,7 +18,7 @@ export function AdminShell({
       <AdminSidebar user={user} />
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminTopbar title={title} actions={actions} />
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0 print:pb-0">{children}</main>
       </div>
     </div>
   );

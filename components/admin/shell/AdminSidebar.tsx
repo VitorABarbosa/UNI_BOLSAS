@@ -50,6 +50,14 @@ const GRUPOS = [
   },
 ] as const;
 
+/** As abas fixas do celular: o que se usa todo dia. */
+const ABAS = [
+  { href: '/admin', label: 'Início', icon: Home, exact: true },
+  { href: '/admin/pedidos', label: 'Pedidos', icon: Receipt, exact: false },
+  { href: '/admin/produtos', label: 'Produtos', icon: Package, exact: false },
+  { href: '/admin/clientes', label: 'Clientes', icon: Users, exact: false },
+] as const;
+
 function Navegacao({ pathname, aoClicar }: { pathname: string; aoClicar?: () => void }) {
   return (
     <nav className="flex-1 space-y-5 overflow-y-auto p-3" aria-label="Menu do painel">
@@ -153,6 +161,39 @@ export function AdminSidebar({ user }: { user: { email: string } }) {
           <Menu className="h-5 w-5" />
         </button>
       </div>
+      {/* Celular: barra de abas embaixo, ao alcance do polegar. "Mais" abre o
+          menu completo. */}
+      <nav
+        aria-label="Atalhos do painel"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-whisper bg-bone-light/95 pb-[env(safe-area-inset-bottom)] backdrop-blur print:hidden md:hidden"
+      >
+        {ABAS.map(({ href, label, icon: Icon, exact }) => {
+          const ativa = exact ? pathname === href : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={ativa ? 'page' : undefined}
+              className={cn(
+                'flex h-14 flex-col items-center justify-center gap-0.5 text-[10.5px]',
+                ativa ? 'font-medium text-leather-dark' : 'text-stone',
+              )}
+            >
+              <Icon className={cn('h-5 w-5', ativa && 'stroke-[2.25]')} />
+              {label}
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => setAberto(true)}
+          aria-expanded={aberto}
+          className="flex h-14 flex-col items-center justify-center gap-0.5 text-[10.5px] text-stone"
+        >
+          <Menu className="h-5 w-5" />
+          Mais
+        </button>
+      </nav>
       {aberto && (
         <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal="true" aria-label="Menu do painel">
           <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-ink/40" onClick={() => setAberto(false)} />

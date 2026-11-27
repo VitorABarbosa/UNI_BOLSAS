@@ -485,6 +485,97 @@ export function ProductsTable({
     setSortDir('asc');
   };
 
+
+  const menuDe = (row: ProductListRow) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" size="icon" disabled={pending}>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={() => router.push(`/admin/produtos/${row.id}`)}
+        >
+          Editar
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => moveParaOTopo(row.id)}
+        >
+          <ChevronsUp className="mr-2 h-4 w-4" /> Mover para o
+          começo
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => toggleActive(row)}>
+          {row.active ? 'Remover do site' : 'Voltar pro site'}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={() =>
+            setConfirm({
+              id: row.id,
+              name: row.name,
+              imageCount: row.image_count,
+            })
+          }
+        >
+          Excluir definitivamente
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  const estrelaDe = (row: ProductListRow) => (
+    <button
+      type="button"
+      onClick={() => toggleFeatured(row)}
+      title={
+        featuredSet.has(row.id)
+          ? 'Tirar da vitrine de destaques'
+          : 'Pôr na vitrine de destaques'
+      }
+      aria-pressed={featuredSet.has(row.id)}
+      aria-label={`${featuredSet.has(row.id) ? 'Tirar' : 'Pôr'} “${row.name}” nos destaques`}
+      className="group rounded p-1 transition-colors hover:bg-bone-light"
+    >
+      {/* A estrela apagada era `text-whisper` (#E5DECF) sobre
+          fundo osso: praticamente invisível. Quem não enxerga o
+          botão não descobre que pode clicar nele. */}
+      <Star
+        className={
+          'h-4 w-4 transition-colors ' +
+          (featuredSet.has(row.id)
+            ? 'fill-leather text-leather'
+            : 'text-stone/45 group-hover:text-leather')
+        }
+      />
+    </button>
+  );
+
+  const setasDe = (row: ProductListRow) => (
+    <>
+      <button
+        type="button"
+        aria-label={`Subir “${row.name}”`}
+        title="Subir uma posição"
+        onClick={() => moveUmaCasa(row.id, -1)}
+        className="rounded p-1 text-stone transition-colors hover:bg-bone-light hover:text-ink"
+      >
+        <ArrowUp className="h-3.5 w-3.5" />
+      </button>
+      <button
+        type="button"
+        aria-label={`Descer “${row.name}”`}
+        title="Descer uma posição"
+        onClick={() => moveUmaCasa(row.id, 1)}
+        className="rounded p-1 text-stone transition-colors hover:bg-bone-light hover:text-ink"
+      >
+        <ArrowDown className="h-3.5 w-3.5" />
+      </button>
+    </>
+  );
+
   return (
     <div className="space-y-4 p-6">
       <div className="flex flex-wrap items-center gap-3">
@@ -518,7 +609,7 @@ export function ProductsTable({
         {/* Três estados, não um interruptor: depois de tirar produtos do
             site é preciso conseguir listar justamente os que estão fora pra
             conferir — coisa que "só ativos" não permitia. */}
-        <div className="flex items-center rounded-lg border border-whisper p-0.5">
+        <div className="-mx-1 flex w-[calc(100%+0.5rem)] items-center overflow-x-auto rounded-lg border border-whisper p-0.5 md:mx-0 md:w-auto">
           {(
             [
               ['all', `Todos (${initial.length})`],
@@ -532,7 +623,7 @@ export function ProductsTable({
               type="button"
               onClick={() => setStatus(value)}
               className={
-                'rounded-md px-3 py-1.5 text-sm transition-colors ' +
+                'shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-colors ' +
                 (status === value
                   ? 'bg-ink text-bone'
                   : 'text-stone hover:text-ink')
@@ -580,9 +671,9 @@ export function ProductsTable({
           )}
         </p>
       ) : (
-        <p className="flex items-center gap-1.5 text-sm text-stone">
-          <Star className="h-3.5 w-3.5 fill-leather text-leather" />
-          Clique na estrela para pôr a peça na vitrine{' '}
+        <p className="text-sm text-stone">
+          <Star className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px fill-leather text-leather" />
+          Toque na estrela para pôr a peça na vitrine{' '}
           <strong className="font-medium text-ink">Destaques da casa</strong>,
           no topo da home. Cabem {MAX_FEATURED}.
         </p>
@@ -641,6 +732,53 @@ export function ProductsTable({
         </div>
       )}
 
+      {/* Celular: um cartão por peça, com o que importa à vista (a tabela não
+          cabia e escondia o status, o destaque e as ações). */}
+      <ul className="divide-y divide-whisper rounded-lg border border-whisper bg-pearl md:hidden">
+        {rows.length === 0 ? (
+          <li className="py-10 text-center text-sm text-stone">Nenhum produto encontrado.</li>
+        ) : (
+          rows.map((row) => (
+            <li
+              key={row.id}
+              className={
+                'flex items-center gap-3 px-3 py-2.5 ' +
+                (selected.has(row.id) ? 'bg-bone-light ' : '') +
+                (row.active ? '' : 'opacity-60')
+              }
+            >
+              <Checkbox aria-label={`Selecionar ${row.name}`} checked={selected.has(row.id)} onChange={() => toggleOne(row.id)} />
+              <Link href={`/admin/produtos/${row.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-whisper">
+                  {row.cover_storage_path && (
+                    <Image src={publicImageUrl(row.cover_storage_path)} alt="" fill sizes="56px" className="object-cover" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="line-clamp-2 text-sm leading-snug text-ink">{row.name}</div>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-stone">
+                    <span className={row.active ? 'rounded bg-emerald-50 px-1.5 py-0.5 text-emerald-800' : 'rounded bg-stone-100 px-1.5 py-0.5 text-stone-600'}>
+                      {row.active ? 'No site' : 'Fora do site'}
+                    </span>
+                    <span>{row.category_label}</span>
+                    <span>· {row.image_count} {row.image_count === 1 ? 'foto' : 'fotos'}</span>
+                  </div>
+                </div>
+              </Link>
+              {reordering ? (
+                <div className="flex flex-col">{setasDe(row)}</div>
+              ) : (
+                <div className="flex shrink-0 items-center">
+                  {estrelaDe(row)}
+                  {menuDe(row)}
+                </div>
+              )}
+            </li>
+          ))
+        )}
+      </ul>
+
+      <div className="hidden md:block">
       <Table>
         <TableHeader>
           <TableRow>
@@ -775,30 +913,7 @@ export function ProductsTable({
                   {/* Sem `disabled`: a estrela responde ao clique sempre, e
                       a gravação corre por fora. Era o `disabled` global que
                       apagava a tabela inteira a cada clique. */}
-                  <button
-                    type="button"
-                    onClick={() => toggleFeatured(row)}
-                    title={
-                      featuredSet.has(row.id)
-                        ? 'Tirar da vitrine de destaques'
-                        : 'Pôr na vitrine de destaques'
-                    }
-                    aria-pressed={featuredSet.has(row.id)}
-                    aria-label={`${featuredSet.has(row.id) ? 'Tirar' : 'Pôr'} “${row.name}” nos destaques`}
-                    className="group rounded p-1 transition-colors hover:bg-bone-light"
-                  >
-                    {/* A estrela apagada era `text-whisper` (#E5DECF) sobre
-                        fundo osso: praticamente invisível. Quem não enxerga o
-                        botão não descobre que pode clicar nele. */}
-                    <Star
-                      className={
-                        'h-4 w-4 transition-colors ' +
-                        (featuredSet.has(row.id)
-                          ? 'fill-leather text-leather'
-                          : 'text-stone/45 group-hover:text-leather')
-                      }
-                    />
-                  </button>
+                  {estrelaDe(row)}
                 </TableCell>
                 <TableCell className="text-sm tabular-nums text-stone">
                   {reordering ? (
@@ -836,49 +951,14 @@ export function ProductsTable({
                   {row.image_count}
                 </TableCell>
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={
-                        <Button variant="ghost" size="icon" disabled={pending}>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      }
-                    />
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => router.push(`/admin/produtos/${row.id}`)}
-                      >
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => moveParaOTopo(row.id)}
-                      >
-                        <ChevronsUp className="mr-2 h-4 w-4" /> Mover para o
-                        começo
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => toggleActive(row)}>
-                        {row.active ? 'Remover do site' : 'Voltar pro site'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() =>
-                          setConfirm({
-                            id: row.id,
-                            name: row.name,
-                            imageCount: row.image_count,
-                          })
-                        }
-                      >
-                        Excluir definitivamente
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {menuDe(row)}
                 </TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
       </Table>
+      </div>
 
       <ConfirmDialog
         open={!!confirm}

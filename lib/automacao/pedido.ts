@@ -1,4 +1,5 @@
 import 'server-only';
+import { avisarNoCelular } from '@/lib/notificar/celular';
 import { lerJson, gravarJson, listarJson } from '@/lib/automacao/armazem';
 import { ErroAutomacao, type NotaEmitida } from '@/lib/automacao/bling';
 import { emitirNotaDoPedido, podeEmitir } from '@/lib/automacao/nota';
@@ -176,7 +177,16 @@ export function emailsDaLoja(): string[] {
 async function avisarLojaDoProblema(estado: EstadoPedido): Promise<void> {
   const erro = estado.erro;
   const loja = emailsDaLoja();
-  if (!erro || !loja.length || estado.problemaAvisado === erro.mensagem) return;
+  if (!erro || estado.problemaAvisado === erro.mensagem) return;
+  const celulares = await avisarNoCelular({
+    titulo: `⚠ Pedido ${estado.ref} travou`,
+    texto: `${erro.etapa === 'nota' ? 'Nota fiscal' : 'Etiqueta'}: ${erro.mensagem}`.slice(0, 180),
+    url: `/admin/pedidos/${estado.ref}`,
+  });
+  if (!loja.length) {
+    if (celulares > 0) estado.problemaAvisado = erro.mensagem;
+    return;
+  }
   const oQueFazer =
     erro.etapa === 'etiqueta'
       ? /saldo/i.test(erro.mensagem)
@@ -193,7 +203,7 @@ async function avisarLojaDoProblema(estado: EstadoPedido): Promise<void> {
     botao: { texto: 'Abrir o pedido no painel', url: `${SITE_URL}/admin/pedidos/${estado.ref}` },
     rodape: 'Você recebe este aviso uma vez por problema.',
   }).catch(() => false);
-  if (ok) estado.problemaAvisado = erro.mensagem;
+  if (ok || celulares > 0) estado.problemaAvisado = erro.mensagem;
 }
 
 /** Primeiro nome, pra saudação do e-mail. */
