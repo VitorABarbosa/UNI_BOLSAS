@@ -23,6 +23,7 @@ export type LookDaVitrine = { cfg: LookConfig; product: ProductWithRelations };
  *
  * Só no computador: no celular a seção nem aparece (CSS) e as imagens nem
  * são baixadas (só carregam quando a tela é larga e a seção está perto).
+ * O celular tem a sua versão, `LookbookCelular`, mais abaixo.
  */
 const KX = [1.2, 0.7, 0.47, 0.33, 0.225, 0.145, 0.085, 0.05, 0.03, 0.02];
 const KF = [1.14, 0.9, 0.79, 0.715, 0.66, 0.625, 0.598, 0.585, 0.575, 0.57];
@@ -333,6 +334,123 @@ export function LookbookChamada({ looks }: { looks: LookDaVitrine[] }) {
         >
           Ver os looks
         </a>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * O lookbook no celular: em vez da passarela (que precisa de tela larga),
+ * um carrossel de cartões que desliza com o dedo, com o próximo look
+ * aparecendo na borda. Cada cartão tem a modelo e, embaixo, a bolsa do
+ * look com preço e "Comprar". As imagens só baixam quando chegam perto.
+ */
+export function LookbookCelular({ looks }: { looks: LookDaVitrine[] }) {
+  const secao = useRef<HTMLElement>(null);
+  const trilho = useRef<HTMLDivElement>(null);
+  const [atual, setAtual] = useState(0);
+  const [adicionado, setAdicionado] = useState<number | null>(null);
+  // As fotos só baixam quando a seção chega perto (economiza o 4G de quem
+  // não rola até aqui).
+  const [perto, setPerto] = useState(false);
+
+  useEffect(() => {
+    const el = secao.current;
+    if (!el || perto) return;
+    const io = new IntersectionObserver(([e]) => e?.isIntersecting && setPerto(true), { rootMargin: '500px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [perto]);
+
+  useEffect(() => {
+    const el = trilho.current;
+    if (!el) return;
+    let frame = 0;
+    const ler = () => {
+      frame = 0;
+      const card = el.firstElementChild as HTMLElement | null;
+      if (!card) return;
+      const passo = card.offsetWidth + parseFloat(getComputedStyle(el).columnGap || '0');
+      setAtual(clamp(Math.round(el.scrollLeft / passo), 0, looks.length - 1));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(ler);
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, [looks.length]);
+
+  if (looks.length === 0) return null;
+  const ir = (i: number) => {
+    const el = trilho.current;
+    const card = el?.children[i] as HTMLElement | undefined;
+    if (el && card) el.scrollTo({ left: card.offsetLeft - el.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
+  };
+
+  return (
+    <section className="uni-lbm" id="looks" ref={secao} aria-label="Lookbook: uma bolsa para cada momento">
+      <div className="uni-lbm-topo">
+        <span className="uni-lb-sobre">Lookbook · {looks.length} looks</span>
+        <h2 className="uni-lbm-titulo">
+          Uma bolsa para <em>cada momento.</em>
+        </h2>
+        <p>Deslize para ver os looks. A bolsa de cada um entra no seu pedido com um toque.</p>
+      </div>
+      <div className="uni-lbm-trilho" ref={trilho}>
+        {looks.map(({ cfg, product }) => {
+          const preco = productPrice(product);
+          const cor = product.colors.find((c) => c.name.toLowerCase() === (cfg.cor ?? '').toLowerCase()) ?? null;
+          return (
+            <article key={cfg.look} className="uni-lbm-card">
+              <div className="uni-lbm-foto">
+                <span className="uni-lbm-n">{nn(cfg.look)}</span>
+                <span className="uni-lbm-tema">{cfg.tema}</span>
+                {perto && <img src={`/lookbook/look-${nn(cfg.look)}.webp`} alt="" loading="lazy" decoding="async" draggable={false} />}
+              </div>
+              <div className="uni-lbm-bolsa">
+                <Link href={`/produtos/${product.slug}`} className="uni-lbm-mini" aria-hidden="true" tabIndex={-1}>
+                  {perto && <img src={`/lookbook/bolsa-${nn(cfg.look)}.webp`} alt="" loading="lazy" decoding="async" />}
+                </Link>
+                <div className="uni-lbm-info">
+                  <Link href={`/produtos/${product.slug}`} className="uni-lbm-nome">
+                    {product.name}
+                  </Link>
+                  <span className="uni-lbm-preco">
+                    {preco.currentLabel} <small>no atacado</small>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className={'uni-lbm-comprar' + (adicionado === cfg.look ? ' is-feito' : '')}
+                  onClick={() => {
+                    adicionarAoPedido(itemDaPeca(product, cor, undefined, cfg.fotoPedido));
+                    setAdicionado(cfg.look);
+                  }}
+                  aria-label={`Comprar ${product.name}`}
+                >
+                  <BagIcon size={14} />
+                  {adicionado === cfg.look ? 'Adicionada' : 'Comprar'}
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      <div className="uni-lbm-pontos" role="tablist" aria-label="Escolher o look">
+        {looks.map(({ cfg }, i) => (
+          <button
+            key={cfg.look}
+            type="button"
+            role="tab"
+            aria-selected={i === atual}
+            aria-label={`Look ${nn(cfg.look)}: ${cfg.tema}`}
+            className={i === atual ? 'is-atual' : undefined}
+            onClick={() => ir(i)}
+          />
+        ))}
       </div>
     </section>
   );
