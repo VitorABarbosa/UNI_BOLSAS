@@ -3,6 +3,7 @@ import { after, NextResponse, type NextRequest } from 'next/server';
 import { processarPedido } from '@/lib/automacao/pedido';
 import { assinaturaValida, buscarPagamento, entregaEmTexto, formaDePagamento, pecasDoPagamento, type Pagamento } from '@/lib/checkout/mercadopago';
 import { enviarEmail } from '@/lib/contas/email';
+import { avisarNoCelular } from '@/lib/notificar/celular';
 import { formatPriceBRL } from '@/lib/format';
 import { REF_PEDIDO } from '@/lib/checkout/tipos';
 import { STORE } from '@/lib/content/store';
@@ -108,6 +109,14 @@ async function avisarVenda(p: Pagamento) {
   } else {
     console.warn(`[aviso] venda ${ref} aprovada, mas PEDIDOS_EMAIL não está configurado.`);
   }
+
+  // Aviso na tela dos celulares com o painel instalado.
+  const pecas = pecasDoPagamento(p).reduce((n, i) => n + (Number(i.quantity) || 0), 0);
+  await avisarNoCelular({
+    titulo: `💰 Nova venda · ${formatPriceBRL(p.transaction_amount)}`,
+    texto: `${m.empresa || m.cliente_nome || 'Cliente'} · ${pecas} ${pecas === 1 ? 'peça' : 'peças'} · ${formaDePagamento(p)} · ${m.entrega === 'retirada' ? 'Retirada na loja' : 'Envio'}`,
+    url: `/admin/pedidos/${ref}`,
+  });
 
   if (m.cliente_email) {
     await enviarEmail({

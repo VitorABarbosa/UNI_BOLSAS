@@ -5,6 +5,7 @@ import { A_FAZER, carregarPedidos, FILAS, type Fila, type PedidoAdmin } from '@/
 import { pecasDoPagamento } from '@/lib/checkout/mercadopago';
 import { statusDasIntegracoes } from '@/lib/admin/status';
 import { formatPriceBRL } from '@/lib/format';
+import { NotificacoesCelular } from '@/components/admin/NotificacoesCelular';
 
 export const metadata = {
   title: 'Início · Uni Bolsas Admin',
@@ -72,6 +73,7 @@ export default async function AdminInicioPage() {
     <AdminShell user={{ email: user.email ?? '' }} title="Início">
       <div className="space-y-6 p-4 md:p-6">
         {erro && <p className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">{erro}</p>}
+        <NotificacoesCelular compacto />
 
         <section>
           <h2 className="mb-2 font-serif text-lg text-ink">Vendas pelo site</h2>

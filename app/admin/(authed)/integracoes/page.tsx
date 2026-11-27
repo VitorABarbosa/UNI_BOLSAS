@@ -6,6 +6,9 @@ import { emProducao, focusConfigurada } from '@/lib/automacao/focus';
 import { NotaTeste } from '@/components/admin/NotaTeste';
 import { NcmPorCategoria } from '@/components/admin/NcmPorCategoria';
 import { categoriasComNcm } from '@/lib/automacao/ncm';
+import { NotificacoesCelular } from '@/components/admin/NotificacoesCelular';
+import { ResumoAgora } from '@/components/admin/ResumoAgora';
+import { aparelhos } from '@/lib/notificar/celular';
 
 export const metadata = { title: 'Integrações · Uni Bolsas Admin' };
 export const dynamic = 'force-dynamic';
@@ -16,6 +19,7 @@ export default async function IntegracoesPage({ searchParams }: { searchParams: 
   const { bling: aviso } = await searchParams;
   const itens = await statusDasIntegracoes();
   const categorias = await categoriasComNcm().catch(() => []);
+  const ativos = await aparelhos().catch(() => []);
   const bling = blingConfigurado() ? await blingConectado().catch(() => ({ conectado: false })) : null;
 
   return (
@@ -44,6 +48,32 @@ export default async function IntegracoesPage({ searchParams }: { searchParams: 
             </li>
           ))}
         </ul>
+
+        <section className="space-y-3 rounded-lg border bg-white p-4 text-sm">
+          <h2 className="font-medium">Notificações e resumos</h2>
+          <p className="text-stone-600">
+            Cada celular ativado recebe um aviso na tela a cada venda paga e quando um pedido travar. Todo dia, a partir das 20h, chega o
+            resumo do dia; na segunda de manhã, o da semana (também por e-mail, se o e-mail da loja estiver configurado).
+          </p>
+          <NotificacoesCelular />
+          <div className="text-stone-600">
+            {ativos.length ? (
+              <>
+                <div className="mb-1 font-medium text-ink">Aparelhos ativados ({ativos.length})</div>
+                <ul className="space-y-0.5">
+                  {ativos.map((a) => (
+                    <li key={a.sub.endpoint}>
+                      {a.nome} · {a.email} · desde {new Date(a.desde).toLocaleDateString('pt-BR')}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              'Nenhum aparelho ativado ainda.'
+            )}
+          </div>
+          <ResumoAgora />
+        </section>
 
         <section className="rounded-lg border bg-white p-4 text-sm">
           <div className="font-medium">NCM por categoria (nota fiscal)</div>
