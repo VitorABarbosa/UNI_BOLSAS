@@ -6,8 +6,9 @@
  * nome do anúncio — é o único dado confiável que vem de lá.
  *
  * A ordem importa: vence a PRIMEIRA regra que casar. Por isso "mochila" vem
- * antes de "viagem" (mochila de viagem continua sendo mochila) e "viagem"
- * antes de "bolsa" (bolsa de viagem é peça de viagem, não bolsa do dia a dia).
+ * antes de tudo (mochila de viagem continua sendo mochila), "esportivas"
+ * antes de "viagem" (toda peça "Sport" é esportiva, mesmo a de viagem) e
+ * "viagem" antes de "bolsa" (bolsa de viagem é peça de viagem).
  *
  * Pra ajustar a classificação, mexa nas listas abaixo — nada mais precisa
  * mudar.
@@ -19,6 +20,8 @@ export type CategoryRule = {
   label: string;
   /** Basta uma palavra casar. Compare sempre em minúsculas e sem acento. */
   keywords: string[];
+  /** Se o nome tiver uma destas, a regra não vale (passa pra próxima). */
+  unless?: string[];
 };
 
 export const CATEGORY_RULES: ReadonlyArray<CategoryRule> = [
@@ -28,8 +31,17 @@ export const CATEGORY_RULES: ReadonlyArray<CategoryRule> = [
     keywords: ['mochila', 'backpack', 'mochilinha'],
   },
   {
+    slug: 'esportivas',
+    label: 'Esportivas',
+    // Vem ANTES de "viagem": na Uni Bolsas toda peça "Sport" é esportiva,
+    // inclusive a "Bolsa de Viagem Sport" e a "Mala ... Sport Academia".
+    keywords: ['esportiva', 'esportivo', 'academia', 'treino', 'gym', 'fitness', 'sport'],
+  },
+  {
     slug: 'viagem',
     label: 'Viagem',
+    // "Bolsa de Praia ... Passeio Piscina Viagem" é bolsa de praia.
+    unless: ['praia'],
     keywords: [
       'viagem',
       'mala',
@@ -45,13 +57,6 @@ export const CATEGORY_RULES: ReadonlyArray<CategoryRule> = [
     slug: 'kits',
     label: 'Kits',
     keywords: ['kit', 'conjunto', 'combo'],
-  },
-  {
-    slug: 'esportivas',
-    label: 'Esportivas',
-    // "sport" sozinho não entra: aparece em nome de bolsa de viagem
-    // ("Bolsa de Viagem Sport") e roubaria a peça da categoria certa.
-    keywords: ['esportiva', 'esportivo', 'academia', 'treino', 'gym', 'fitness'],
   },
   {
     slug: 'bolsas',
@@ -90,7 +95,11 @@ export type CategorySuggestion = {
 export function suggestCategory(productName: string): CategorySuggestion | null {
   const name = normalize(productName);
   for (const rule of CATEGORY_RULES) {
-    const keyword = rule.keywords.find((k) => name.includes(normalize(k)));
+    // Casa no começo de uma palavra: "sport" pega "Sport" e "Sports", mas
+    // não "transporte"; "bolsa" pega "bolsas".
+    const casa = (k: string) => new RegExp(`(^|[^a-z])${normalize(k)}`).test(name);
+    if (rule.unless?.some(casa)) continue;
+    const keyword = rule.keywords.find(casa);
     if (keyword) return { slug: rule.slug, label: rule.label, keyword };
   }
   return null;
