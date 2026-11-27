@@ -185,7 +185,7 @@ export function ProductForm({
         </Tabs>
 
         {/* Sticky footer */}
-        <div className="sticky bottom-0 left-0 right-0 flex justify-end gap-2 border-t border-whisper bg-pearl px-6 py-3">
+        <div className="sticky bottom-[calc(56px+env(safe-area-inset-bottom))] left-0 right-0 z-20 flex md:bottom-0 justify-end gap-2 border-t border-whisper bg-pearl px-6 py-3">
           <Button type="submit" disabled={!dirty || pending}>
             {pending ? 'Salvando…' : 'Salvar'}
           </Button>
