@@ -1,13 +1,7 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { Logo } from '@/components/public/primitives/Logo';
-import {
-  ArrowIcon,
-  ClockIcon,
-  HeartIcon,
-  InstagramIcon,
-  PinIcon,
-  WhatsAppIcon,
-} from '@/components/public/icons';
+import { ArrowIcon, HeartIcon, InstagramIcon, PinIcon, WhatsAppIcon } from '@/components/public/icons';
 import { STORE } from '@/lib/content/store';
 import { PEDIDO_MINIMO } from '@/lib/content/atacado';
 import { COMPRA_NO_SITE } from '@/lib/contas/ligado';
@@ -15,144 +9,149 @@ import { INSTAGRAM_HANDLE } from '@/lib/tokens';
 import { waGeneral, waLink } from '@/lib/whatsapp';
 import { CookiePrefsButton } from '@/components/public/shell/CookieConsent';
 import { WaLink } from '@/components/public/primitives/WaLink';
+import { LojaAberta } from '@/components/public/shell/LojaAberta';
+
+/** As três bolsas do leque (fotos de estúdio do lookbook). */
+const LEQUE = [
+  { src: '/lookbook/bolsa-04.webp', alt: 'Bolsa de ombro caramelo' },
+  { src: '/lookbook/bolsa-01.webp', alt: 'Bolsa de verniz vermelha' },
+  { src: '/lookbook/bolsa-07.webp', alt: 'Bolsa de viagem roxa' },
+];
+
+const FAIXA = [
+  `Atacado a partir de ${PEDIDO_MINIMO} peças`,
+  'Pix, cartão e boleto',
+  'Nota fiscal em todo pedido',
+  'Envio para todo o Brasil',
+  'Retire grátis no Brás',
+  'Há mais de 25 anos no Brás',
+];
 
 /**
- * Rodapé: uma chamada de compra, o mapa do site em colunas, a faixa do que
- * dá segurança pra comprar (pagamento, nota, envio) e os dados da empresa.
- * Fundo areia, no tom do resto do site — o preto pesava no fim da página.
+ * Rodapé "vitrine": um cartão escuro com a chamada de compra e três bolsas
+ * em leque, as colunas do site, a loja física com o selo de aberto/fechado
+ * e uma faixa correndo com o que dá segurança pra comprar.
  */
 export function Footer() {
   return (
-    <footer className="uni-footer">
+    <footer className="uni-footer uni-ft">
       <div className="uni-container">
-        <div className="uni-footer-cta">
-          <div>
-            <p className="uni-footer-eyebrow">Atacado · a partir de {PEDIDO_MINIMO} peças</p>
-            <h2 className="uni-footer-title">
-              Bolsas no atacado, <em>direto do Brás.</em>
+        <section className="uni-ft-card" aria-label="Comprar no atacado">
+          <div className="uni-ft-leque" aria-hidden="true">
+            {LEQUE.map((f) => (
+              <span key={f.src} className="uni-ft-foto">
+                <Image src={f.src} alt="" fill sizes="(max-width: 700px) 120px, 220px" />
+              </span>
+            ))}
+          </div>
+          <div className="uni-ft-chamada">
+            <p className="uni-ft-ey">Atacado · a partir de {PEDIDO_MINIMO} peças</p>
+            <h2 className="uni-ft-titulo">
+              Sua loja abastecida, <em>direto do Brás.</em>
             </h2>
-          </div>
-          <div className="uni-footer-cta-acoes">
-            <Link href="/#catalogo" className="uni-footer-btn is-cheio">
-              {COMPRA_NO_SITE ? 'Comprar pelo site' : 'Ver o catálogo'} <ArrowIcon size={14} />
-            </Link>
-            <WaLink href={waGeneral} className="uni-footer-btn">
-              <WhatsAppIcon size={15} /> Falar no WhatsApp
-            </WaLink>
-          </div>
-        </div>
-
-        <div className="uni-footer-grid">
-          <div className="uni-footer-marca">
-            <Logo size={26} />
-            <p className="uni-footer-blurb">
-              Bolsas, mochilas e esportivas com preço de fábrica, direto do nosso stand no {STORE.name}.{' '}
-              <strong>Há mais de 25 anos no Brás.</strong>
+            <p className="uni-ft-sub">
+              Preço de fábrica, nota fiscal e envio para todo o Brasil. Ou retire grátis no {STORE.name}.
             </p>
-            <div className="uni-footer-redes">
-              <a
-                href={`https://instagram.com/${INSTAGRAM_HANDLE}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Instagram @${INSTAGRAM_HANDLE}`}
-              >
-                <InstagramIcon size={17} />
+            <div className="uni-ft-acoes">
+              <Link href="/#catalogo" className="uni-ft-btn is-cheio">
+                {COMPRA_NO_SITE ? 'Comprar pelo site' : 'Ver o catálogo'}
+                <ArrowIcon size={15} />
+              </Link>
+              <WaLink href={waGeneral} className="uni-ft-btn">
+                <WhatsAppIcon size={16} /> Chamar no WhatsApp
+              </WaLink>
+            </div>
+            <dl className="uni-ft-numeros">
+              <div>
+                <dt>+25</dt>
+                <dd>anos no Brás</dd>
+              </div>
+              <div>
+                <dt>{PEDIDO_MINIMO}</dt>
+                <dd>peças de mínimo</dd>
+              </div>
+              <div>
+                <dt>1 dia</dt>
+                <dd>útil pra separar</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <div className="uni-ft-grade">
+          <div className="uni-ft-marca">
+            <Logo size={24} />
+            <p>Bolsas, mochilas e esportivas no atacado, com preço de fábrica. Direto do nosso stand no {STORE.name}.</p>
+            <div className="uni-ft-redes">
+              <a href={`https://instagram.com/${INSTAGRAM_HANDLE}`} target="_blank" rel="noopener noreferrer" aria-label={`Instagram @${INSTAGRAM_HANDLE}`}>
+                <InstagramIcon size={18} />
               </a>
               <WaLink href={waGeneral} ariaLabel="WhatsApp">
-                <WhatsAppIcon size={17} />
+                <WhatsAppIcon size={18} />
               </WaLink>
             </div>
           </div>
 
-          <nav aria-label="Comprar">
-            <div className="uni-footer-head">Comprar</div>
-            <div className="uni-footer-list">
-              <Link href="/#catalogo" className="uni-footer-link">Catálogo</Link>
-              <Link href="/#lookbook" className="uni-footer-link">Lookbook</Link>
-              <Link href="/#atacado" className="uni-footer-link">Como comprar</Link>
-              <Link href="/#faq" className="uni-footer-link">Dúvidas</Link>
-              <Link href="/catalogo" className="uni-footer-link">Catálogo em PDF</Link>
-              {COMPRA_NO_SITE && (
-                <Link href="/conta" className="uni-footer-link">Minha conta</Link>
-              )}
-            </div>
+          <nav className="uni-ft-col" aria-label="Comprar">
+            <p className="uni-ft-cab">Comprar</p>
+            <Link href="/#catalogo">Catálogo</Link>
+            <Link href="/#lookbook">Lookbook</Link>
+            <Link href="/#atacado">Como comprar</Link>
+            <Link href="/catalogo">Catálogo em PDF</Link>
+            {COMPRA_NO_SITE && <Link href="/conta">Minha conta</Link>}
           </nav>
 
-          <div>
-            <div className="uni-footer-head">Loja física</div>
-            <div className="uni-footer-store">
-              <p>
-                <PinIcon size={14} />
-                <span>
-                  {STORE.name} · {STORE.unit}
-                  <br />
-                  {STORE.street}
-                  <br />
-                  {STORE.district} · {STORE.city}
-                </span>
-              </p>
-              <p>
-                <ClockIcon size={14} />
-                <span>
-                  {STORE.hoursShort.map((line, i) => (
-                    <span key={line}>
-                      {i > 0 && <br />}
-                      {line}
-                    </span>
-                  ))}
-                </span>
-              </p>
-              <a href={STORE.directionsUrl} target="_blank" rel="noopener noreferrer" className="uni-footer-link is-sublinhado">
-                Como chegar
-              </a>
-            </div>
-          </div>
+          <nav className="uni-ft-col" aria-label="Atendimento">
+            <p className="uni-ft-cab">Atendimento</p>
+            <WaLink href={waGeneral}>WhatsApp</WaLink>
+            <a href={`https://instagram.com/${INSTAGRAM_HANDLE}`} target="_blank" rel="noopener noreferrer">
+              Instagram
+            </a>
+            <Link href="/#faq">Dúvidas</Link>
+            <Link href="/trocas">Trocas e devoluções</Link>
+            <a href={waLink('Olá! Tenho interesse em trabalhar com vocês — vim pelo site.')} target="_blank" rel="noopener noreferrer">
+              Trabalhe conosco <HeartIcon size={11} />
+            </a>
+          </nav>
 
-          <div>
-            <div className="uni-footer-head">Atendimento</div>
-            <div className="uni-footer-list">
-              <WaLink href={waGeneral} className="uni-footer-link">
-                <WhatsAppIcon size={14} /> WhatsApp
-              </WaLink>
-              <a
-                href={`https://instagram.com/${INSTAGRAM_HANDLE}`}
-                className="uni-footer-link"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <InstagramIcon size={14} /> @{INSTAGRAM_HANDLE}
-              </a>
-              <Link href="/trocas" className="uni-footer-link">Trocas e devoluções</Link>
-              <a
-                href={waLink('Olá! Tenho interesse em trabalhar com vocês — vim pelo site.')}
-                className="uni-footer-link"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <HeartIcon size={12} /> Trabalhe conosco
-              </a>
+          <div className="uni-ft-loja">
+            <div className="uni-ft-loja-topo">
+              <p className="uni-ft-cab">Loja física</p>
+              <LojaAberta />
             </div>
+            <p className="uni-ft-loja-nome">
+              {STORE.name} · {STORE.unit.split(' · ')[0]}
+            </p>
+            <p className="uni-ft-loja-end">
+              {STORE.street}
+              <br />
+              {STORE.unit.split(' · ')[1] ?? ''} · {STORE.district}, {STORE.city}
+            </p>
+            <p className="uni-ft-loja-hor">{STORE.hoursShort.join('  ·  ')}</p>
+            <a href={STORE.directionsUrl} target="_blank" rel="noopener noreferrer" className="uni-ft-rota">
+              <PinIcon size={14} /> Como chegar
+            </a>
           </div>
         </div>
+      </div>
 
-        {COMPRA_NO_SITE && (
-        <ul className="uni-footer-selos" aria-label="Compra segura">
-          <li>
-            <strong>Pix, cartão ou boleto</strong>
-            <span>Pagamento seguro pelo Mercado Pago</span>
-          </li>
-          <li>
-            <strong>Nota fiscal</strong>
-            <span>Em todo pedido, com CNPJ ou CPF</span>
-          </li>
-          <li>
-            <strong>Envio para todo o Brasil</strong>
-            <span>Ou retire grátis no Brás</span>
-          </li>
-        </ul>
-        )}
+      <div className="uni-ft-faixa" aria-label="Compra segura">
+        <div className="uni-ft-faixa-trilho">
+          {[0, 1].map((k) => (
+            <span key={k} aria-hidden={k === 1 || undefined}>
+              {FAIXA.map((t) => (
+                <span key={t}>
+                  {t}
+                  <b>✦</b>
+                </span>
+              ))}
+            </span>
+          ))}
+        </div>
+      </div>
 
-        <div className="uni-footer-bottom">
+      <div className="uni-container">
+        <div className="uni-ft-base">
           <span>
             © {new Date().getFullYear()} {STORE.razaoSocial} · CNPJ {STORE.cnpj}
             {STORE.inscricaoEstadual ? ` · IE ${STORE.inscricaoEstadual}` : ''}
@@ -160,11 +159,11 @@ export function Footer() {
           {/* Privacidade e revogação ficam no rodapé de todas as páginas: a
               LGPD (art. 8º, §5º) pede que desfazer o aceite seja tão fácil
               quanto foi aceitar. */}
-          <span className="uni-footer-legal">
-            <Link href="/termos" className="uni-footer-link">Termos de compra</Link>
-            <Link href="/trocas" className="uni-footer-link">Trocas</Link>
-            <Link href="/privacidade" className="uni-footer-link">Privacidade</Link>
-            <CookiePrefsButton className="uni-footer-link uni-footer-linkbtn" />
+          <span className="uni-ft-legal">
+            <Link href="/termos">Termos</Link>
+            <Link href="/trocas">Trocas</Link>
+            <Link href="/privacidade">Privacidade</Link>
+            <CookiePrefsButton className="uni-ft-linkbtn" />
           </span>
         </div>
       </div>
