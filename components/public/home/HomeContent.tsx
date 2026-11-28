@@ -43,7 +43,6 @@ export function HomeContent({
         }
       />
       <LookbookChamada looks={lookbook} />
-      <LookbookCelular looks={lookbook} />
       <Catalog
         products={products}
         categories={categories}
@@ -52,6 +51,10 @@ export function HomeContent({
           setQuickView({ product, colorIdx })
         }
       />
+      {/* No celular o lookbook vem DEPOIS do catálogo: quem chega quer ver
+          as peças primeiro. (No computador, a chamada fica antes e a
+          passarela inteira vem depois, em page.tsx.) */}
+      <LookbookCelular looks={lookbook} />
       {quickView && (
         <QuickView
           product={quickView.product}

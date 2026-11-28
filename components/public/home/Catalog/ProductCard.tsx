@@ -57,7 +57,6 @@ export function ProductCard({
   const activeColor = previewing ?? selected;
 
   const [imgIdx, setImgIdx] = useState(0);
-  const [parallax, setParallax] = useState({ x: 0, y: 0 });
 
   const activeImages = galleryImages(product, activeColor);
   const activeColorIdx = previewColorIdx ?? selectedColorIdx;
@@ -94,16 +93,7 @@ export function ProductCard({
       ];
   const hasAnyImage = layers.some((l) => l.img != null);
 
-  const onMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    // Ponteiro grosso (dedo) não tem parallax — só gastaria render no mobile.
-    if (!window.matchMedia('(hover: hover)').matches) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    const cx = (e.clientX - r.left) / r.width - 0.5;
-    const cy = (e.clientY - r.top) / r.height - 0.5;
-    setParallax({ x: -cx * 4, y: -cy * 4 });
-  };
   const onMouseLeave = () => {
-    setParallax({ x: 0, y: 0 });
     setImgIdx(0);
   };
 
@@ -124,7 +114,6 @@ export function ProductCard({
         (isLeaving ? 'is-leaving ' : '') +
         (isEntering ? 'is-entering' : '')
       }
-      onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
     >
       <div
@@ -173,9 +162,6 @@ export function ProductCard({
                   // O catálogo nunca é a primeira dobra: tudo entra sob demanda.
                   loading="lazy"
                   fetchPriority={i === activeColorIdx ? 'auto' : 'low'}
-                  style={{
-                    transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0) scale(1.02)`,
-                  }}
                 />
               </div>
             ) : null,
