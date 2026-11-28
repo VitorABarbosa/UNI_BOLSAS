@@ -20,19 +20,19 @@ const PASSOS_ALL = () => (COMPRA_NO_SITE ? PASSOS_SITE : PASSOS_WHATS);
 const PASSOS_SITE = [
   {
     titulo: 'Escolha as peças',
-    texto: `Coloque na sacola, com no mínimo ${PEDIDO_MINIMO} peças. Pode misturar modelos e cores; os preços de atacado já estão no site.`,
+    texto: `No mínimo ${PEDIDO_MINIMO} peças, misturando modelos e cores. O preço de atacado já está no site.`,
     icone: 'sacola',
   },
   {
     titulo: 'Finalize aqui no site',
     texto:
-      'Crie sua conta com CPF ou CNPJ e escolha: retirar grátis no Brás ou receber pelo correio, com o frete calculado pelo CEP.',
+      'Crie sua conta com CPF ou CNPJ. Retire grátis no Brás ou receba com o frete calculado pelo CEP.',
     icone: 'checkout',
   },
   {
     titulo: 'Pague e acompanhe',
     texto:
-      'Pix, cartão ou boleto pelo Mercado Pago. Separamos em até 1 dia útil, e você acompanha o pedido, a nota e o rastreio na sua conta.',
+      'Pix, cartão ou boleto. Separamos em até 1 dia útil, e você acompanha tudo na sua conta.',
     icone: 'caminhao',
   },
 ] satisfies Passo[];
@@ -41,7 +41,7 @@ const CONDICOES_SITE = [
   ['Pedido mínimo', `${PEDIDO_MINIMO} peças`],
   ['Compra', 'Pelo site, com CPF ou CNPJ'],
   ['Pagamento', 'Pix, cartão ou boleto'],
-  ['Entrega', 'Correio/transportadora ou retirada no Brás'],
+  ['Entrega', 'Envio ou retirada no Brás'],
 ] as const;
 
 /** Quando a compra pelo site está desligada (interruptor de emergência). */
@@ -85,46 +85,37 @@ export function ComoComprar() {
               Só atacado, <em>a partir de {PEDIDO_MINIMO} peças.</em>
             </h2>
           </div>
-          <div className="uni-como-lado">
-            <p className="uni-como-lede">
-              {COMPRA_NO_SITE
-                ? 'Não vendemos peça avulsa. Monte o pedido aqui no site e pague com Pix, cartão ou boleto. Dúvida sobre alguma peça? A gente responde no WhatsApp.'
-                : 'Não vendemos peça avulsa. O pedido é fechado direto com a gente pelo WhatsApp, sem carrinho e sem cadastro no site.'}
-            </p>
-            <div className="uni-como-ctas">
-              {COMPRA_NO_SITE ? (
-                <>
-                  <Link href="/#catalogo" className="uni-como-btn is-cheio">
-                    Ver o catálogo e comprar <span aria-hidden="true">→</span>
-                  </Link>
-                  <WaLink href={waGeneral} className="uni-como-btn">
-                    <WhatsAppIcon size={16} /> Tirar dúvidas
-                  </WaLink>
-                </>
-              ) : (
-                <WaLink href={waWholesale} className="uni-como-btn is-cheio">
-                  <WhatsAppIcon size={16} /> Receber tabela de atacado
+          <div className="uni-como-ctas">
+            {COMPRA_NO_SITE ? (
+              <>
+                <Link href="/#catalogo" className="uni-como-btn is-cheio">
+                  Ver o catálogo <span aria-hidden="true">→</span>
+                </Link>
+                <WaLink href={waGeneral} className="uni-como-btn">
+                  <WhatsAppIcon size={16} /> Dúvidas
                 </WaLink>
-              )}
-            </div>
+              </>
+            ) : (
+              <WaLink href={waWholesale} className="uni-como-btn is-cheio">
+                <WhatsAppIcon size={16} /> Receber tabela de atacado
+              </WaLink>
+            )}
           </div>
         </Reveal>
 
         <ComoComprarPassos passos={PASSOS} />
 
-        <Reveal className="uni-como-faixa">
-          <dl className="uni-como-condicoes">
-            {CONDICOES.map(([termo, valor]) => (
-              <div key={termo}>
-                <dt>{termo}</dt>
-                <dd>{valor}</dd>
-              </div>
-            ))}
-          </dl>
+        <p className="uni-como-resumo">
+          {CONDICOES.map(([termo, valor], i) => (
+            <span key={termo}>
+              {i > 0 && <b aria-hidden="true">·</b>}
+              <span className="uni-como-resumo-t">{termo}:</span> {valor}
+            </span>
+          ))}
           <Link href="/catalogo" className="uni-como-pdf">
-            Catálogo pra compartilhar ou salvar em PDF <span aria-hidden="true">↗</span>
+            Catálogo em PDF ↗
           </Link>
-        </Reveal>
+        </p>
       </div>
     </section>
   );
