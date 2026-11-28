@@ -1781,67 +1781,6 @@ html, body {
   }
 
   /* ---- Footer ---- */
-  .uni-footer {
-    background: var(--color-black);
-    color: var(--color-bone);
-    padding: 70px 0 40px;
-  }
-  /* O PNG da sacola é preto: sobre o fundo preto do rodapé ele sumia. */
-  .uni-footer .uni-logo-mark { filter: invert(1); }
-  .uni-footer-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
-    gap: 48px;
-    margin-bottom: 48px;
-  }
-  .uni-footer-blurb {
-    font-family: var(--font-sans);
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--color-whisper);
-    margin: 18px 0 0;
-    max-width: 320px;
-  }
-  .uni-footer-head {
-    font-family: var(--font-sans);
-    font-size: 10px;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    color: var(--color-whisper);
-    margin-bottom: 18px;
-    opacity: 0.75;
-  }
-  .uni-footer-list { display: flex; flex-direction: column; gap: 12px; }
-  .uni-footer-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--color-bone);
-    font-family: var(--font-sans);
-    font-size: 14px;
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-  .uni-footer-link:hover { color: var(--color-caramel); }
-  .uni-footer-store { font-size: 14px; line-height: 1.7; color: var(--color-bone); }
-  .uni-footer-hours { color: var(--color-whisper); font-size: 12px; }
-  .uni-footer-bottom {
-    border-top: 1px solid var(--color-charcoal);
-    padding-top: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--color-whisper);
-    letter-spacing: 0.08em;
-    opacity: 0.75;
-  }
-  .uni-footer-bottom a { color: var(--color-whisper); text-decoration: none; }
-  .uni-footer-bottom a:hover { color: var(--color-caramel); }
-
   /* ---- Floating WA ---- */
   .uni-float-wa-wrap {
     position: fixed;
@@ -2573,14 +2512,6 @@ html, body {
 .uni-cookie-foot a { color: var(--color-leather-dark); text-decoration: underline; }
 
 /* Rodapé: privacidade + revogar consentimento */
-.uni-footer-legal { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
-.uni-footer-linkbtn {
-  background: none;
-  border: 0;
-  padding: 0;
-  font: inherit;
-  cursor: pointer;
-}
 
 /* ---- Mapa que espera o sim ---- */
 .uni-map-ask {
@@ -3016,7 +2947,6 @@ input, select, textarea { font-size: 16px; }
   .uni-product-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
   .uni-reels-grid { gap: 18px; max-width: none; }
   .uni-location-grid { grid-template-columns: 1fr; gap: 32px; }
-  .uni-footer-grid { grid-template-columns: 1.5fr 1fr 1fr; gap: 32px; }
   .uni-cred-grid { grid-template-columns: repeat(2, 1fr); gap: 0; }
   .uni-cred-cell:nth-child(2) { border-right: none; }
   .uni-cred-cell:nth-child(1),
@@ -3097,7 +3027,6 @@ input, select, textarea { font-size: 16px; }
   /* A bolinha continua fina, mas o dedo acerta uma faixa de 28px. */
   .uni-carousel-dot::after { content: ""; position: absolute; inset: -12px -2px; }
   .uni-carousel-dots { padding: 12px; gap: 10px; }
-  .uni-footer-link { min-height: 40px; align-items: center; }
   .uni-hero-eyebrow { margin-bottom: 12px; font-size: 10px; letter-spacing: 0.3em; }
   .uni-hero-h1 { margin-bottom: 16px; }
   .uni-hero-lede { font-size: 15.5px; margin-bottom: 20px; }
@@ -3284,9 +3213,6 @@ input, select, textarea { font-size: 16px; }
   .uni-news-submit { justify-content: center; min-height: 50px; }
 
   /* Rodapé: respiro extra pro botão flutuante do WhatsApp não cobrir links. */
-  .uni-footer { padding: 56px 0 calc(80px + env(safe-area-inset-bottom)); }
-  .uni-footer-grid { grid-template-columns: 1fr; gap: 28px; }
-  .uni-footer-bottom { flex-direction: column; align-items: flex-start; gap: 6px; }
 
   /* Botão flutuante */
   .uni-float-wa-wrap { flex-direction: column; align-items: flex-end; gap: 8px; }
@@ -5118,4 +5044,205 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
   .uni-filtro-btn { min-height: 38px; padding: 0 12px; font-size: 12.5px; }
   .uni-filtro-painel { left: 0; right: 0; min-width: 0; max-width: none; }
   .uni-filtro-cor { gap: 8px; padding: 0 6px; font-size: 13px; line-height: 1.2; }
+}
+
+/* Selo de loja aberta/fechada (LojaAberta) */
+.uni-loja-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.uni-loja-status i { width: 7px; height: 7px; border-radius: 50%; }
+.uni-loja-status.is-aberta { background: #E2EEDC; color: #2F6B3E; }
+.uni-loja-status.is-aberta i { background: #2F9E4F; box-shadow: 0 0 0 0 rgba(47, 158, 79, 0.6); animation: uni-pulso-verde 2s infinite; }
+.uni-loja-status.is-fechada { background: #F1E7DA; color: var(--color-leather-dark); }
+.uni-loja-status.is-fechada i { background: var(--color-caramel); }
+.uni-loja-status.is-carregando { min-width: 120px; min-height: 28px; background: rgba(17, 17, 17, 0.05); }
+@keyframes uni-pulso-verde { 70% { box-shadow: 0 0 0 7px rgba(47, 158, 79, 0); } 100% { box-shadow: 0 0 0 0 rgba(47, 158, 79, 0); } }
+
+/* ─── Rodapé: cartão de visita ────────────────────────────────────────────
+   Frente café com a marca em "hot stamping" caramelo, verso creme com os
+   dados e um QR do WhatsApp. Embaixo, uma linha de links e o CNPJ. */
+.uni-cv {
+  --cv-cafe: #22170F;
+  --cv-papel: #FBF8F2;
+  --cv-ouro: linear-gradient(115deg, #A8763A 0%, #E8C489 38%, #B98443 62%, #F0D39B 100%);
+  background:
+    radial-gradient(60% 80% at 50% 0%, rgba(201, 147, 74, 0.10), transparent 70%),
+    var(--color-bone);
+  border-top: 1px solid var(--color-whisper);
+  padding: 72px 0 28px;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+.uni-cv a { color: inherit; text-decoration: none; }
+.uni-cv-mesa { display: flex; justify-content: center; perspective: 1400px; }
+.uni-cv-cartao {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.78fr 1.5fr;
+  width: min(1080px, 100%);
+  aspect-ratio: 2.15;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--cv-papel);
+  box-shadow:
+    0 1px 1px rgba(34, 23, 15, 0.08),
+    0 8px 16px -8px rgba(34, 23, 15, 0.18),
+    0 40px 70px -30px rgba(34, 23, 15, 0.45);
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.7s;
+}
+.uni-cv-cartao:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1px 1px rgba(34, 23, 15, 0.08), 0 12px 24px -10px rgba(34, 23, 15, 0.2), 0 50px 90px -34px rgba(34, 23, 15, 0.5);
+}
+/* Papel com fibra: um ruído bem leve por cima do cartão inteiro. */
+.uni-cv-cartao::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Frente (café) */
+.uni-cv-frente {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 28px 20px;
+  background:
+    radial-gradient(90% 70% at 50% 0%, rgba(201, 147, 74, 0.22), transparent 70%),
+    linear-gradient(160deg, #2D1E13 0%, var(--cv-cafe) 100%);
+  color: #F4EFE6;
+}
+.uni-cv-moldura { position: absolute; inset: 14px; border: 1px solid rgba(232, 196, 137, 0.35); border-radius: 8px; pointer-events: none; }
+.uni-cv-logo { width: 60px; height: 60px; filter: invert(1) sepia(1) saturate(2.2) hue-rotate(-12deg) brightness(0.92); margin-bottom: 14px; }
+.uni-cv-nome {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(32px, 3.6vw, 48px);
+  line-height: 1;
+  background: var(--cv-ouro);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.uni-cv-ramo { margin: 10px 0 0; font-size: 10.5px; letter-spacing: 0.32em; text-transform: uppercase; color: rgba(244, 239, 230, 0.8); }
+.uni-cv-desde { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid rgba(232, 196, 137, 0.3); font-family: var(--font-serif); font-style: italic; font-size: 14px; color: #E8C489; }
+
+/* Verso (creme) */
+.uni-cv-verso { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 40px 56px; }
+.uni-cv-ey { margin: 0 0 16px; font-size: 10.5px; font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase; color: var(--color-leather-dark); }
+.uni-cv-dados { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+.uni-cv-dados li { display: flex; gap: 12px; align-items: flex-start; font-size: 15px; line-height: 1.45; color: var(--color-charcoal); }
+.uni-cv-dados li > svg { flex-shrink: 0; margin-top: 2px; color: var(--color-leather); }
+.uni-cv-dados strong { display: block; font-weight: 600; color: var(--color-ink); }
+.uni-cv-dados a:hover { color: var(--color-leather-dark); text-decoration: underline; text-underline-offset: 3px; }
+.uni-cv-status { margin-left: 10px; padding: 3px 9px; font-size: 11px; vertical-align: 1px; }
+.uni-cv-acoes { display: flex; gap: 8px; margin-top: 20px; }
+.uni-cv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 23, 15, 0.25);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.uni-cv-btn:hover { border-color: var(--cv-cafe); }
+.uni-cv-btn.is-cheio { background: var(--cv-cafe); border-color: var(--cv-cafe); color: #F4EFE6 !important; }
+.uni-cv-btn.is-cheio:hover { background: var(--color-leather-dark); border-color: var(--color-leather-dark); }
+.uni-cv-qr {
+  position: absolute;
+  right: 44px;
+  bottom: 40px;
+  width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.uni-cv-qr span { display: block; width: 96px; height: 96px; padding: 6px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 1px rgba(34, 23, 15, 0.12); }
+.uni-cv-qr svg { display: block; width: 100%; height: 100%; }
+.uni-cv-qr small { font-size: 9.5px; line-height: 1.25; color: var(--color-stone); }
+
+/* Links e base */
+.uni-cv-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 26px; margin: 56px 0 22px; }
+.uni-cv-links a { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-charcoal); padding: 6px 0; }
+.uni-cv-links a:hover { color: var(--color-leather-dark); }
+.uni-cv-base {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(17, 17, 17, 0.1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--color-stone);
+}
+.uni-cv-legal { display: flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--font-sans); font-size: 12.5px; letter-spacing: 0; }
+.uni-cv-legal a, .uni-cv-linkbtn { color: var(--color-charcoal); }
+.uni-cv-legal a:hover, .uni-cv-linkbtn:hover { color: var(--color-leather-dark); }
+.uni-cv-linkbtn { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  .uni-cv-cartao { transform: none; transition: none; }
+  .uni-loja-status.is-aberta i { animation: none; }
+}
+
+/* Tablet: o cartão perde a proporção fixa pra caber o texto. */
+@media (max-width: 860px) {
+  .uni-cv-cartao { aspect-ratio: auto; grid-template-columns: 0.75fr 1.4fr; }
+  .uni-cv-qr { display: none; }
+}
+
+/* Celular: frente vira uma faixa no topo, verso enxuto; sem QR. */
+@media (max-width: 600px) {
+  .uni-cv { padding: 44px 0 calc(92px + env(safe-area-inset-bottom)); }
+  .uni-cv-cartao { grid-template-columns: 1fr; border-radius: 14px; }
+  .uni-cv-frente {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 18px 20px;
+    text-align: left;
+  }
+  .uni-cv-moldura { inset: 8px; border-radius: 6px; }
+  .uni-cv-logo { width: 38px; height: 38px; margin: 0; }
+  .uni-cv-nome { font-size: 28px; }
+  .uni-cv-ramo { display: none; }
+  .uni-cv-desde { margin: 0 0 0 auto; padding: 0 0 0 12px; border-top: 0; border-left: 1px solid rgba(232, 196, 137, 0.3); font-size: 12px; max-width: 90px; line-height: 1.25; text-align: right; }
+  .uni-cv-verso { padding: 20px 20px 22px; }
+  .uni-cv-ey { margin-bottom: 12px; font-size: 10px; }
+  .uni-cv-dados { gap: 9px; }
+  .uni-cv-dados li { font-size: 13.5px; }
+  .uni-cv-status { display: inline-flex; margin: 6px 0 0; }
+  .uni-cv-dados li:nth-child(2) > span { display: flex; flex-direction: column; align-items: flex-start; }
+  .uni-cv-acoes { margin-top: 16px; }
+  .uni-cv-btn { flex: 1; justify-content: center; min-height: 46px; padding: 0 12px; letter-spacing: 0.08em; white-space: nowrap; }
+  .uni-cv-links { margin: 32px 0 16px; gap: 2px 18px; }
+  .uni-cv-links a { font-size: 11.5px; padding: 8px 0; }
+  .uni-cv-base { flex-direction: column; align-items: center; text-align: center; }
+  .uni-cv-legal { justify-content: center; }
 }
