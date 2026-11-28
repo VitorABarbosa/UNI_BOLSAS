@@ -2,12 +2,12 @@
 
 /* eslint-disable @next/next/no-img-element -- recortes PNG/WebP com transparência, já no tamanho certo */
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { BagIcon } from '@/components/public/icons';
 import { itemDaPeca } from '@/components/public/pedido/AdicionarAoPedido';
 import { adicionarAoPedido } from '@/lib/pedido';
 import { productPrice } from '@/lib/product-price';
-import { nn, type LookConfig } from '@/lib/content/lookbook';
+import { nn, tomDo, type LookConfig } from '@/lib/content/lookbook';
 import type { ProductWithRelations } from '@/lib/queries/products';
 
 export type LookDaVitrine = { cfg: LookConfig; product: ProductWithRelations };
@@ -38,10 +38,7 @@ export function Lookbook({ looks }: { looks: LookDaVitrine[] }) {
   const N = looks.length;
   const secao = useRef<HTMLElement>(null);
   const palco = useRef<HTMLDivElement>(null);
-  const trilho = useRef<HTMLDivElement>(null);
-  const rolo = useRef<HTMLSpanElement>(null);
   const modelos = useRef<(HTMLDivElement | null)[]>([]);
-  const cartoes = useRef<(HTMLElement | null)[]>([]);
   const alvo = useRef(0);
   const [ativo, setAtivo] = useState(false);
   const [atual, setAtual] = useState(0);
@@ -66,9 +63,8 @@ export function Lookbook({ looks }: { looks: LookDaVitrine[] }) {
   useEffect(() => {
     if (!ativo) return;
     const stage = palco.current!;
-    const rail = trilho.current!;
     const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let W = 0, H = 0, base = 0, cardS = 0, p = alvo.current, last = 0, raf = 0, sujo = true, visivel = true, mostrado = -1;
+    let W = 0, H = 0, base = 0, p = alvo.current, last = 0, raf = 0, sujo = true, visivel = true, mostrado = -1;
     const cache = looks.map(() => ({ f: '', o: '' }));
 
     const medir = () => {
@@ -80,8 +76,6 @@ export function Lookbook({ looks }: { looks: LookDaVitrine[] }) {
         m.style.width = `${base * looks[i]!.cfg.proporcao}px`;
         m.style.height = `${base}px`;
       });
-      cardS = rail.clientHeight / 3;
-      cartoes.current.forEach((c) => c && (c.style.height = `${cardS}px`));
       sujo = true;
     };
     const pintar = () => {
@@ -102,18 +96,6 @@ export function Lookbook({ looks }: { looks: LookDaVitrine[] }) {
         }
         m.style.zIndex = String(100 - Math.round(d * 10));
       });
-      const todos = cardS * N;
-      cartoes.current.forEach((c, i) => {
-        if (!c) return;
-        let y = wrap(i * cardS - p * cardS, todos);
-        if (y > todos - cardS) y -= todos;
-        c.style.transform = `translate3d(0,${y.toFixed(1)}px,0)`;
-      });
-      const r = rolo.current;
-      if (r?.firstElementChild) {
-        const lh = (r.firstElementChild as HTMLElement).offsetHeight;
-        r.style.transform = `translate3d(0,${(-wrap(p, N) * lh).toFixed(1)}px,0)`;
-      }
       const cur = wrap(Math.round(p), N);
       if (cur !== mostrado) {
         mostrado = cur;
@@ -209,17 +191,40 @@ export function Lookbook({ looks }: { looks: LookDaVitrine[] }) {
     };
   }, [ativo, looks, N]);
 
+  // A miniatura do look atual sempre à vista no painel.
+  useEffect(() => {
+    const fila = secao.current?.querySelector<HTMLElement>('.uni-lb-miniaturas');
+    const b = fila?.children[atual] as HTMLElement | undefined;
+    if (fila && b) fila.scrollTo({ left: b.offsetLeft - fila.clientWidth / 2 + b.offsetWidth / 2 });
+  }, [atual]);
+
   if (N === 0) return null;
   const mover = (d: number) => (alvo.current = Math.round(alvo.current) + d);
+  // Vai direto a um look pelo caminho mais curto (a fila é circular).
+  const irPara = (i: number) => {
+    let d = wrap(i - Math.round(alvo.current), N);
+    if (d > N / 2) d -= N;
+    alvo.current = Math.round(alvo.current) + d;
+  };
+  const atualLook = looks[atual] ?? looks[0]!;
+  const tom = tomDo(atualLook.cfg.look);
+  const estilo = { '--lb-a': tom.a, '--lb-b': tom.b, '--lb-t': tom.tinta } as CSSProperties;
+  const produto = atualLook.product;
+  const preco = productPrice(produto);
+  const cor =
+    produto.colors.find((c) => c.name.toLowerCase() === (atualLook.cfg.cor ?? '').toLowerCase()) ?? null;
 
   return (
-    <section className="uni-lb" id="lookbook" ref={secao} aria-label="Lookbook: uma bolsa para cada momento">
+    <section className="uni-lb" id="lookbook" ref={secao} style={estilo} aria-label="Lookbook: uma bolsa para cada momento">
       <div
         className="uni-lb-palco"
         ref={palco}
         tabIndex={0}
         aria-label="Passarela de looks. Arraste ou use as setas do teclado para trocar o look."
       >
+        <span key={atualLook.cfg.look} className="uni-lb-num" aria-hidden="true">
+          {nn(atualLook.cfg.look)}
+        </span>
         <div className="uni-lb-fila">
           {ativo &&
             looks.map(({ cfg }, i) => (
@@ -233,23 +238,13 @@ export function Lookbook({ looks }: { looks: LookDaVitrine[] }) {
           <h2 className="uni-lb-titulo">
             Uma bolsa para <em>cada momento.</em>
           </h2>
-          <p>
-            Dez looks com bolsas do nosso atacado: da festa à academia, do escritório à praia. Arraste para trocar o look; a
-            bolsa de cada um está ao lado, pronta para entrar no seu pedido.
-          </p>
+          <p>Dez looks com bolsas do nosso atacado. Arraste para trocar; a bolsa de cada look está ao lado, pronta para o pedido.</p>
         </div>
-        <div className="uni-lb-tag">
-          <div className="uni-lb-look" aria-live="polite">
-            <span className="uni-lb-rotulo">Look</span>
-            <span className="uni-lb-janela">
-              <span className="uni-lb-rolo" ref={rolo}>
-                {[...looks, looks[0]!].map(({ cfg }, i) => (
-                  <span key={i}>{nn(cfg.look)}</span>
-                ))}
-              </span>
-            </span>
-          </div>
-          <span className="uni-lb-tema">{looks[atual]?.cfg.tema}</span>
+        <div className="uni-lb-tag" aria-live="polite">
+          <span className="uni-lb-rotulo">Look {nn(atualLook.cfg.look)}</span>
+          <span key={atualLook.cfg.look} className="uni-lb-tema">
+            {atualLook.cfg.tema}
+          </span>
           <span className="uni-lb-dica">Arraste para trocar o look</span>
         </div>
         <div className="uni-lb-setas">
@@ -261,41 +256,65 @@ export function Lookbook({ looks }: { looks: LookDaVitrine[] }) {
           </button>
         </div>
       </div>
-      <div className="uni-lb-trilho" ref={trilho} aria-label="A bolsa de cada look">
-        {looks.map(({ cfg, product }, i) => {
-          const preco = productPrice(product);
-          const cor = product.colors.find((c) => c.name.toLowerCase() === (cfg.cor ?? '').toLowerCase()) ?? null;
-          return (
-            <article key={cfg.look} className={`uni-lb-card${i % 2 ? ' is-alt' : ''}`} ref={(el) => void (cartoes.current[i] = el)}>
-              <span className="uni-lb-n">
-                Look {nn(cfg.look)} · {cfg.tema}
-              </span>
-              <Link href={`/produtos/${product.slug}`} className="uni-lb-foto" tabIndex={-1}>
-                {ativo && <img src={`/lookbook/bolsa-${nn(cfg.look)}.webp`} alt={product.name} loading="lazy" />}
-              </Link>
-              <div className="uni-lb-meta">
-                <Link href={`/produtos/${product.slug}`} className="uni-lb-nome">
-                  {product.name}
-                </Link>
-                <span className="uni-lb-preco">
-                  {preco.currentLabel} <small>no atacado</small>
-                </span>
-                <button
-                  type="button"
-                  className="uni-lb-comprar"
-                  onClick={() => {
-                    adicionarAoPedido(itemDaPeca(product, cor, undefined, cfg.fotoPedido));
-                    setAdicionado(cfg.look);
-                  }}
-                >
-                  <BagIcon size={13} />
-                  {adicionado === cfg.look ? 'Adicionada' : 'Comprar'}
-                </button>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+
+      <aside className="uni-lb-painel" aria-label="Compre o look">
+        <span className="uni-lb-painel-ey">Compre o look · {nn(atualLook.cfg.look)}</span>
+        <div key={atualLook.cfg.look} className="uni-lb-painel-troca">
+          <Link href={`/produtos/${produto.slug}`} className="uni-lb-painel-foto" tabIndex={-1} aria-hidden="true">
+            {ativo && <img src={`/lookbook/bolsa-${nn(atualLook.cfg.look)}.webp`} alt="" />}
+          </Link>
+          <Link href={`/produtos/${produto.slug}`} className="uni-lb-painel-nome">
+            {produto.name}
+          </Link>
+          <span className="uni-lb-painel-preco">
+            {preco.currentLabel} <small>no atacado · mín. 3 peças</small>
+          </span>
+          {cor && (
+            <span className="uni-lb-painel-cor">
+              <i style={{ background: cor.hex }} /> {cor.name}, a cor do look
+            </span>
+          )}
+          <div className="uni-lb-painel-acoes">
+            <button
+              type="button"
+              className="uni-lb-painel-btn is-cheio"
+              onClick={() => {
+                adicionarAoPedido(itemDaPeca(produto, cor, undefined, atualLook.cfg.fotoPedido));
+                setAdicionado(atualLook.cfg.look);
+              }}
+            >
+              <BagIcon size={14} />
+              {adicionado === atualLook.cfg.look ? 'Adicionada' : 'Comprar'}
+            </button>
+            <Link href={`/produtos/${produto.slug}`} className="uni-lb-painel-btn">
+              Ver detalhes
+            </Link>
+          </div>
+        </div>
+        <div className="uni-lb-painel-looks">
+          <div className="uni-lb-painel-cont">
+            <span>
+              {nn(atualLook.cfg.look)} / {nn(N)}
+            </span>
+            <span>{atualLook.cfg.tema}</span>
+          </div>
+          <div className="uni-lb-miniaturas">
+            {looks.map(({ cfg }, i) => (
+              <button
+                key={cfg.look}
+                type="button"
+                className={i === atual ? 'is-atual' : undefined}
+                onClick={() => irPara(i)}
+                aria-label={`Look ${nn(cfg.look)}: ${cfg.tema}`}
+                aria-pressed={i === atual}
+                style={{ background: tomDo(cfg.look).a }}
+              >
+                {ativo && <img src={`/lookbook/look-${nn(cfg.look)}.webp`} alt="" loading="lazy" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      </aside>
     </section>
   );
 }
@@ -383,6 +402,13 @@ export function LookbookCelular({ looks }: { looks: LookDaVitrine[] }) {
     };
   }, [looks.length]);
 
+  // A miniatura do look atual sempre à vista na fileira de baixo.
+  useEffect(() => {
+    const fila = secao.current?.querySelector<HTMLElement>('.uni-lbm-miniaturas');
+    const b = fila?.children[atual] as HTMLElement | undefined;
+    if (fila && b) fila.scrollTo({ left: b.offsetLeft - fila.clientWidth / 2 + b.offsetWidth / 2, behavior: 'smooth' });
+  }, [atual]);
+
   if (looks.length === 0) return null;
   const ir = (i: number) => {
     const el = trilho.current;
@@ -397,31 +423,38 @@ export function LookbookCelular({ looks }: { looks: LookDaVitrine[] }) {
         <h2 className="uni-lbm-titulo">
           Uma bolsa para <em>cada momento.</em>
         </h2>
-        <p>Deslize para ver os looks. A bolsa de cada um entra no seu pedido com um toque.</p>
       </div>
       <div className="uni-lbm-trilho" ref={trilho}>
-        {looks.map(({ cfg, product }) => {
+        {looks.map(({ cfg, product }, i) => {
           const preco = productPrice(product);
           const cor = product.colors.find((c) => c.name.toLowerCase() === (cfg.cor ?? '').toLowerCase()) ?? null;
+          const tom = tomDo(cfg.look);
           return (
-            <article key={cfg.look} className="uni-lbm-card">
-              <div className="uni-lbm-foto">
-                <span className="uni-lbm-n">{nn(cfg.look)}</span>
-                <span className="uni-lbm-tema">{cfg.tema}</span>
-                {perto && <img src={`/lookbook/look-${nn(cfg.look)}.webp`} alt="" loading="lazy" decoding="async" draggable={false} />}
+            <article
+              key={cfg.look}
+              className="uni-lbm-card"
+              style={{ '--lb-a': tom.a, '--lb-b': tom.b, '--lb-t': tom.tinta } as CSSProperties}
+            >
+              <div className="uni-lbm-stories" aria-hidden="true">
+                {looks.map((l, k) => (
+                  <i key={l.cfg.look} className={k <= i ? 'is-on' : undefined} />
+                ))}
               </div>
-              <div className="uni-lbm-bolsa">
+              <span className="uni-lbm-n" aria-hidden="true">
+                {nn(cfg.look)}
+              </span>
+              <span className="uni-lbm-tema">{cfg.tema}</span>
+              {perto && (
+                <img className="uni-lbm-modelo" src={`/lookbook/look-${nn(cfg.look)}.webp`} alt="" loading="lazy" decoding="async" draggable={false} />
+              )}
+              <div className="uni-lbm-vidro">
                 <Link href={`/produtos/${product.slug}`} className="uni-lbm-mini" aria-hidden="true" tabIndex={-1}>
                   {perto && <img src={`/lookbook/bolsa-${nn(cfg.look)}.webp`} alt="" loading="lazy" decoding="async" />}
                 </Link>
-                <div className="uni-lbm-info">
-                  <Link href={`/produtos/${product.slug}`} className="uni-lbm-nome">
-                    {product.name}
-                  </Link>
-                  <span className="uni-lbm-preco">
-                    {preco.currentLabel} <small>no atacado</small>
-                  </span>
-                </div>
+                <Link href={`/produtos/${product.slug}`} className="uni-lbm-info">
+                  <span className="uni-lbm-nome">{product.name}</span>
+                  <span className="uni-lbm-preco">{preco.currentLabel}</span>
+                </Link>
                 <button
                   type="button"
                   className={'uni-lbm-comprar' + (adicionado === cfg.look ? ' is-feito' : '')}
@@ -431,15 +464,14 @@ export function LookbookCelular({ looks }: { looks: LookDaVitrine[] }) {
                   }}
                   aria-label={`Comprar ${product.name}`}
                 >
-                  <BagIcon size={14} />
-                  {adicionado === cfg.look ? 'Adicionada' : 'Comprar'}
+                  {adicionado === cfg.look ? '✓' : 'Comprar'}
                 </button>
               </div>
             </article>
           );
         })}
       </div>
-      <div className="uni-lbm-pontos" role="tablist" aria-label="Escolher o look">
+      <div className="uni-lbm-miniaturas" role="tablist" aria-label="Escolher o look">
         {looks.map(({ cfg }, i) => (
           <button
             key={cfg.look}
@@ -448,8 +480,11 @@ export function LookbookCelular({ looks }: { looks: LookDaVitrine[] }) {
             aria-selected={i === atual}
             aria-label={`Look ${nn(cfg.look)}: ${cfg.tema}`}
             className={i === atual ? 'is-atual' : undefined}
+            style={{ background: tomDo(cfg.look).a }}
             onClick={() => ir(i)}
-          />
+          >
+            {perto && <img src={`/lookbook/look-${nn(cfg.look)}.webp`} alt="" loading="lazy" />}
+          </button>
         ))}
       </div>
     </section>

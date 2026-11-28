@@ -30,3 +30,22 @@ export const LOOKS: LookConfig[] = [
 ];
 
 export const nn = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * Tom de cada look: as duas cores do fundo (claras, pra modelo saltar) e a
+ * "tinta" dos textos do look (número, tema). O fundo troca suavemente quando
+ * o look muda.
+ */
+export const TONS: Record<number, { a: string; b: string; tinta: string }> = {
+  1: { a: '#F1DEE1', b: '#E3C7CD', tinta: '#6B1E32' }, // festa e noite
+  2: { a: '#F1E8DB', b: '#E3D5C1', tinta: '#6B4326' }, // passeio elegante
+  3: { a: '#F6E7CC', b: '#EBD2A9', tinta: '#8A5A1E' }, // verão
+  4: { a: '#EAE5DE', b: '#D9D1C6', tinta: '#4E4740' }, // trabalho
+  5: { a: '#EBE0E4', b: '#D8C7CE', tinta: '#5C1A2B' }, // executiva
+  6: { a: '#E6EAEE', b: '#D1D9E0', tinta: '#2B4A7A' }, // casual
+  7: { a: '#EAE3EE', b: '#D8CCE0', tinta: '#4D2F63' }, // viagem
+  8: { a: '#E4EBE1', b: '#CEDBCA', tinta: '#3E5E3E' }, // academia
+  9: { a: '#F6E7D0', b: '#E8D0AC', tinta: '#9A5B24' }, // praia
+  10: { a: '#F4E3E5', b: '#E7CBCF', tinta: '#7A3442' }, // faculdade e passeio
+};
+export const tomDo = (look: number) => TONS[look] ?? { a: '#EFE6D8', b: '#E3D5C1', tinta: '#6B4326' };
