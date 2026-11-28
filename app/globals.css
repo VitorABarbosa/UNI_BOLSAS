@@ -4614,7 +4614,7 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
   --lb-u: min(calc(100vw / 1600), calc(100vh / 900));
   position: relative;
   display: grid;
-  grid-template-columns: 1fr clamp(300px, calc(380 * var(--lb-u)), 400px);
+  grid-template-columns: 1fr clamp(340px, calc(430 * var(--lb-u)), 450px);
   /* Cabe inteira na tela, abaixo do cabeçalho fixo. O pulo até aqui já
      desconta o cabeçalho (scroll-padding-top do html). */
   height: clamp(600px, calc(100vh - 84px), 900px);
@@ -4630,8 +4630,9 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
   cursor: grab;
   outline: none;
   background:
-    radial-gradient(120% 70% at 78% 92%, rgba(255, 255, 255, 0.75), transparent 60%),
-    linear-gradient(90deg, #E6DCCB 0%, #EEE6D9 40%, #F3EDE3 70%, #F8F4EE 100%);
+    radial-gradient(70% 60% at 62% 70%, rgba(255, 255, 255, 0.6), transparent 70%),
+    linear-gradient(160deg, var(--lb-a) 0%, var(--lb-b) 60%, var(--lb-a) 100%);
+  transition: --lb-a 0.9s ease, --lb-b 0.9s ease;
 }
 .uni-lb-palco:focus-visible { box-shadow: inset 0 0 0 2px var(--color-ink); }
 .uni-lb-palco.is-drag { cursor: grabbing; }
@@ -4650,32 +4651,11 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
 .uni-lb-titulo { margin: 10px 0 0; font-family: var(--font-serif); font-weight: 300; font-size: clamp(34px, calc(52 * var(--lb-u)), 54px); line-height: 1.02; letter-spacing: -0.02em; color: var(--color-ink); text-wrap: balance; }
 .uni-lb-titulo em, .uni-lb-chamada-titulo em { color: var(--color-leather); }
 .uni-lb-intro p { margin: 14px 0 0; font-family: var(--font-sans); font-size: 15px; line-height: 1.6; color: var(--color-stone); }
-.uni-lb-tag { position: absolute; z-index: 2; left: 48px; bottom: 40px; pointer-events: none; }
-.uni-lb-look { display: flex; align-items: flex-end; gap: 0.45em; font-family: var(--font-serif); font-weight: 300; font-size: 40px; line-height: 1; color: var(--color-ink); }
-.uni-lb-rotulo { font-family: var(--font-mono); font-size: 0.32em; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-stone); padding-bottom: 0.45em; }
-.uni-lb-janela { height: 1em; overflow: hidden; font-variant-numeric: tabular-nums; }
-.uni-lb-rolo { display: block; will-change: transform; }
-.uni-lb-rolo span { display: block; height: 1em; }
-.uni-lb-tema { display: block; margin-top: 8px; min-height: 1.3em; font-family: var(--font-serif); font-style: italic; font-size: 20px; color: var(--color-leather); }
-.uni-lb-dica { display: block; margin-top: 14px; font-family: var(--font-sans); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-stone); }
 .uni-lb-setas { position: absolute; z-index: 3; right: 26px; top: 50%; display: flex; flex-direction: column; gap: 10px; transform: translateY(-50%); }
 .uni-lb-setas button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 99px; background: rgba(251, 248, 243, 0.88); border: 1px solid var(--color-whisper); cursor: pointer; transition: background 0.2s; }
 .uni-lb-setas button:hover { background: var(--color-pearl); }
 .uni-lb-setas svg { width: 16px; height: 16px; fill: none; stroke: var(--color-ink); stroke-width: 1.6; }
-.uni-lb-trilho { position: relative; overflow: hidden; min-height: 0; background: var(--color-pearl); border-left: 1px solid var(--color-whisper); }
-.uni-lb-card { position: absolute; left: 0; top: 0; width: 100%; display: flex; flex-direction: column; padding: 18px 26px; background: var(--color-pearl); border-bottom: 1px solid var(--color-whisper); will-change: transform; }
-.uni-lb-card.is-alt { background: #fff; }
-.uni-lb-n { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-stone); }
-.uni-lb-foto { position: relative; flex: 1; min-height: 0; margin: 10px 0; background: var(--color-bone); overflow: hidden; }
-.uni-lb-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-.uni-lb-meta { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: end; }
-.uni-lb-nome { font-family: var(--font-serif); font-size: 15.5px; line-height: 1.25; color: var(--color-ink); text-decoration: none; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.uni-lb-nome:hover { text-decoration: underline; text-underline-offset: 3px; }
-.uni-lb-preco { grid-column: 1; font-family: var(--font-mono); font-size: 13.5px; color: var(--color-ink); }
-.uni-lb-preco small { font-family: var(--font-sans); font-size: 0.82em; color: var(--color-stone); }
-.uni-lb-comprar { grid-column: 2; grid-row: 1 / 3; align-self: center; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border: 0; background: var(--color-ink); color: var(--color-pearl); font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
-.uni-lb-comprar:hover { background: var(--color-leather); }
-.uni-lb-comprar:focus-visible, .uni-lb-setas button:focus-visible { outline: 2px solid var(--color-caramel); outline-offset: 2px; }
+.uni-lb-painel-btn:focus-visible, .uni-lb-setas button:focus-visible { outline: 2px solid var(--color-caramel); outline-offset: 2px; }
 
 .uni-lb-chamada { padding: 28px 0; background: linear-gradient(90deg, #E6DCCB, #F3EDE3 60%, #F8F4EE); border-top: 1px solid var(--color-whisper); border-bottom: 1px solid var(--color-whisper); }
 .uni-lb-chamada-in { display: grid; grid-template-columns: auto 1fr auto; gap: 40px; align-items: center; }
@@ -4689,166 +4669,6 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
 @media (max-width: 900px) {
   .uni-lb, .uni-lb-chamada { display: none; }
   .uni-header-link[href='/#lookbook'] { display: none; }
-}
-
-/* ─── Lookbook no celular ─────────────────────────────────────────────────
-   Carrossel de cartões com o próximo look espiando na borda. Só aparece
-   até 900px; no computador fica a passarela. */
-.uni-lbm { display: none; }
-@media (max-width: 900px) {
-  .uni-lbm {
-    display: block;
-    padding: 56px 0 44px;
-    background: linear-gradient(180deg, var(--color-bone) 0%, #EEE6D9 100%);
-    border-top: 1px solid var(--color-whisper);
-    border-bottom: 1px solid var(--color-whisper);
-    scroll-margin-top: 0;
-  }
-  .uni-lbm-topo { padding: 0 20px 22px; }
-  .uni-lbm-titulo {
-    margin: 10px 0 8px;
-    font-family: var(--font-serif);
-    font-size: clamp(30px, 8.4vw, 40px);
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -0.01em;
-    color: var(--color-ink);
-  }
-  .uni-lbm-titulo em { font-style: italic; color: var(--color-leather-dark); }
-  .uni-lbm-topo p { margin: 0; font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: var(--color-stone); }
-  .uni-lbm-trilho {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: min(78vw, 340px);
-    column-gap: 12px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    scroll-padding: 0 20px;
-    padding: 0 20px 6px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .uni-lbm-trilho::-webkit-scrollbar { display: none; }
-  .uni-lbm-card {
-    scroll-snap-align: center;
-    display: flex;
-    flex-direction: column;
-    background: var(--color-bone-light);
-    border: 1px solid var(--color-whisper);
-    box-shadow: 0 20px 40px -28px rgba(17, 17, 17, 0.45);
-    overflow: hidden;
-  }
-  .uni-lbm-foto {
-    position: relative;
-    height: min(420px, 54svh);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding-top: 14px;
-    background:
-      radial-gradient(90% 55% at 50% 100%, rgba(255, 255, 255, 0.85), transparent 70%),
-      linear-gradient(180deg, #E6DCCB 0%, #F1EADF 100%);
-  }
-  .uni-lbm-foto img {
-    position: relative;
-    height: 100%;
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
-    object-position: bottom center;
-    -webkit-user-drag: none;
-    user-select: none;
-  }
-  .uni-lbm-n {
-    position: absolute;
-    top: 10px;
-    left: 14px;
-    font-family: var(--font-serif);
-    font-size: 64px;
-    line-height: 1;
-    color: rgba(17, 17, 17, 0.1);
-  }
-  .uni-lbm-tema {
-    position: absolute;
-    top: 16px;
-    right: 14px;
-    z-index: 1;
-    padding: 6px 10px;
-    background: rgba(250, 247, 241, 0.86);
-    font-family: var(--font-sans);
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-ink);
-  }
-  .uni-lbm-bolsa {
-    display: grid;
-    grid-template-columns: 58px 1fr;
-    grid-template-rows: auto auto;
-    gap: 10px 12px;
-    padding: 12px;
-    border-top: 1px solid var(--color-whisper);
-  }
-  .uni-lbm-mini {
-    display: block;
-    width: 58px;
-    height: 58px;
-    background: #fff;
-    overflow: hidden;
-  }
-  .uni-lbm-mini img { width: 100%; height: 100%; object-fit: contain; }
-  .uni-lbm-info { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-width: 0; }
-  .uni-lbm-nome {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    font-family: var(--font-serif);
-    font-size: 15px;
-    line-height: 1.2;
-    color: var(--color-ink);
-    text-decoration: none;
-  }
-  .uni-lbm-preco { font-family: var(--font-mono); font-size: 13px; color: var(--color-ink); }
-  .uni-lbm-preco small { font-family: var(--font-sans); font-size: 11px; color: var(--color-stone); }
-  .uni-lbm-comprar {
-    grid-column: 1 / -1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 46px;
-    border: 0;
-    background: var(--color-ink);
-    color: var(--color-bone);
-    font-family: var(--font-sans);
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-  .uni-lbm-comprar.is-feito { background: var(--color-leather-dark); }
-  .uni-lbm-pontos { display: flex; justify-content: center; gap: 4px; padding-top: 16px; }
-  .uni-lbm-pontos button {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-    position: relative;
-  }
-  .uni-lbm-pontos button::after {
-    content: '';
-    position: absolute;
-    inset: 9px;
-    border-radius: 3px;
-    background: rgba(17, 17, 17, 0.22);
-    transition: background 0.2s, inset 0.2s;
-  }
-  .uni-lbm-pontos button.is-atual::after { inset: 9px 4px; background: var(--color-ink); }
 }
 
 /* ─── Filtros de cor, preço e ordem do catálogo ───────────────────────── */
@@ -5245,4 +5065,233 @@ body:has(.uni-cat-doc.is-revenda) :is(.uni-promo-strip, .uni-header, .uni-footer
 }
 @media (prefers-reduced-motion: reduce) {
   .uni-passo-no, .uni-passo-n, .uni-passo-h, .uni-passo-p, .uni-passos-fill { transition: none; }
+}
+
+/* ─── Lookbook: tom por look, número vazado e "Compre o look" ──────────── */
+@property --lb-a { syntax: '<color>'; inherits: true; initial-value: #F1E8DB; }
+@property --lb-b { syntax: '<color>'; inherits: true; initial-value: #E3D5C1; }
+@property --lb-t { syntax: '<color>'; inherits: true; initial-value: #6B4326; }
+.uni-lb { --lb-a: #F1E8DB; --lb-b: #E3D5C1; --lb-t: #6B4326; transition: --lb-t 0.9s ease; }
+@keyframes uni-lb-entra { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.uni-lb-num {
+  position: absolute;
+  right: 9%;
+  top: 4%;
+  z-index: 0;
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(320px, calc(560 * var(--lb-u)), 600px);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--lb-t) 22%, transparent);
+  pointer-events: none;
+  animation: uni-lb-entra 0.8s ease both;
+}
+.uni-lb-fila { z-index: 1; }
+.uni-lb-tag { position: absolute; z-index: 2; left: 48px; bottom: 40px; pointer-events: none; display: flex; flex-direction: column; gap: 6px; }
+.uni-lb-rotulo { font-family: var(--font-sans); font-size: 11px; font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase; color: var(--lb-t); }
+.uni-lb-tema { font-family: var(--font-serif); font-style: italic; font-size: 38px; line-height: 1; color: var(--lb-t); animation: uni-lb-entra 0.6s ease both; }
+.uni-lb-dica { margin-top: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-stone); }
+.uni-lb-setas { top: auto; bottom: 40px; right: 32px; flex-direction: row; transform: none; }
+.uni-lb-setas button { width: 52px; height: 52px; background: rgba(255, 255, 255, 0.82); border: 0; box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.35); }
+.uni-lb-setas button:hover { background: #fff; }
+
+.uni-lb-painel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: clamp(24px, calc(36 * var(--lb-u)), 40px) clamp(22px, calc(32 * var(--lb-u)), 36px);
+  background: var(--color-bone-light);
+  border-left: 1px solid var(--color-whisper);
+}
+.uni-lb-painel-ey { font-family: var(--font-sans); font-size: 11px; font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase; color: var(--color-stone); }
+.uni-lb-painel-troca { display: flex; flex-direction: column; min-height: 0; flex: 1; animation: uni-lb-entra 0.5s ease both; }
+.uni-lb-painel-foto {
+  position: relative;
+  display: block;
+  flex: 1;
+  min-height: 120px;
+  max-height: 340px;
+  margin: 14px 0 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.06);
+}
+.uni-lb-painel-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: transform 0.6s ease; }
+.uni-lb-painel-foto:hover img { transform: scale(1.03); }
+.uni-lb-painel-nome { font-family: var(--font-serif); font-size: clamp(19px, calc(23 * var(--lb-u)), 24px); line-height: 1.2; color: var(--color-ink); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.uni-lb-painel-nome:hover { text-decoration: underline; text-underline-offset: 4px; }
+.uni-lb-painel-preco { margin-top: 8px; font-family: var(--font-mono); font-size: 16px; color: var(--color-ink); }
+.uni-lb-painel-preco small { margin-left: 6px; font-family: var(--font-sans); font-size: 12px; color: var(--color-stone); }
+.uni-lb-painel-cor { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-family: var(--font-sans); font-size: 13px; color: var(--color-stone); }
+.uni-lb-painel-cor i { width: 18px; height: 18px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--color-ink); }
+.uni-lb-painel-acoes { display: flex; gap: 8px; margin-top: 18px; }
+.uni-lb-painel-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(17, 17, 17, 0.25);
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.uni-lb-painel-btn:hover { border-color: var(--color-ink); }
+.uni-lb-painel-btn.is-cheio { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-bone); }
+.uni-lb-painel-btn.is-cheio:hover { background: var(--lb-t); border-color: var(--lb-t); }
+.uni-lb-painel-looks { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--color-whisper); }
+.uni-lb-painel-cont { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; color: var(--color-stone); }
+.uni-lb-miniaturas { display: flex; gap: 8px; margin: 12px -4px 0; padding: 4px; overflow-x: auto; scrollbar-width: none; scroll-behavior: smooth; }
+.uni-lb-miniaturas::-webkit-scrollbar { display: none; }
+.uni-lb-miniaturas button {
+  position: relative;
+  flex: 0 0 56px;
+  height: 72px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.25s, box-shadow 0.25s, transform 0.25s;
+}
+.uni-lb-miniaturas button img { position: absolute; left: 50%; bottom: 0; height: 94%; transform: translateX(-50%); }
+.uni-lb-miniaturas button:hover { opacity: 0.9; transform: translateY(-2px); }
+.uni-lb-miniaturas button.is-atual { opacity: 1; box-shadow: 0 0 0 2px var(--color-ink); }
+
+/* ─── Lookbook no celular: cartões com tom do look, "stories" e vidro ──── */
+.uni-lbm { display: none; }
+@media (max-width: 900px) {
+  .uni-lbm { display: block; padding: 52px 0 36px; background: var(--color-bone); border-top: 1px solid var(--color-whisper); }
+  .uni-lbm-topo { padding: 0 20px 18px; }
+  .uni-lbm-titulo { margin: 10px 0 0; font-family: var(--font-serif); font-weight: 400; font-size: clamp(30px, 8.4vw, 38px); line-height: 1.04; letter-spacing: -0.01em; color: var(--color-ink); }
+  .uni-lbm-titulo em { font-style: italic; color: var(--color-leather-dark); }
+  .uni-lbm-trilho {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(80vw, 340px);
+    column-gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 20px;
+    padding: 0 20px 4px;
+    scrollbar-width: none;
+  }
+  .uni-lbm-trilho::-webkit-scrollbar { display: none; }
+  .uni-lbm-card {
+    position: relative;
+    scroll-snap-align: center;
+    height: min(500px, 64svh);
+    border-radius: 26px;
+    overflow: hidden;
+    background:
+      radial-gradient(80% 50% at 50% 72%, rgba(255, 255, 255, 0.55), transparent 70%),
+      linear-gradient(170deg, var(--lb-a), var(--lb-b));
+    box-shadow: 0 24px 40px -28px rgba(17, 17, 17, 0.45);
+  }
+  .uni-lbm-stories { position: absolute; z-index: 3; top: 14px; left: 14px; right: 14px; display: flex; gap: 4px; }
+  .uni-lbm-stories i { flex: 1; height: 3px; border-radius: 3px; background: rgba(17, 17, 17, 0.12); }
+  .uni-lbm-stories i.is-on { background: color-mix(in srgb, var(--lb-t) 85%, #000); }
+  .uni-lbm-n {
+    position: absolute;
+    z-index: 0;
+    left: 14px;
+    top: 26px;
+    font-family: var(--font-serif);
+    font-weight: 300;
+    font-size: 132px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 1.2px color-mix(in srgb, var(--lb-t) 28%, transparent);
+  }
+  .uni-lbm-tema {
+    position: absolute;
+    z-index: 2;
+    left: 18px;
+    top: 34px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 16px;
+    color: var(--lb-t);
+  }
+  .uni-lbm-modelo { position: absolute; z-index: 1; left: 50%; bottom: 0; height: 92%; width: auto; transform: translateX(-50%); -webkit-user-drag: none; user-select: none; }
+  .uni-lbm-vidro {
+    position: absolute;
+    z-index: 3;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 8px 8px 8px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.68);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    backdrop-filter: blur(16px) saturate(1.2);
+    box-shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  }
+  .uni-lbm-mini { position: relative; flex-shrink: 0; width: 52px; height: 52px; border-radius: 12px; overflow: hidden; background: #fff; }
+  .uni-lbm-mini img { width: 100%; height: 100%; object-fit: contain; }
+  .uni-lbm-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: var(--color-ink); }
+  .uni-lbm-nome { font-family: var(--font-serif); font-size: 13.5px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .uni-lbm-preco { font-family: var(--font-mono); font-size: 13px; }
+  .uni-lbm-comprar {
+    flex-shrink: 0;
+    min-width: 88px;
+    height: 42px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .uni-lbm-comprar.is-feito { background: #2F6B3E; font-size: 16px; }
+  .uni-lbm-miniaturas { display: flex; gap: 8px; padding: 16px 20px 2px; overflow-x: auto; scrollbar-width: none; }
+  .uni-lbm-miniaturas::-webkit-scrollbar { display: none; }
+  .uni-lbm-miniaturas button {
+    position: relative;
+    flex: 0 0 46px;
+    height: 60px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    opacity: 0.55;
+    cursor: pointer;
+    transition: opacity 0.2s, box-shadow 0.2s;
+  }
+  .uni-lbm-miniaturas button img { position: absolute; left: 50%; bottom: 0; height: 94%; transform: translateX(-50%); }
+  .uni-lbm-miniaturas button.is-atual { opacity: 1; box-shadow: 0 0 0 2px var(--color-ink); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uni-lb-num, .uni-lb-tema, .uni-lb-painel-troca { animation: none; }
+  .uni-lb-palco { transition: none; }
 }
