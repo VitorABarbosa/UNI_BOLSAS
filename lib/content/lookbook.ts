@@ -28,7 +28,7 @@ export const LOOKS: LookConfig[] = [
   { look: 8, tema: 'Academia', produtoId: '608c07b9-7da3-4f46-96a6-7e6e2a8dee3d', cor: 'Vermelho', fotoPedido: '608c07b9-7da3-4f46-96a6-7e6e2a8dee3d/6560477b-b739-47f7-8607-a02c38877ed1.jpg', proporcao: 0.3407 },
   { look: 9, tema: 'Praia', produtoId: '5fe0a6e9-385d-4386-a81e-ba1a9e65808b', cor: 'Laranja', fotoPedido: '5fe0a6e9-385d-4386-a81e-ba1a9e65808b/9b8c5b39-a3a5-4c25-9306-c901ae2266a7.jpg', proporcao: 0.4536 },
   { look: 10, tema: 'Faculdade e passeio', produtoId: '1af3fa33-f4b5-465c-8c72-fe648c6da40b', cor: 'Rosa', fotoPedido: '1af3fa33-f4b5-465c-8c72-fe648c6da40b/de7fdc31-94a7-4b8c-8fb8-97e85df2a56f.jpg', proporcao: 0.3679 },
-  { look: 11, tema: 'Brunch e café', produtoId: 'db9857fe-debb-4526-a642-d7ba818ecdfe', cor: 'Bege', fotoPedido: 'db9857fe-debb-4526-a642-d7ba818ecdfe/78ee10a9-d183-4724-bd75-236496b0f906.jpg', proporcao: 0.3136 },
+  { look: 11, tema: 'Brunch e café', produtoId: 'db9857fe-debb-4526-a642-d7ba818ecdfe', cor: 'Bege', fotoPedido: 'db9857fe-debb-4526-a642-d7ba818ecdfe/78ee10a9-d183-4724-bd75-236496b0f906.jpg', proporcao: 0.3371 },
   { look: 12, tema: 'Esporte e rua', produtoId: '6f8e473d-5e2a-4db8-a2c7-cec07e028ffd', cor: 'Preto Com Rosa', fotoPedido: '6f8e473d-5e2a-4db8-a2c7-cec07e028ffd/20951a74-4c49-4489-bb57-272d447878e4.jpg', proporcao: 0.4393 },
 ];
 
