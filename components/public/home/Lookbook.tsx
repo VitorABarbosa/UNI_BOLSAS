@@ -222,6 +222,23 @@ export function Lookbook({ looks }: { looks: LookDaVitrine[] }) {
         tabIndex={0}
         aria-label="Passarela de looks. Arraste ou use as setas do teclado para trocar o look."
       >
+        <div className="uni-lb-fundos" aria-hidden="true">
+          {ativo &&
+            looks.map(({ cfg }, i) => {
+              // Só o look atual e os vizinhos: troca com fade sem baixar os 12 de uma vez.
+              const d = Math.min(wrap(i - atual, N), wrap(atual - i, N));
+              return d > 1 ? null : (
+              <img
+                key={cfg.look}
+                src={`/lookbook/fundo-${nn(cfg.look)}.webp`}
+                alt=""
+                decoding="async"
+                draggable={false}
+                className={i === atual ? 'is-on' : undefined}
+              />
+              );
+            })}
+        </div>
         <span key={atualLook.cfg.look} className="uni-lb-num" aria-hidden="true">
           {nn(atualLook.cfg.look)}
         </span>
@@ -238,7 +255,7 @@ export function Lookbook({ looks }: { looks: LookDaVitrine[] }) {
           <h2 className="uni-lb-titulo">
             Uma bolsa para <em>cada momento.</em>
           </h2>
-          <p>Dez looks com bolsas do nosso atacado. Arraste para trocar; a bolsa de cada look está ao lado, pronta para o pedido.</p>
+          <p>{N} looks com bolsas do nosso atacado. Arraste para trocar; a bolsa de cada look está ao lado, pronta para o pedido.</p>
         </div>
         <div className="uni-lb-tag" aria-live="polite">
           <span className="uni-lb-rotulo">Look {nn(atualLook.cfg.look)}</span>
@@ -440,6 +457,9 @@ export function LookbookCelular({ looks }: { looks: LookDaVitrine[] }) {
                   <i key={l.cfg.look} className={k <= i ? 'is-on' : undefined} />
                 ))}
               </div>
+              {perto && (
+                <img className="uni-lbm-fundo" src={`/lookbook/fundo-${nn(cfg.look)}.webp`} alt="" loading="lazy" decoding="async" draggable={false} />
+              )}
               <span className="uni-lbm-n" aria-hidden="true">
                 {nn(cfg.look)}
               </span>

@@ -1,6 +1,7 @@
 /**
- * Lookbook da página inicial: dez looks, cada um com uma bolsa real do
- * catálogo. A imagem da modelo e a foto da bolsa ficam em /public/lookbook.
+ * Lookbook da página inicial: cada look tem uma bolsa real do catálogo.
+ * A imagem da modelo, a foto da bolsa e o cenário de fundo (fundo-NN.webp)
+ * ficam em /public/lookbook.
  * Preço, nome e link vêm do catálogo (se a peça sair do ar, o look some).
  *
  * `cor` é a cor da bolsa que a modelo usa (entra no pedido com ela) e
@@ -27,6 +28,8 @@ export const LOOKS: LookConfig[] = [
   { look: 8, tema: 'Academia', produtoId: '608c07b9-7da3-4f46-96a6-7e6e2a8dee3d', cor: 'Vermelho', fotoPedido: '608c07b9-7da3-4f46-96a6-7e6e2a8dee3d/6560477b-b739-47f7-8607-a02c38877ed1.jpg', proporcao: 0.3407 },
   { look: 9, tema: 'Praia', produtoId: '5fe0a6e9-385d-4386-a81e-ba1a9e65808b', cor: 'Laranja', fotoPedido: '5fe0a6e9-385d-4386-a81e-ba1a9e65808b/9b8c5b39-a3a5-4c25-9306-c901ae2266a7.jpg', proporcao: 0.4536 },
   { look: 10, tema: 'Faculdade e passeio', produtoId: '1af3fa33-f4b5-465c-8c72-fe648c6da40b', cor: 'Rosa', fotoPedido: '1af3fa33-f4b5-465c-8c72-fe648c6da40b/de7fdc31-94a7-4b8c-8fb8-97e85df2a56f.jpg', proporcao: 0.3679 },
+  { look: 11, tema: 'Brunch e café', produtoId: 'db9857fe-debb-4526-a642-d7ba818ecdfe', cor: 'Bege', fotoPedido: 'db9857fe-debb-4526-a642-d7ba818ecdfe/78ee10a9-d183-4724-bd75-236496b0f906.jpg', proporcao: 0.3136 },
+  { look: 12, tema: 'Esporte e rua', produtoId: '6f8e473d-5e2a-4db8-a2c7-cec07e028ffd', cor: 'Preto Com Rosa', fotoPedido: '6f8e473d-5e2a-4db8-a2c7-cec07e028ffd/20951a74-4c49-4489-bb57-272d447878e4.jpg', proporcao: 0.4393 },
 ];
 
 export const nn = (n: number) => String(n).padStart(2, '0');
@@ -47,5 +50,7 @@ export const TONS: Record<number, { a: string; b: string; tinta: string }> = {
   8: { a: '#E4EBE1', b: '#CEDBCA', tinta: '#3E5E3E' }, // academia
   9: { a: '#F6E7D0', b: '#E8D0AC', tinta: '#9A5B24' }, // praia
   10: { a: '#F4E3E5', b: '#E7CBCF', tinta: '#7A3442' }, // faculdade e passeio
+  11: { a: '#F3EADF', b: '#E6D6C3', tinta: '#7A5232' }, // brunch e café
+  12: { a: '#EFE3E8', b: '#DCCAD2', tinta: '#8A2E5C' }, // esporte e rua
 };
 export const tomDo = (look: number) => TONS[look] ?? { a: '#EFE6D8', b: '#E3D5C1', tinta: '#6B4326' };
